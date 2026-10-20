@@ -1,6 +1,6 @@
 /*
  * Estilo Brutalista: neobrutalismo minimalista. Fundo creme com grade fina, bordas pretas retas,
- * sombras sólidas deslocadas, tipografia grotesca e monoespaçada e uma única cor de destaque (--accent),
+ * sombras sólidas deslocadas, a fonte monoespaçada Space Mono em todos os textos e uma única cor de destaque (--accent),
  * escolhida pelo usuário. Tudo fica sob [data-estilo="grade"]; o estilo Clássico continua em index.css.
  */
 :root[data-estilo="grade"] {
@@ -39,7 +39,8 @@
   --b: 1.5px;
   --sombra: 4px 4px 0 var(--sombra-cor);
   --sombra-alta: 8px 8px 0 var(--sombra-cor);
-  --f-body: "Space Grotesk", "Segoe UI", system-ui, -apple-system, sans-serif;
+  /* Uma fonte só em todos os textos, como nas referências. */
+  --f-body: "Space Mono", ui-monospace, Menlo, Consolas, monospace;
   --f-mono: "Space Mono", ui-monospace, Menlo, Consolas, monospace;
 }
 :root[data-estilo="grade"][data-tema="escuro"] {
@@ -74,7 +75,8 @@
   background-size: 28px 28px;
   background-attachment: fixed;
 }
-[data-estilo="grade"] h1, [data-estilo="grade"] h2 { letter-spacing: -0.02em; font-weight: 700; }
+[data-estilo="grade"] h1, [data-estilo="grade"] h2 { letter-spacing: -0.03em; font-weight: 700; }
+[data-estilo="grade"] body { font-size: 13.5px; }
 [data-estilo="grade"] h3, [data-estilo="grade"] th, [data-estilo="grade"] .etapas .pilula.etapa small,
 [data-estilo="grade"] .criterio .k, [data-estilo="grade"] .tag, [data-estilo="grade"] .campo,
 [data-estilo="grade"] .cartao-projeto-dados small, [data-estilo="grade"] .kv small, [data-estilo="grade"] .numeros small,
@@ -207,3 +209,5 @@
 [data-estilo="grade"] .capa-projeto, [data-estilo="grade"] .capa-projeto-editar, [data-estilo="grade"] .importar-chamada, [data-estilo="grade"] .importar-chamada-icone,
 [data-estilo="grade"] .cartao-projeto-imagem, [data-estilo="grade"] .imagem-ambiente { border-radius: 0; }
 [data-estilo="grade"] .capa-projeto { border: var(--b) solid var(--borda); }
+/* A fonte monoespaçada é mais larga: botões longos quebram a linha em vez de passar da tela. */
+[data-estilo="grade"] .btn { max-width: 100%; white-space: normal; text-align: center; }

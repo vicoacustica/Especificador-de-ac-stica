@@ -23,6 +23,13 @@ interface Props {
 }
 
 /** Projetos que usam o material em alguma superfície ou item. */
+type ModoVista = 'grade' | 'lista'
+const CHAVE_MODO = 'especificador:biblioteca-vista:v1'
+/** Preferência de visualização deste navegador: cartões grandes em grade ou lista com miniaturas. */
+function lerModo(): ModoVista {
+  try { return localStorage.getItem(CHAVE_MODO) === 'lista' ? 'lista' : 'grade' } catch { return 'grade' }
+}
+
 function usosDoMaterial(id: string, projetos: Projeto[]): string[] {
   return projetos
     .filter((p) => p.cenarios.some((c) => c.superficies.some((s) => s.material === id) || c.itens.some((it) => it.material === id || it.materialOcupado === id)))
@@ -37,6 +44,8 @@ export function Materiais({ catalogo, projetos, salvarMaterial, excluirMaterial,
   const [editando, setEditando] = useState<Material | 'novo' | null>(null)
   const [copiando, setCopiando] = useState<Material | null>(null)
   const [excluindo, setExcluindo] = useState<string | null>(null)
+  const [modo, setModo] = useState<ModoVista>(lerModo)
+  const mudarModo = (m: ModoVista) => { setModo(m); try { localStorage.setItem(CHAVE_MODO, m) } catch { /* só nesta sessão */ } }
 
   const termo = busca.trim().toLowerCase()
   const doFiltro = catalogo.todos.filter((m) =>
@@ -67,6 +76,10 @@ export function Materiais({ catalogo, projetos, salvarMaterial, excluirMaterial,
             <button key={f.valor} type="button" aria-pressed={filtro === f.valor} onClick={() => mudar(() => { setFiltro(f.valor); setCategoria('todas') })}>{f.rotulo}</button>
           ))}
         </div>
+        <div className="seg modo-vista" role="group" aria-label="Visualização">
+          <button type="button" aria-pressed={modo === 'grade'} aria-label="Cartões grandes em grade" title="Cartões em grade" onClick={() => mudarModo('grade')}><Icone nome="grade" tamanho={16} /><span>Grade</span></button>
+          <button type="button" aria-pressed={modo === 'lista'} aria-label="Lista com miniaturas" title="Lista com miniaturas" onClick={() => mudarModo('lista')}><Icone nome="lista" tamanho={16} /><span>Lista</span></button>
+        </div>
       </div>
       <div className="chips rolagem">
         <button type="button" className="chip" aria-pressed={categoria === 'todas'} onClick={() => mudar(() => setCategoria('todas'))}>Todas <span className="contagem">{doFiltro.length}</span></button>
@@ -77,7 +90,7 @@ export function Materiais({ catalogo, projetos, salvarMaterial, excluirMaterial,
         ))}
       </div>
 
-      <div className="grade-biblioteca">
+      <div className={modo === 'lista' ? 'lista-biblioteca' : 'grade-biblioteca'}>
         {lista.slice(0, limite).map((m) => {
           const usos = excluindo === m.id ? usosDoMaterial(m.id, projetos) : []
           return (
@@ -88,7 +101,7 @@ export function Materiais({ catalogo, projetos, salvarMaterial, excluirMaterial,
               </button>
               <div className="cartao-biblioteca-corpo">
                 <b>{m.nome}</b>
-                <span className="suave">{nomeCategoria(m.tipo)}</span>
+                <span className="suave">{nomeCategoria(m.tipo)}<span className="so-lista"> · {m.proprio ? 'Meu material' : 'Base'}</span></span>
                 {m.descricao && <span className="descricao">{m.descricao}</span>}
                 <div className="cartao-biblioteca-alfa">
                   <BarrasAlfa alfa={m.alfa} unidade={m.unidade} />

@@ -10,7 +10,7 @@ export interface Aparencia {
   destaque: string
 }
 
-/** Cores de destaque do estilo Brutalista (o id interno continua 'grade'); `tinta` é a cor do texto sobre o destaque. */
+/** Cores de destaque dos dois estilos (o id interno do Brutalista continua 'grade'); `tinta` é a cor do texto sobre o destaque. */
 export const PALETA: { id: string; nome: string; cor: string; tinta: string }[] = [
   { id: 'laranja', nome: 'Laranja Viço', cor: '#e0523e', tinta: '#ffffff' },
   { id: 'azul', nome: 'Azul', cor: '#2f6fed', tinta: '#ffffff' },
@@ -23,8 +23,8 @@ export const PALETA: { id: string; nome: string; cor: string; tinta: string }[] 
 ]
 
 export const NOME_ESTILO: Record<Estilo, { nome: string; descricao: string }> = {
-  classico: { nome: 'Clássico', descricao: 'Off-white, cantos arredondados e destaque laranja.' },
-  grade: { nome: 'Brutalista', descricao: 'Neobrutalismo minimalista: bordas pretas, sombras sólidas e uma cor de destaque, com modo escuro.' },
+  classico: { nome: 'Clássico', descricao: 'Off-white, cantos arredondados e fonte Onest.' },
+  grade: { nome: 'Brutalista', descricao: 'Neobrutalismo minimalista: bordas pretas, sombras sólidas e fonte Space Mono.' },
 }
 
 const CHAVE = 'especificador:aparencia:v1'
@@ -43,19 +43,13 @@ export function salvarAparencia(a: Aparencia) {
   try { localStorage.setItem(CHAVE, JSON.stringify(a)) } catch { /* armazenamento bloqueado: vale só nesta sessão */ }
 }
 
-/** Aplica no documento: o estilo Clássico mantém as cores originais e o modo claro. */
+/** Aplica no documento: estilo, modo claro ou escuro e cor de destaque valem para os dois estilos. */
 export function aplicarAparencia(a: Aparencia) {
   const raiz = document.documentElement
   raiz.dataset.estilo = a.estilo
-  const grade = a.estilo === 'grade'
-  raiz.dataset.tema = grade ? a.tema : 'claro'
+  raiz.dataset.tema = a.tema
   const cor = PALETA.find((p) => p.id === a.destaque) ?? PALETA[0]
-  if (grade) {
-    raiz.style.setProperty('--accent', cor.cor)
-    raiz.style.setProperty('--accent-ink', cor.tinta)
-  } else {
-    raiz.style.removeProperty('--accent')
-    raiz.style.removeProperty('--accent-ink')
-  }
-  raiz.style.colorScheme = grade && a.tema === 'escuro' ? 'dark' : 'light'
+  raiz.style.setProperty('--accent', cor.cor)
+  raiz.style.setProperty('--accent-ink', cor.tinta)
+  raiz.style.colorScheme = a.tema === 'escuro' ? 'dark' : 'light'
 }
