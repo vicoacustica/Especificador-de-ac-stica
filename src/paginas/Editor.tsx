@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { avaliar, NOME_SITUACAO } from '../motor/acustica'
 import type { Catalogo } from '../motor/materiais'
 import type { Cenario, EstadoOcupacao, Projeto } from '../motor/tipos'
+import type { Perfil } from '../dados/conta'
 import { cenarioVazio, duplicarCenario } from '../dados/exemplo'
 import { EtapaAmbiente } from '../etapas/Ambiente'
 import { EtapaComparar } from '../etapas/Comparar'
@@ -28,11 +29,13 @@ interface Props {
   catalogo: Catalogo
   mudarProjeto: (f: (p: Projeto) => void) => void
   salvarMaterial: (s: SalvarMaterial) => void
+  perfil: Perfil
+  mudarPerfil: (p: Perfil) => void
   voltar: () => void
   abrirAjuda: () => void
 }
 
-export function Editor({ projeto, catalogo, mudarProjeto, salvarMaterial, voltar, abrirAjuda }: Props) {
+export function Editor({ projeto, catalogo, mudarProjeto, salvarMaterial, perfil, mudarPerfil, voltar, abrirAjuda }: Props) {
   const [cenarioId, setCenarioId] = useState(projeto.cenarios[0].id)
   const cenario = projeto.cenarios.find((c) => c.id === cenarioId) ?? projeto.cenarios[0]
   const [etapa, setEtapa] = useState(cenario.superficies.length ? 1 : 0)
@@ -123,7 +126,7 @@ export function Editor({ projeto, catalogo, mudarProjeto, salvarMaterial, voltar
           </section>
         </main>
         <aside className="editor-resultado">
-          <PainelResultado projeto={projeto} cenario={cenario} catalogo={catalogo} estado={estado} setEstado={setEstado} />
+          <PainelResultado projeto={projeto} cenario={cenario} catalogo={catalogo} estado={estado} setEstado={setEstado} perfil={perfil} mudarPerfil={mudarPerfil} />
         </aside>
       </div>
       {editandoProjeto && (

@@ -181,7 +181,7 @@ export function Visor3D({ faces, cor, destaque, selecionado, ocultos, aoClicar, 
         <button type="button" className="icone-btn" aria-label="Afastar" onClick={() => setVista((v) => ({ ...v, zoom: Math.max(0.3, v.zoom / 1.2) }))}><span aria-hidden="true" style={{ fontSize: 18, lineHeight: 1 }}>−</span></button>
         <button type="button" className="btn fantasma pequeno" onClick={() => setVista(VISTA_INICIAL)}>Vista inicial</button>
       </div>
-      <span className="previa-dica">Arraste para girar · role para aproximar{aoClicar ? ' · clique numa face para escolher' : ''}{faces.length > LIMITE_FACES ? ` · mostrando ${LIMITE_FACES} de ${faces.length} faces` : ''}</span>
+      <span className="previa-dica">Arraste para girar · role para aproximar{aoClicar ? ' · clique em uma face para escolher' : ''}{faces.length > LIMITE_FACES ? ` · mostrando ${LIMITE_FACES} de ${faces.length} faces` : ''}</span>
     </div>
   )
 }

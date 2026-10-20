@@ -21,8 +21,8 @@ interface Props {
 }
 
 /**
- * Superfícies sobre o modelo 3D importado: clique numa face para escolher a superfície e depois
- * num material, ou arraste o material da biblioteca até a face.
+ * Superfícies sobre o modelo 3D importado: clique em uma face para escolher a superfície e depois
+ * em um material, ou arraste o material da biblioteca até a face.
  */
 export function SuperficiesNoModelo({ cenario, catalogo, modelo, materiais, mudarMaterial, mudarCategoria, erro }: Props) {
   const [grupo, setGrupo] = useState<string | null>(null)
@@ -54,7 +54,7 @@ export function SuperficiesNoModelo({ cenario, catalogo, modelo, materiais, muda
           ocultos={ocultos}
           aoClicar={setGrupo}
           aoSoltar={atribuir}
-          rotulo={`Modelo 3D de ${modelo.arquivo}. Clique numa face para escolher a superfície.`}
+          rotulo={`Modelo 3D de ${modelo.arquivo}. Clique em uma face para escolher a superfície.`}
         />
       </div>
       <div className="modelo-sup-lista" onMouseLeave={() => setDestaque(null)}>
@@ -95,7 +95,7 @@ export function SuperficiesNoModelo({ cenario, catalogo, modelo, materiais, muda
             </span>
           </div>
         ) : (
-          <p className="modelo-sup-dica"><Icone nome="ok" tamanho={16} />Clique numa superfície do modelo (ou da lista) e depois num material. Também dá para arrastar o material até a superfície no modelo.</p>
+          <p className="modelo-sup-dica"><Icone nome="ok" tamanho={16} />Clique em uma superfície do modelo (ou da lista) e depois em um material. Também é possível arrastar o material até a superfície no modelo.</p>
         )}
         <div className="busca">
           <Icone nome="busca" />

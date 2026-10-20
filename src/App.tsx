@@ -149,6 +149,8 @@ export default function App() {
         catalogo={catalogo}
         mudarProjeto={(f) => mudarProjeto(projeto.id, f)}
         salvarMaterial={salvarMaterial}
+        perfil={perfil}
+        mudarPerfil={mudarPerfil}
         voltar={() => ir({ pagina: 'projetos' })}
         abrirAjuda={() => ir({ pagina: 'ajuda' })}
       />

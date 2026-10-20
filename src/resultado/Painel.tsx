@@ -5,15 +5,26 @@ import { BANDAS, NOME_ESTADO, type Cenario, type EstadoOcupacao, type Projeto } 
 import { Segmentado } from '../ui/campos'
 import { CLASSE_SITUACAO, fmt } from '../ui/formato'
 import { GraficoAV, GraficoTempo } from './Graficos'
-import { memorial } from './memorial'
+import { GerarMemorial } from './GerarMemorial'
+import type { Perfil } from '../dados/conta'
+import { Icone } from '../ui/Icone'
 
 const CLASSE = { ok: 'o', acima: 'a', abaixo: 'b', invalido: 'b' } as const
 
-export function PainelResultado({ projeto, cenario, catalogo, estado, setEstado }: { projeto: Projeto; cenario: Cenario; catalogo: Catalogo; estado: EstadoOcupacao; setEstado: (e: EstadoOcupacao) => void }) {
-  const [copiado, setCopiado] = useState<string | null>(null)
+interface Props {
+  projeto: Projeto
+  cenario: Cenario
+  catalogo: Catalogo
+  estado: EstadoOcupacao
+  setEstado: (e: EstadoOcupacao) => void
+  perfil: Perfil
+  mudarPerfil: (p: Perfil) => void
+}
+
+export function PainelResultado({ projeto, cenario, catalogo, estado, setEstado, perfil, mudarPerfil }: Props) {
+  const [gerando, setGerando] = useState(false)
   const av = avaliar(cenario, catalogo)
   const r = av.resultado
-  const texto = memorial(projeto, cenario, av, catalogo)
 
   let falhas: string[] = []
   let corpo
@@ -79,10 +90,6 @@ export function PainelResultado({ projeto, cenario, catalogo, estado, setEstado 
     )
   }
 
-  function copiar() {
-    navigator.clipboard.writeText(texto).then(() => setCopiado('Copiado'), () => setCopiado('Não foi possível copiar; selecione o texto abaixo'))
-  }
-
   return (
     <>
       <section className="cartao">
@@ -94,13 +101,12 @@ export function PainelResultado({ projeto, cenario, catalogo, estado, setEstado 
         {falhas.length > 0 && <p className="nota">{falhas.join(' · ')}</p>}
         {corpo}
       </section>
-      <section className="cartao">
-        <div className="status">
-          <b>Memorial de especificação</b>
-          <button type="button" className="btn secundario pequeno" onClick={copiar}>{copiado ?? 'Copiar memorial'}</button>
-        </div>
-        <pre className="memorial">{texto}</pre>
+      <section className="cartao memorial-cartao">
+        <b>Memorial de especificação</b>
+        <p className="nota">PDF com plantas e vistas do modelo 3D, quadro de especificações dos materiais acústicos, resultados e memória de cálculo.</p>
+        <button type="button" className="btn primario" onClick={() => setGerando(true)}><Icone nome="documento" />Gerar memorial</button>
       </section>
+      {gerando && <GerarMemorial projeto={projeto} cenarioId={cenario.id} catalogo={catalogo} perfil={perfil} mudarPerfil={mudarPerfil} aoFechar={() => setGerando(false)} />}
     </>
   )
 }

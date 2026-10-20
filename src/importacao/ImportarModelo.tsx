@@ -127,7 +127,7 @@ export function ImportarModelo({ cenario, catalogo, aoImportar, aoFechar }: Prop
             <li><b>DXF 3D:</b> faces 3D (3DFACE) e malhas (polyface mesh), como exporta o SketchUp. Blocos são lidos com a posição, a escala e a rotação. Exporte em ASCII.</li>
             <li><b>DXF 2D:</b> polilinhas fechadas viram áreas de piso. Informe as paredes depois, na etapa de superfícies.</li>
             <li><b>OBJ:</b> as faces ficam agrupadas pelos grupos ou pelos materiais do modelo. SketchUp, Revit, Rhino e Blender exportam OBJ.</li>
-            <li>Modele só o ambiente avaliado, com cada material numa layer (ou etiqueta) e portas e janelas em layers próprias.</li>
+            <li>Modele só o ambiente avaliado, com cada material em uma layer (ou etiqueta) e portas e janelas em layers próprias.</li>
           </ul>
         </div>
       )}
@@ -195,7 +195,7 @@ export function ImportarModelo({ cenario, catalogo, aoImportar, aoFechar }: Prop
               </tfoot>
             </table>
           </div>
-          <p className="nota">Áreas em m². Passe o mouse numa layer para destacá-la na prévia. Faces com até 20° de inclinação são horizontais: abaixo da metade da altura do modelo contam como piso, acima como forro/teto. Faces a partir de 70° são paredes; entre esses ângulos, inclinadas.</p>
+          <p className="nota">Áreas em m². Passe o mouse em uma layer para destacá-la na prévia. Faces com até 20° de inclinação são horizontais: abaixo da metade da altura do modelo contam como piso, acima como forro/teto. Faces a partir de 70° são paredes; entre esses ângulos, inclinadas.</p>
           {ignoradas.length > 0 && <p className="alerta">O arquivo também tem {ignoradas.map(([t, n]) => `${n} ${t}`).join(', ')}, que não entram no quadro. Para incluí-los, exporte essas superfícies como faces 3D ou malha.</p>}
 
           <div className="importar-opcoes-finais">

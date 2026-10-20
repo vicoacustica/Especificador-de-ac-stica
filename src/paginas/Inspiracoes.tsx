@@ -36,7 +36,7 @@ function PastaPinterest({ url }: { url: string }) {
       )}
       {estado === 'falhou' && (
         <a className="pasta-atalho" href={url} target="_blank" rel="noopener noreferrer">
-          <Icone nome="imagem" tamanho={22} /><span><b>Abrir minha pasta no Pinterest</b><small>Não foi possível mostrar as imagens aqui. O link abre a pasta numa nova aba.</small></span><Icone nome="seta" />
+          <Icone nome="imagem" tamanho={22} /><span><b>Abrir minha pasta no Pinterest</b><small>Não foi possível mostrar as imagens aqui. O link abre a pasta em uma nova aba.</small></span><Icone nome="seta" />
         </a>
       )}
     </div>
@@ -107,7 +107,7 @@ export function Inspiracoes({ tipologias, perfil, mudarPerfil }: { tipologias: T
             <input type="url" value={link} placeholder="https://br.pinterest.com/seu-usuario/acustica/" onChange={(e) => setLink(e.target.value.trim())} />
           </label>
           {link && !PASTA.test(link) && <p className="erro">O link deve ser de uma pasta, no formato pinterest.com/usuário/pasta.</p>}
-          <p className="nota">Para copiar o link, abra a pasta no Pinterest e use Compartilhar › Copiar link. Entrar com a conta do Pinterest para escolher a pasta numa lista vem junto com o login da comunidade.</p>
+          <p className="nota">Para copiar o link, abra a pasta no Pinterest e use Compartilhar › Copiar link. Entrar com a conta do Pinterest para escolher a pasta em uma lista vem junto com o login da comunidade.</p>
           <div className="linha acoes">
             <button type="button" className="btn primario" disabled={!PASTA.test(link)} onClick={() => { mudarPerfil({ ...perfil, pinterest: link }); setPersonalizando(false) }}><Icone nome="ok" />Usar esta pasta</button>
             {perfil.pinterest && <button type="button" className="btn secundario" onClick={() => { mudarPerfil({ ...perfil, pinterest: '' }); setPersonalizando(false) }}>Voltar às sugestões</button>}

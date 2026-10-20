@@ -88,7 +88,7 @@ export function ProcessosCalculo() {
         </Topico>
 
         <Topico n={3} titulo="Área de absorção sonora equivalente (A)">
-          <p>A Área de absorção sonora equivalente (A) soma toda a absorção da sala numa única grandeza: é a área de uma janela aberta, que absorve tudo, que teria o mesmo efeito que todas as superfícies e objetos juntos. Cada superfície contribui com sua área vezes o α do material, e cada objeto com a sua área de absorção por peça. O cálculo é feito em cada banda.</p>
+          <p>A Área de absorção sonora equivalente (A) soma toda a absorção da sala em uma única grandeza: é a área de uma janela aberta, que absorve tudo, que teria o mesmo efeito que todas as superfícies e objetos juntos. Cada superfície contribui com sua área vezes o α do material, e cada objeto com a sua área de absorção por peça. O cálculo é feito em cada banda.</p>
           <Equacao
             formula={<>A = Σ S<sub>i</sub>·α<sub>i</sub> + Σ n<sub>j</sub>·A<sub>obj,j</sub></>}
             legenda={[

@@ -18,6 +18,7 @@ const CAMPOS: { chave: Exclude<keyof Perfil, 'pinterest'>; rotulo: string; exemp
   { chave: 'email', rotulo: 'E-mail', exemplo: 'voce@empresa.com.br' },
   { chave: 'empresa', rotulo: 'Empresa ou escritório', exemplo: 'ex.: Viço Acústica' },
   { chave: 'profissao', rotulo: 'Profissão', exemplo: 'ex.: Arquiteta, engenheiro acústico' },
+  { chave: 'registro', rotulo: 'Cadastro profissional', exemplo: 'ex.: CAU A123456-7 ou CREA 123456/D' },
 ]
 
 /** Tamanho aproximado do que este app guarda no navegador, em kB. */

@@ -1,10 +1,44 @@
 import { useMemo, useState } from 'react'
 import { areaEfetiva, avaliar, NOME_SITUACAO } from '../motor/acustica'
 import type { Catalogo } from '../motor/materiais'
-import type { Projeto } from '../motor/tipos'
+import { elementoDe, FORMAS, type Cenario, type ItemOcupacao, type Projeto } from '../motor/tipos'
 import { coresDoCenario, facesDoModelo } from '../importacao/cena'
 import { Visor3D } from '../importacao/Visor3D'
 import { CLASSE_SITUACAO, fmt } from '../ui/formato'
+
+const GRUPOS_ITENS: { titulo: string; filtro: (it: ItemOcupacao) => boolean }[] = [
+  { titulo: 'Mobiliário', filtro: (it) => it.tipo === 'assento' },
+  { titulo: 'Nuvens', filtro: (it) => it.tipo === 'suspenso' && elementoDe(it) === 'nuvem' },
+  { titulo: 'Baffles', filtro: (it) => it.tipo === 'suspenso' && elementoDe(it) === 'baffle' },
+]
+
+/** Quantidade do item: peças, ou área total com as peças e medidas para os itens com α. */
+function quantidadeDoItem(it: ItemOcupacao, catalogo: Catalogo): string {
+  if (it.tipo !== 'suspenso' || catalogo.get(it.material).unidade) return `${it.quantidade} un.`
+  const f = it.forma
+  return f ? `${fmt(it.quantidade)} m² · ${f.quantidade} × ${FORMAS[f.tipo].nome.toLowerCase()} ${f.medidas.map((m) => fmt(m)).join(' × ')} m` : `${fmt(it.quantidade)} m²`
+}
+
+/** Resumo do mobiliário, das nuvens e dos baffles do cenário (o público fica de fora). */
+function ResumoItens({ cenario, catalogo }: { cenario: Cenario; catalogo: Catalogo }) {
+  const grupos = GRUPOS_ITENS.map((g) => ({ ...g, itens: cenario.itens.filter(g.filtro) }))
+  return (
+    <div className="modelo-itens">
+      {grupos.map((g) => (
+        <div key={g.titulo}>
+          <b className="k">{g.titulo}</b>
+          {g.itens.length ? (
+            <ul>
+              {g.itens.map((it) => (
+                <li key={it.id}><span><b>{it.nome}</b><small>{catalogo.get(it.material).nome}</small></span><span className="mono">{quantidadeDoItem(it, catalogo)}</span></li>
+              ))}
+            </ul>
+          ) : <p className="suave">Nenhum item neste cenário.</p>}
+        </div>
+      ))}
+    </div>
+  )
+}
 
 /** Modelo 3D pintado pelos materiais de cada cenário, com legenda e troca de cenário. */
 export function ModeloResultado({ projeto, catalogo }: { projeto: Projeto; catalogo: Catalogo }) {
@@ -61,9 +95,10 @@ export function ModeloResultado({ projeto, catalogo }: { projeto: Projeto; catal
               </li>
             ))}
           </ul>
-          <p className="nota">Passe o mouse num material para isolá-lo no modelo.</p>
+          <p className="nota">Passe o mouse em um material para isolá-lo no modelo.</p>
         </div>
       </div>
+      <ResumoItens cenario={cenario} catalogo={catalogo} />
     </section>
   )
 }

@@ -36,7 +36,7 @@ const PASSOS: Passo[] = [
       marcas: [<>Escolha a classificação. Os grupos A e as curvas da NBR 12179:1992 definem um Tempo de reverberação alvo (T<sub>alvo</sub>); os grupos B definem uma absorção mínima por volume.</>, <>Digite o Volume (V) em m³: 189.</>, <>Escolha a Umidade relativa do ar (UR). Ela define quanto o ar absorve nas bandas agudas; no exemplo, 50%.</>, <>O quadro mostra o critério resultante: T<sub>alvo</sub> = 0,32·lg 189 − 0,17 = 0,56 s, e a faixa aceita em cada banda.</>],
     }, {
       imagem: '02-importar', legenda: 'Importar um modelo DXF ou OBJ',
-      marcas: [<>A prévia 3D do modelo aberto pelo botão “Importar modelo”, no início da etapa 1, com uma cor por layer. Arraste para girar e role para aproximar.</>, <>O quadro de áreas: cada layer (ou etiqueta) com a área de piso, paredes, forro/teto e faces inclinadas. Passe o mouse numa layer para destacá-la na prévia e confira a unidade pela caixa envolvente.</>, <>Escolha de onde vem o volume e o pé-direito, e se as paredes do modelo já têm os vãos recortados.</>, <>Importe. Cada layer vira uma superfície; ajuste o tipo e o material na etapa 2.</>],
+      marcas: [<>A prévia 3D do modelo aberto pelo botão “Importar modelo”, no início da etapa 1, com uma cor por layer. Arraste para girar e role para aproximar.</>, <>O quadro de áreas: cada layer (ou etiqueta) com a área de piso, paredes, forro/teto e faces inclinadas. Passe o mouse em uma layer para destacá-la na prévia e confira a unidade pela caixa envolvente.</>, <>Escolha de onde vem o volume e o pé-direito, e se as paredes do modelo já têm os vãos recortados.</>, <>Importe. Cada layer vira uma superfície; ajuste o tipo e o material na etapa 2.</>],
     }],
     dica: <>No grupo B o sistema também pede o Pé-direito (h), porque o mínimo de absorção depende dele.</>,
   },
@@ -89,7 +89,7 @@ const PASSOS: Passo[] = [
     intro: <>O painel à direita acompanha todas as etapas e mostra o resultado do cenário aberto, recalculado a cada mudança.</>,
     figuras: [{
       imagem: '07-resultado', legenda: 'Painel de resultado',
-      marcas: [<>Se o cenário atende e qual fórmula foi usada, Sabine ou Eyring.</>, <>O Tempo de reverberação (T) por banda em cada situação de ocupação, dentro da faixa aceita.</>, <>Os valores de T comparados aos limites mínimo e máximo.</>, <>A observação sobre o Coeficiente de absorção médio (ᾱ) da sala: acima de 0,30 o cálculo passa a usar Eyring. No exemplo, ᾱ = 0,23 e vale Sabine.</>, <>Copie o memorial de especificação, com critério, superfícies, materiais e resultados.</>],
+      marcas: [<>Se o cenário atende e qual fórmula foi usada, Sabine ou Eyring.</>, <>O Tempo de reverberação (T) por banda em cada situação de ocupação, dentro da faixa aceita.</>, <>Os valores de T comparados aos limites mínimo e máximo.</>, <>A observação sobre o Coeficiente de absorção médio (ᾱ) da sala: acima de 0,30 o cálculo passa a usar Eyring. No exemplo, ᾱ = 0,23 e vale Sabine.</>, <>O botão “Gerar memorial” cria o PDF com plantas e vistas do modelo 3D, quadro de especificações, resultados e memória de cálculo.</>],
     }],
   },
   {

@@ -17,7 +17,7 @@ export interface SalvarMaterial {
 
 /**
  * Criação e edição de material. Materiais próprios são editáveis por inteiro; nos da planilha
- * só a imagem muda, e os coeficientes podem ser ajustados numa cópia.
+ * só a imagem muda, e os coeficientes podem ser ajustados em uma cópia.
  */
 export function EditorMaterial(props: {
   catalogo: Catalogo

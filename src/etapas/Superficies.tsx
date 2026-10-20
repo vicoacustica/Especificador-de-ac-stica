@@ -26,7 +26,7 @@ export function EtapaSuperficies({ cenario, catalogo, mudar, salvarMaterial, mod
   const materiais = catalogo.todos.filter(paraSuperficie)
   const bases = cenario.superficies.filter(ehBase)
 
-  // Aplica a mudança numa cópia e só confirma se nenhum item ficar maior que a área livre da base.
+  // Aplica a mudança em uma cópia e só confirma se nenhum item ficar maior que a área livre da base.
   function alterar(id: string, f: (s: Superficie, c: Cenario) => string | void) {
     const copia: Cenario = structuredClone(cenario)
     const s = copia.superficies.find((x) => x.id === id)!

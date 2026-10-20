@@ -367,7 +367,6 @@ td.num { font-size: 13px; }
 .obs { border: 1px solid var(--line); margin: 4px 0 0; font-size: 12.5px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--surface-2); }
 .obs.eyring { background: var(--accent-soft); }
 .legenda-eq { font-size: 12px; color: var(--ink-2); border-top: 1px solid var(--line); padding-top: 10px; }
-.memorial { border: 1px solid var(--line); font-family: var(--f-mono); font-size: 11.5px; white-space: pre-wrap; background: var(--surface-2); border-radius: var(--r-sm); padding: 12px; margin: 0; max-height: 280px; overflow: auto; }
 
 /* ---------- Ajuda ---------- */
 .abas { border: 1px solid var(--line); display: flex; gap: 4px; padding: 4px; background: var(--container); border-radius: 999px; width: fit-content; max-width: 100%; overflow-x: auto; }
@@ -578,3 +577,18 @@ details p { margin: 8px 0 0; color: var(--ink-2); max-width: 75ch; }
 .modelo-legenda li > span { display: grid; min-width: 0; font-size: 13px; }
 .modelo-legenda li small { color: var(--ink-2); }
 .modelo-sup .sw, .modelo-legenda .sw { flex: none; width: 12px; height: 12px; margin-right: 0; }
+.modelo-itens { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.modelo-itens > div { display: grid; gap: 6px; align-content: start; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface-2); min-width: 0; }
+.modelo-itens .k { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); font-weight: 600; }
+.modelo-itens ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.modelo-itens li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 8px; border-radius: var(--r-sm); background: var(--surface); border: 1px solid var(--line); font-size: 13px; }
+.modelo-itens li > span:first-child { display: grid; min-width: 0; }
+.modelo-itens li small { color: var(--ink-2); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.modelo-itens li .mono { font-size: 12px; text-align: right; }
+.modelo-itens p { margin: 0; font-size: 13px; }
+@media (max-width: 900px) { .modelo-itens { grid-template-columns: minmax(0, 1fr); } }
+.memorial-cartao { display: grid; gap: 8px; justify-items: start; }
+.memorial-cartao .nota { margin: 0; }
+.memorial-conteudo { margin: 14px 0 4px; padding: 12px 14px 12px 30px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); display: grid; gap: 4px; font-size: 13.5px; color: var(--ink-2); }
+.memorial-conteudo li.fora { color: var(--ink-3); }
+.modal .nota a { color: var(--accent); font-weight: 600; }

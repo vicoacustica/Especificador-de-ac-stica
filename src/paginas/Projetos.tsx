@@ -63,7 +63,7 @@ export function Projetos({ projetos, catalogo, abrir, novo, duplicar, excluir }:
         </button>
       </div>
       {!lista.length && termo && <p className="suave">Nenhum projeto com esse nome.</p>}
-      <p className="nota">Os projetos ficam salvos neste navegador. O login da comunidade, com projetos na nuvem, entra numa próxima versão.</p>
+      <p className="nota">Os projetos ficam salvos neste navegador. O login da comunidade, com projetos na nuvem, entra em uma próxima versão.</p>
     </div>
   )
 }
