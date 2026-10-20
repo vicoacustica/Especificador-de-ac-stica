@@ -169,5 +169,7 @@ describe('formas de nuvens e baffles', () => {
     expect(areaDaForma({ tipo: 'circulo', medidas: [1], quantidade: 4 })).toBeCloseTo(Math.PI, 9)
     expect(areaDaForma({ tipo: 'triangulo', medidas: [1, 1], quantidade: 2 })).toBeCloseTo(1, 9)
     expect(areaDaForma({ tipo: 'trapezio', medidas: [1.2, 0.6, 0.5], quantidade: 2 })).toBeCloseTo(0.9, 9)
+    // Baffle: base C × L e duas laterais C × H.
+    expect(areaDaForma({ tipo: 'baffle', medidas: [1.2, 0.05, 0.3], quantidade: 10 })).toBeCloseTo(10 * (1.2 * 0.05 + 2 * 1.2 * 0.3), 9)
   })
 })

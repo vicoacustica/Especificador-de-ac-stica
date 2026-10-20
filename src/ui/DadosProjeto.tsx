@@ -27,7 +27,7 @@ export function DadosProjeto(props: { titulo: string; nome?: string; imagem?: st
         <input ref={arquivo} type="file" accept="image/*" hidden onChange={(e) => enviar(e.target.files?.[0])} />
       </div>
       {imagem && <button type="button" className="btn fantasma pequeno" style={{ justifySelf: 'start' }} onClick={() => setImagem(undefined)}>Remover imagem</button>}
-      <p className="nota">Sem imagem, o projeto usa uma foto do tipo de ambiente escolhido na etapa 1.</p>
+      <p className="nota">A imagem é opcional e pode ser trocada depois, pelo cabeçalho do projeto.</p>
       {erro && <p className="erro" role="alert">{erro}</p>}
       <div className="linha acoes">
         <button type="button" className="btn primario" onClick={() => props.aoSalvar(nome.trim() || 'Novo projeto', imagem)}><Icone nome="ok" />{props.acao}</button>

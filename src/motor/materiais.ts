@@ -37,17 +37,32 @@ export const MATERIAIS_BASE: Material[] = (() => {
     })
 })()
 
+/** NRC pela definição usual: média de α em 250, 500, 1000 e 2000 Hz, arredondada a 0,05. */
+export const nrcCalculado = (alfa: PorBanda) => Math.round((alfa[1] + alfa[2] + alfa[3] + alfa[4]) / 4 / 0.05) * 0.05
+
+/** NRC informado pelo usuário ou, sem ele, o calculado. Materiais por peça não têm NRC. */
+export function nrcDe(m: Material): { valor: number; informado: boolean } | null {
+  if (m.unidade) return null
+  return m.nrc !== undefined ? { valor: m.nrc, informado: true } : { valor: nrcCalculado(m.alfa), informado: false }
+}
+
 export class Catalogo {
   private porId: Map<string, Material>
+  /** Materiais disponíveis para escolha: não inclui os da base que o usuário removeu da biblioteca. */
   readonly todos: Material[]
+  readonly ocultos: Material[]
 
-  /** Base da planilha, materiais próprios do usuário e as imagens que ele enviou (por id de material). */
-  constructor(proprios: Material[] = [], imagens: Record<string, string> = {}) {
+  /** Base da planilha, materiais próprios do usuário, as imagens que ele enviou e os ids da base que ele removeu. */
+  constructor(proprios: Material[] = [], imagens: Record<string, string> = {}, ocultos: string[] = []) {
     const vistos = new Set<string>()
-    this.todos = [...MATERIAIS_BASE, ...proprios]
+    const lista = [...MATERIAIS_BASE, ...proprios]
       .filter((m) => (vistos.has(m.id) ? false : (vistos.add(m.id), true)))
       .map((m) => (imagens[m.id] ? { ...m, imagem: imagens[m.id] } : m))
-    this.porId = new Map(this.todos.map((m) => [m.id, m]))
+    const fora = new Set(ocultos)
+    this.todos = lista.filter((m) => m.proprio || !fora.has(m.id))
+    this.ocultos = lista.filter((m) => !m.proprio && fora.has(m.id))
+    // Projetos antigos podem usar um material removido: ele continua resolvível pelo id.
+    this.porId = new Map(lista.map((m) => [m.id, m]))
   }
 
   get(id: string): Material {
@@ -58,7 +73,7 @@ export class Catalogo {
 
   /** Busca pelo nome exato, como o PROCV da planilha: devolve a primeira ocorrência. */
   porNome(nome: string): Material {
-    const m = this.todos.find((x) => x.nome === nome)
+    const m = this.todos.find((x) => x.nome === nome) ?? this.ocultos.find((x) => x.nome === nome)
     if (!m) throw new Error(`Material desconhecido: ${nome}`)
     return m
   }

@@ -17,6 +17,10 @@ export interface Material {
   proprio?: boolean
   /** Foto ou textura do material (data URL), enviada pelo usuário. */
   imagem?: string
+  /** Texto livre do usuário: fabricante, espessura, montagem, laudo. */
+  descricao?: string
+  /** Coeficiente de redução de ruído (NRC) informado pelo usuário. Só informativo, não entra no cálculo. */
+  nrc?: number
 }
 
 export type CategoriaSuperficie = 'piso' | 'parede' | 'teto' | 'revestimento' | 'esquadria' | 'elemento'
@@ -57,9 +61,12 @@ export interface ItemOcupacao {
   materialOcupado?: string
   /** Nuvens e baffles com coeficiente de absorção (α): a área total vem do formato, das medidas e da quantidade de peças. */
   forma?: Forma
+  /** Só para itens suspensos: nuvem (plana, uma face) ou baffle (vertical, base e duas laterais). */
+  elemento?: Elemento
 }
 
-export type TipoForma = 'quadrado' | 'retangulo' | 'circulo' | 'triangulo' | 'trapezio'
+export type Elemento = 'nuvem' | 'baffle'
+export type TipoForma = 'quadrado' | 'retangulo' | 'circulo' | 'triangulo' | 'trapezio' | 'baffle'
 
 export interface Forma {
   tipo: TipoForma
@@ -68,16 +75,20 @@ export interface Forma {
   quantidade: number
 }
 
-/** Formatos usuais de nuvens e baffles e a área de uma face de cada um. */
+/** Formatos usuais de nuvens (área de uma face) e o baffle (base e duas laterais). */
 export const FORMAS: Record<TipoForma, { nome: string; medidas: string[]; area: (m: number[]) => number }> = {
   quadrado: { nome: 'Quadrado', medidas: ['Lado (L)'], area: ([l]) => l * l },
   retangulo: { nome: 'Retângulo', medidas: ['Largura (L)', 'Comprimento (C)'], area: ([l, c]) => l * c },
   circulo: { nome: 'Círculo', medidas: ['Diâmetro (D)'], area: ([d]) => (Math.PI * d * d) / 4 },
   triangulo: { nome: 'Triângulo', medidas: ['Base (b)', 'Altura (h)'], area: ([b, h]) => (b * h) / 2 },
   trapezio: { nome: 'Trapézio', medidas: ['Base maior (B)', 'Base menor (b)', 'Altura (h)'], area: ([B, b, h]) => ((B + b) * h) / 2 },
+  baffle: { nome: 'Baffle', medidas: ['Comprimento (C)', 'Largura (L)', 'Altura (H)'], area: ([c, l, h]) => c * l + 2 * c * h },
 }
+/** Itens antigos não guardam o tipo de elemento: o nome decide. */
+export const elementoDe = (it: ItemOcupacao): Elemento => it.elemento ?? (/baffle/i.test(it.nome) ? 'baffle' : 'nuvem')
+export const FORMAS_NUVEM: TipoForma[] = ['quadrado', 'retangulo', 'circulo', 'triangulo', 'trapezio']
 
-/** Área total (m²) das peças: área de uma face × quantidade. */
+/** Área total (m²) das peças: área de cada peça × quantidade. */
 export const areaDaForma = (f: Forma) => FORMAS[f.tipo].area(f.medidas) * f.quantidade
 
 export type EstadoOcupacao = 'vazio' | 'meio' | 'cheio'

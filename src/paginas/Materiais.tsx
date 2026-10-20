@@ -1,17 +1,16 @@
 import { useState } from 'react'
-import { nomeCategoria, type Catalogo } from '../motor/materiais'
+import { nomeCategoria, nrcDe, type Catalogo } from '../motor/materiais'
 import type { Material, Projeto } from '../motor/tipos'
 import { EditorMaterial, type SalvarMaterial } from '../ui/EditorMaterial'
 import { fmt } from '../ui/formato'
 import { Icone } from '../ui/Icone'
 import { BarrasAlfa, MiniaturaMaterial } from '../ui/MaterialVisual'
 
-type Filtro = 'todos' | 'planilha' | 'meus' | 'imagem'
+type Filtro = 'todos' | 'base' | 'meus'
 const FILTROS: { valor: Filtro; rotulo: string }[] = [
   { valor: 'todos', rotulo: 'Todos' },
-  { valor: 'planilha', rotulo: 'Base da planilha' },
+  { valor: 'base', rotulo: 'Base' },
   { valor: 'meus', rotulo: 'Meus materiais' },
-  { valor: 'imagem', rotulo: 'Com imagem' },
 ]
 const PAGINA = 60
 
@@ -20,6 +19,14 @@ interface Props {
   projetos: Projeto[]
   salvarMaterial: (s: SalvarMaterial) => void
   excluirMaterial: (id: string) => void
+  restaurarMateriais: () => void
+}
+
+/** NRC no cartão; materiais por peça mostram a absorção média por peça. */
+function Desempenho({ material: m }: { material: Material }) {
+  const nrc = nrcDe(m)
+  if (!nrc) return <span className="mono">A média: {fmt((m.alfa[1] + m.alfa[2] + m.alfa[3] + m.alfa[4]) / 4)} m²/peça</span>
+  return <span className="mono" title={nrc.informado ? 'NRC informado' : 'NRC calculado: média de α em 250, 500, 1000 e 2000 Hz'}>NRC {fmt(nrc.valor)}{nrc.informado ? '' : '*'}</span>
 }
 
 /** Projetos que usam o material em alguma superfície ou item. */
@@ -29,17 +36,18 @@ function usosDoMaterial(id: string, projetos: Projeto[]): string[] {
     .map((p) => p.nome)
 }
 
-export function Materiais({ catalogo, projetos, salvarMaterial, excluirMaterial }: Props) {
+export function Materiais({ catalogo, projetos, salvarMaterial, excluirMaterial, restaurarMateriais }: Props) {
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState<Filtro>('todos')
   const [categoria, setCategoria] = useState('todas')
   const [limite, setLimite] = useState(PAGINA)
   const [editando, setEditando] = useState<Material | 'novo' | null>(null)
+  const [copiando, setCopiando] = useState<Material | null>(null)
   const [excluindo, setExcluindo] = useState<string | null>(null)
 
   const termo = busca.trim().toLowerCase()
   const doFiltro = catalogo.todos.filter((m) =>
-    filtro === 'planilha' ? !m.proprio : filtro === 'meus' ? m.proprio : filtro === 'imagem' ? !!m.imagem : true)
+    filtro === 'base' ? !m.proprio : filtro === 'meus' ? m.proprio : true)
   const categorias = [...new Set(doFiltro.map((m) => m.tipo))].sort((a, b) => a.localeCompare(b, 'pt-BR'))
   const lista = doFiltro.filter((m) => (categoria === 'todas' || m.tipo === categoria) && (!termo || m.nome.toLowerCase().includes(termo)))
   const mudar = (f: () => void) => { f(); setLimite(PAGINA); setExcluindo(null) }
@@ -83,14 +91,15 @@ export function Materiais({ catalogo, projetos, salvarMaterial, excluirMaterial 
             <article key={m.id} className="cartao-biblioteca">
               <button type="button" className="cartao-biblioteca-imagem" aria-label={`Abrir ${m.nome}`} onClick={() => setEditando(m)}>
                 <MiniaturaMaterial material={m} />
-                <span className="selo">{m.proprio ? 'Meu material' : 'Planilha'}</span>
+                <span className="selo">{m.proprio ? 'Meu material' : 'Base'}</span>
               </button>
               <div className="cartao-biblioteca-corpo">
                 <b>{m.nome}</b>
                 <span className="suave">{nomeCategoria(m.tipo)}</span>
+                {m.descricao && <span className="descricao">{m.descricao}</span>}
                 <div className="cartao-biblioteca-alfa">
                   <BarrasAlfa alfa={m.alfa} unidade={m.unidade} />
-                  <span className="mono">{m.unidade ? 'A por peça' : 'α'} 500 Hz: {fmt(m.alfa[2])}</span>
+                  <Desempenho material={m} />
                 </div>
                 {excluindo === m.id ? (
                   usos.length ? (
@@ -98,17 +107,16 @@ export function Materiais({ catalogo, projetos, salvarMaterial, excluirMaterial 
                       <button type="button" className="btn fantasma pequeno" onClick={() => setExcluindo(null)}>Entendi</button>
                     </p>
                   ) : (
-                    <span className="confirmar">Excluir?
+                    <span className="confirmar">{m.proprio ? 'Excluir?' : 'Remover da biblioteca?'}
                       <button type="button" className="btn perigo pequeno" onClick={() => { excluirMaterial(m.id); setExcluindo(null) }}>Excluir</button>
                       <button type="button" className="btn fantasma pequeno" onClick={() => setExcluindo(null)}>Cancelar</button>
                     </span>
                   )
                 ) : (
-                  <div className="linha">
-                    <button type="button" className="btn secundario pequeno" onClick={() => setEditando(m)}>
-                      <Icone nome={m.proprio ? 'editar' : 'imagem'} tamanho={16} />{m.proprio ? 'Editar' : m.imagem ? 'Trocar imagem' : 'Enviar imagem'}
-                    </button>
-                    {m.proprio && <button type="button" className="icone-btn" aria-label={`Excluir ${m.nome}`} onClick={() => setExcluindo(m.id)}><Icone nome="lixo" /></button>}
+                  <div className="acoes-cartao">
+                    <button type="button" className="btn secundario pequeno" title={m.proprio ? 'Editar o material' : 'Materiais da base: só a imagem muda'} onClick={() => setEditando(m)}><Icone nome="editar" tamanho={16} />Editar</button>
+                    <button type="button" className="btn secundario pequeno" title="Criar um material novo a partir deste" onClick={() => setCopiando(m)}><Icone nome="copiar" tamanho={16} />Copiar</button>
+                    <button type="button" className="icone-btn" aria-label={`Excluir ${m.nome}`} title="Excluir" onClick={() => setExcluindo(m.id)}><Icone nome="lixo" /></button>
                   </div>
                 )}
               </div>
@@ -124,12 +132,27 @@ export function Materiais({ catalogo, projetos, salvarMaterial, excluirMaterial 
       )}
       {!lista.length && (
         <div className="vazio">
-          <b>{filtro === 'meus' ? 'Você ainda não criou materiais' : filtro === 'imagem' ? 'Nenhum material com imagem' : 'Nenhum material encontrado'}</b>
-          <span className="suave">{filtro === 'meus' ? 'Crie um material com os seis coeficientes do ensaio do fabricante.' : filtro === 'imagem' ? 'Abra um material e envie a foto do acabamento.' : 'Tente outro nome ou outra categoria.'}</span>
+          <b>{filtro === 'meus' ? 'Você ainda não criou materiais' : 'Nenhum material encontrado'}</b>
+          <span className="suave">{filtro === 'meus' ? 'Crie um material com os seis coeficientes do ensaio do fabricante, ou copie um da base.' : 'Tente outro nome ou outra categoria.'}</span>
           {filtro === 'meus' && <button type="button" className="btn primario" onClick={() => setEditando('novo')}><Icone nome="mais" />Novo material</button>}
         </div>
       )}
 
+      {catalogo.ocultos.length > 0 && filtro !== 'meus' && (
+        <p className="nota restaurar">{catalogo.ocultos.length} {catalogo.ocultos.length === 1 ? 'material da base foi removido' : 'materiais da base foram removidos'} da sua biblioteca.
+          <button type="button" className="btn fantasma pequeno" onClick={restaurarMateriais}>Restaurar</button>
+        </p>
+      )}
+      <p className="nota">* NRC calculado pela média do coeficiente de absorção sonora (α) em 250, 500, 1000 e 2000 Hz, quando o material não tem o NRC informado.</p>
+
+      {copiando && (
+        <EditorMaterial
+          catalogo={catalogo}
+          copiaDe={copiando}
+          aoSalvar={(s) => { salvarMaterial(s); setCopiando(null) }}
+          aoFechar={() => setCopiando(null)}
+        />
+      )}
       {editando && (
         <EditorMaterial
           catalogo={catalogo}

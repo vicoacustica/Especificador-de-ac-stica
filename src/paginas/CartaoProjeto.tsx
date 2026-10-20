@@ -22,7 +22,7 @@ export function CartaoProjeto({ projeto, catalogo, abrir, acoes }: { projeto: Pr
     <article className="cartao-projeto">
       <button type="button" className="cartao-projeto-abrir" onClick={abrir}>
         <span className="cartao-projeto-imagem">
-          <ImagemProjeto projeto={projeto} largura={720} />
+          <ImagemProjeto projeto={projeto} />
           <span className={`etiqueta ${atendem === n ? 'ok' : atendem ? 'parcial' : 'ruim'}`}>{atendem}/{n} {n === 1 ? 'atende' : 'atendem'}</span>
           <span className="seta-canto"><Icone nome="seta" tamanho={16} /></span>
         </span>

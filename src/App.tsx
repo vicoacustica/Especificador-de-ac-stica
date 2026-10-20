@@ -54,7 +54,7 @@ export default function App() {
 
   const projeto = rota.pagina === 'projeto' ? projetos.find((p) => p.id === rota.id) : undefined
   const catalogo = useMemo(
-    () => new Catalogo([...biblioteca.proprios, ...(projeto?.materiaisProprios ?? [])], biblioteca.imagens),
+    () => new Catalogo([...biblioteca.proprios, ...(projeto?.materiaisProprios ?? [])], biblioteca.imagens, biblioteca.ocultos),
     [biblioteca, projeto?.materiaisProprios],
   )
 
@@ -106,13 +106,23 @@ export default function App() {
     const imagens = { ...biblioteca.imagens }
     if (typeof imagem === 'string') imagens[material.id] = imagem
     else if (imagem === null) delete imagens[material.id]
-    gravarBiblioteca({ proprios, imagens })
+    gravarBiblioteca({ ...biblioteca, proprios, imagens })
     setAviso(`“${material.nome}” salvo na sua biblioteca.`)
   }
+  // Materiais próprios são apagados; os da base só saem da biblioteca e podem ser restaurados.
   function excluirMaterial(id: string) {
     const imagens = { ...biblioteca.imagens }
     delete imagens[id]
-    gravarBiblioteca({ proprios: biblioteca.proprios.filter((m) => m.id !== id), imagens })
+    const proprio = biblioteca.proprios.some((m) => m.id === id)
+    gravarBiblioteca({
+      proprios: biblioteca.proprios.filter((m) => m.id !== id),
+      imagens,
+      ocultos: proprio ? biblioteca.ocultos : [...new Set([...biblioteca.ocultos, id])],
+    })
+  }
+  function restaurarMateriais() {
+    gravarBiblioteca({ ...biblioteca, ocultos: [] })
+    setAviso('Os materiais removidos da base voltaram para a biblioteca.')
   }
   function mudarPerfil(p: Perfil) {
     setPerfil(p)
@@ -146,7 +156,7 @@ export default function App() {
   } else if (rota.pagina === 'projetos' || rota.pagina === 'projeto') {
     conteudo = <Projetos projetos={projetos} catalogo={catalogo} abrir={(id) => ir({ pagina: 'projeto', id })} novo={novoProjeto} duplicar={duplicarProjeto} excluir={excluirProjeto} />
   } else if (rota.pagina === 'materiais') {
-    conteudo = <Materiais catalogo={catalogo} projetos={projetos} salvarMaterial={salvarMaterial} excluirMaterial={excluirMaterial} />
+    conteudo = <Materiais catalogo={catalogo} projetos={projetos} salvarMaterial={salvarMaterial} excluirMaterial={excluirMaterial} restaurarMateriais={restaurarMateriais} />
   } else if (rota.pagina === 'ajuda') {
     conteudo = <Ajuda aba={rota.aba ?? 'guia'} mudarAba={(aba) => ir({ pagina: 'ajuda', aba })} />
   } else if (rota.pagina === 'conta') {

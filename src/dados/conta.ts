@@ -16,6 +16,8 @@ export interface Biblioteca {
   proprios: Material[]
   /** Imagens enviadas pelo usuário, por id de material (próprio ou da base). */
   imagens: Record<string, string>
+  /** Materiais da base que o usuário removeu da biblioteca (somem da escolha, mas podem ser restaurados). */
+  ocultos: string[]
 }
 
 const CHAVE_PERFIL = 'especificador:perfil:v1'
@@ -44,5 +46,5 @@ export const PERFIL_VAZIO: Perfil = { nome: '', email: '', empresa: '', profissa
 
 export const lerPerfil = () => ler(CHAVE_PERFIL, PERFIL_VAZIO)
 export const salvarPerfil = (p: Perfil) => gravar(CHAVE_PERFIL, p)
-export const lerBiblioteca = () => ler<Biblioteca>(CHAVE_BIBLIOTECA, { proprios: [], imagens: {} })
+export const lerBiblioteca = () => ler<Biblioteca>(CHAVE_BIBLIOTECA, { proprios: [], imagens: {}, ocultos: [] })
 export const salvarBiblioteca = (b: Biblioteca) => gravar(CHAVE_BIBLIOTECA, b)

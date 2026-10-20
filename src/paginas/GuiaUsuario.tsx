@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from 'react'
-import { AMBIENTES } from '../dados/ambientes'
 import { Icone } from '../ui/Icone'
 
 // Os prints ficam em public/guia e são gerados por scripts/prints-guia.cjs com o projeto de exemplo.
@@ -20,7 +19,7 @@ const PASSOS: Passo[] = [
       },
       {
         imagem: '01-novo-projeto', legenda: 'Janela de novo projeto',
-        marcas: [<>Dê um nome ao projeto, por exemplo “Sala de aula · exemplo”.</>, <>Se quiser, envie uma foto, um render ou a planta da sala. Sem imagem, o cartão usa uma foto do tipo de ambiente escolhido na etapa 1.</>, <>Clique em <b>Criar projeto</b>.</>],
+        marcas: [<>Dê um nome ao projeto, por exemplo “Sala de aula · exemplo”.</>, <>Se quiser, envie uma foto, um render ou a planta da sala. A imagem é opcional e aparece no cartão do projeto.</>, <>Clique em <b>Criar projeto</b>.</>],
       },
       {
         imagem: '01-editor', legenda: 'Editor do projeto',
@@ -59,7 +58,7 @@ const PASSOS: Passo[] = [
     intro: <>Na etapa 3 entram os elementos suspensos. No cenário “Nuvens no teto” o forro acústico foi retirado e no lugar entraram 18 nuvens de 1,20 × 1,20 m.</>,
     figuras: [{
       imagem: '04-nuvens', legenda: 'Etapa 3 · Nuvens e baffles',
-      marcas: [<>Escolha o modelo da nuvem ou do baffle.</>, <>Este modelo tem a Área de absorção do objeto (A<sub>obj</sub>) por peça, então basta a quantidade de peças. Modelos com coeficiente de absorção sonora (α) pedem a área total ou o formato (quadrado, retângulo, círculo, triângulo ou trapézio), as medidas e a quantidade.</>, <>Adicione outros grupos de nuvens ou de baffles.</>],
+      marcas: [<>Diga se o elemento é uma nuvem (placa horizontal) ou um baffle (placa vertical).</>, <>Escolha o modelo da nuvem ou do baffle.</>, <>Este modelo tem a Área de absorção do objeto (A<sub>obj</sub>) por peça, então basta a quantidade de peças. Com coeficiente de absorção sonora (α), as nuvens pedem a área de uma face (total, ou formato, medidas e quantidade) e os baffles pedem comprimento, largura e altura, para somar a base e as duas laterais.</>, <>Adicione outros grupos de nuvens ou de baffles.</>],
     }],
   },
   {
@@ -97,11 +96,11 @@ const PASSOS: Passo[] = [
     figuras: [
       {
         imagem: '08-biblioteca', legenda: 'Biblioteca de materiais',
-        marcas: [<>Busque pelo nome ou pelo fabricante.</>, <>Filtre pela origem: base da planilha, meus materiais ou com imagem.</>, <>Filtre pela categoria do material.</>, <>Crie um material novo.</>],
+        marcas: [<>Busque pelo nome ou pelo fabricante.</>, <>Filtre pela origem: todos, base ou meus materiais.</>, <>Filtre pela categoria do material.</>, <>Crie um material novo.</>, <>Em cada cartão: editar, copiar e excluir o material. O cartão mostra o NRC.</>],
       },
       {
         imagem: '08-novo-material', legenda: 'Criação de material',
-        marcas: [<>Envie a foto do acabamento; ela aparece na escolha de materiais.</>, <>O nome do material.</>, <>A categoria, existente ou nova.</>, <>Os seis coeficientes de absorção sonora (α), de 125 a 4000 Hz, do laudo do fabricante. Para nuvens e baffles vendidos por peça, marque a absorção por unidade.</>, <>Salve. Nos materiais da planilha você pode trocar a imagem ou criar uma cópia editável.</>],
+        marcas: [<>Envie a foto do acabamento; ela aparece na escolha de materiais.</>, <>O nome do material.</>, <>A categoria, existente ou nova.</>, <>A descrição: fabricante, espessura, montagem, laudo.</>, <>Os seis coeficientes de absorção sonora (α), de 125 a 4000 Hz, do laudo do fabricante. Para nuvens e baffles vendidos por peça, marque a absorção por unidade.</>, <>O Coeficiente de redução de ruído (NRC) do laudo. Em branco, o sistema mostra a média de α em 250, 500, 1000 e 2000 Hz.</>, <>Salve. Nos materiais da base você pode trocar a imagem ou criar uma cópia editável.</>],
       },
     ],
   },
@@ -168,7 +167,6 @@ export function GuiaUsuario() {
             </details>
           ))}
         </section>
-        <p className="nota">Fotos dos tipos de ambiente: Unsplash ({Object.values(AMBIENTES).map((a) => a.autor).join(', ')}), sob a Licença Unsplash.</p>
       </div>
     </div>
   )

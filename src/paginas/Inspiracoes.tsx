@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { AMBIENTES, inspiracoes, type Tipologia } from '../dados/ambientes'
 import type { Perfil } from '../dados/conta'
 import { Icone } from '../ui/Icone'
-import { ImagemAmbiente } from '../ui/ImagemProjeto'
 import { Modal } from '../ui/Modal'
 
 const PASTA = /^https:\/\/([a-z]{2,3}\.)?pinterest\.[a-z.]+\/[^/?#]+\/[^/?#]+\/?$/i
@@ -72,7 +71,7 @@ export function Inspiracoes({ tipologias, perfil, mudarPerfil }: { tipologias: T
       <div className="bloco-topo">
         <div>
           <h2>Inspirações</h2>
-          <p className="suave">{usaPasta ? 'Sua pasta do Pinterest.' : `Projetos de ${nomes.join(', ').replace(/, ([^,]*)$/, ' e $1')} com tratamento acústico, no Pinterest e no ArchDaily.`}</p>
+          <p className="suave">{usaPasta ? 'Sua pasta do Pinterest.' : `Projetos de ${nomes.join(', ').replace(/, ([^,]*)$/, ' e $1')} com tratamento acústico, no Pinterest.`}</p>
         </div>
         <div className="linha">
           {!usaPasta && (
@@ -88,14 +87,15 @@ export function Inspiracoes({ tipologias, perfil, mudarPerfil }: { tipologias: T
         <div className="trilho" ref={trilho}>
           {cartoes.map((c) => (
             <a key={c.id} className="inspiracao" href={c.url} target="_blank" rel="noopener noreferrer">
-              <span className="inspiracao-imagem">
-                <ImagemAmbiente tipologia={c.tipologia} largura={480} alt={AMBIENTES[c.tipologia].nome} />
-                <span className={`fonte ${c.fonte === 'Pinterest' ? 'pinterest' : 'archdaily'}`}>{c.fonte} · {c.idioma}</span>
+              <span className="inspiracao-topo">
+                <span className="fonte pinterest">Pinterest · {c.idioma}</span>
+                <span className="suave">{AMBIENTES[c.tipologia].nome}</span>
               </span>
               <span className="inspiracao-texto">
+                <Icone nome="busca" tamanho={20} />
                 <b>{c.termo}</b>
-                <small>Abrir no {c.fonte}<Icone nome="seta" tamanho={14} /></small>
               </span>
+              <small className="inspiracao-abrir">Ver ideias no Pinterest<Icone nome="seta" tamanho={14} /></small>
             </a>
           ))}
         </div>

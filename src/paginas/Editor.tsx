@@ -63,7 +63,7 @@ export function Editor({ projeto, catalogo, mudarProjeto, salvarMaterial, voltar
       <button type="button" className="link-voltar" onClick={voltar}><Icone nome="voltar" tamanho={16} />Projetos</button>
       <header className="cabecalho">
         <button type="button" className="capa-projeto" aria-label="Trocar imagem do projeto" onClick={() => setEditandoProjeto(true)}>
-          <ImagemProjeto projeto={projeto} largura={240} />
+          <ImagemProjeto projeto={projeto} />
           <span className="capa-projeto-editar"><Icone nome="imagem" tamanho={16} /></span>
         </button>
         <div className="cabecalho-texto">

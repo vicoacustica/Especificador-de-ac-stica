@@ -9,7 +9,6 @@ const SAIDA = path.join(__dirname, '..', 'public', 'guia')
   require('fs').mkdirSync(SAIDA, { recursive: true })
   const navegador = await chromium.launch()
   const p = await navegador.newPage({ viewport: { width: 1360, height: 900 }, deviceScaleFactor: 1 })
-  // Sem acesso à internet as fotos não carregam; o app mostra a ilustração da tipologia.
   await p.goto(BASE)
   await p.waitForTimeout(700)
 
@@ -71,7 +70,7 @@ const SAIDA = path.join(__dirname, '..', 'public', 'guia')
   // 4. Nuvens/Baffles: cenário com nuvens
   await p.locator('.cenarios .pilula', { hasText: 'Nuvens' }).click()
   await etapa('Nuvens')
-  await marcar([['.painel .sup .campo-material', '1'], ['.painel .sup-l2 .em', '2'], ['.painel > .linha .btn', '3', 0]])
+  await marcar([['.painel .sup-l1 .seg', '1', 0], ['.painel .sup .campo-material', '2'], ['.painel .sup-l2 .em', '3'], ['.painel > .linha .btn', '4', 0]])
   await foto('04-nuvens', '.painel')
 
   // 5. Ocupação
@@ -93,13 +92,13 @@ const SAIDA = path.join(__dirname, '..', 'public', 'guia')
   // 8. Biblioteca de materiais
   await p.locator('.menu .pilula', { hasText: 'Materiais' }).click()
   await p.waitForTimeout(400)
-  await marcar([['.filtros .busca', '1'], ['.filtros .seg', '2'], ['.chips.rolagem', '3'], ['.cabecalho-acoes .btn.primario', '4']])
+  await marcar([['.filtros .busca', '1'], ['.filtros .seg', '2'], ['.chips.rolagem', '3'], ['.cabecalho-acoes .btn.primario', '4'], ['.acoes-cartao', '5', 0]])
   await p.setViewportSize({ width: 1360, height: 1000 })
   await foto('08-biblioteca', '.pagina', 8, 760)
   await p.locator('.cabecalho-acoes .btn.primario').click()
   await p.waitForTimeout(300)
   await p.fill('.modal input[type=text]', 'Painel ripado de madeira 20 mm')
-  await marcar([['.editor-imagem .btn.secundario', '1'], ['.editor-campos .campo', '2', 0], ['.editor-campos .linha .campo', '3', 0], ['.alfas-campos', '4'], ['.editor-campos .acoes .btn.primario', '5']])
+  await marcar([['.editor-imagem .btn.secundario', '1'], ['.editor-campos .campo', '2', 0], ['.editor-campos .linha .campo', '3', 0], ['.editor-campos textarea', '4'], ['.alfas-campos', '5'], ['.campo-nrc input', '6'], ['.editor-campos .acoes .btn.primario', '7']])
   await foto('08-novo-material', '.modal', 4)
 
   await navegador.close()
