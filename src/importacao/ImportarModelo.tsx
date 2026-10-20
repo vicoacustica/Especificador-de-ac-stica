@@ -1,12 +1,12 @@
 import { useMemo, useRef, useState } from 'react'
 import type { Catalogo } from '../motor/materiais'
-import type { Cenario, Superficie } from '../motor/tipos'
+import type { Cenario, ModeloProjeto, Superficie } from '../motor/tipos'
 import { Icone } from '../ui/Icone'
 import { Modal } from '../ui/Modal'
 import { fmt } from '../ui/formato'
 import { aplicarImportacao, sugerirDestino } from './aplicar'
 import { CORES_LAYER, ESCALA, lerDXF, lerOBJ, NOME_ORIENTACAO, NOME_UNIDADE, objTemMateriais, quadroDeAreas, unidadeProvavel, type Modelo, type Orientacao, type Unidade } from './modelo'
-import { PreviaModelo } from './PreviaModelo'
+import { Visor3D } from './Visor3D'
 
 const ORIENTACOES: Orientacao[] = ['piso', 'parede', 'teto', 'inclinada']
 
@@ -15,6 +15,9 @@ interface Arquivo { nome: string; texto: string; formato: 'DXF' | 'OBJ' }
 export interface ResultadoImportacao {
   arquivo: string
   superficies: Superficie[]
+  modelo: ModeloProjeto
+  /** Superfície criada para cada grupo do modelo. */
+  grupos: Record<string, string>
   volume?: number
   peDireito?: number
 }
@@ -49,8 +52,9 @@ export function ImportarModelo({ cenario, catalogo, aoImportar, aoFechar }: Prop
   }, [arquivo, agrupar])
   const un = unidade ?? (modelo ? unidadeProvavel(modelo) : 'm')
   const quadro = useMemo(() => (modelo?.faces.length ? quadroDeAreas(modelo, un, separar) : null), [modelo, un, separar])
-  const layers = useMemo(() => (quadro ? [...new Set(quadro.linhas.map((l) => l.layer))] : []), [quadro])
-  const corDe = (layer: string) => CORES_LAYER[layers.indexOf(layer) % CORES_LAYER.length]
+  const chaves = useMemo(() => (quadro ? quadro.linhas.map((l) => l.chave) : []), [quadro])
+  const corDe = (chave: string) => CORES_LAYER[Math.max(0, chaves.indexOf(chave)) % CORES_LAYER.length]
+  const facesVisor = useMemo(() => (quadro ? quadro.faces.map((f) => ({ c: f.chave, pontos: f.pontos })) : []), [quadro])
 
   // Volume pelas faces só é confiável quando não passa da caixa: acima dela há superfícies internas ou o modelo está aberto.
   const facesConfiaveis = !!quadro && quadro.volumeFaces > 0.3 * quadro.volumeCaixa && quadro.volumeFaces <= quadro.volumeCaixa * 1.001
@@ -90,6 +94,9 @@ export function ImportarModelo({ cenario, catalogo, aoImportar, aoFechar }: Prop
     aoImportar({
       arquivo: arquivo.nome,
       superficies: r.superficies,
+      grupos: r.grupos,
+      // Pontos arredondados ao milímetro, para o projeto ficar leve no armazenamento.
+      modelo: { arquivo: arquivo.nome, faces: quadro.faces.map((f) => ({ g: f.chave, p: f.pontos.flat().map((v) => Math.round(v * 1000) / 1000) })) },
       volume: v ? Math.round(v * 10) / 10 : undefined,
       peDireito: usarAltura && altura > 0 ? Math.round(altura * 100) / 100 : undefined,
     })
@@ -138,7 +145,7 @@ export function ImportarModelo({ cenario, catalogo, aoImportar, aoFechar }: Prop
             <span className="suave">Caixa envolvente {dim.map((d) => fmt(d)).join(' × ')} m</span>
           </div>
 
-          <PreviaModelo modelo={modelo} unidade={un} layers={layers} destaque={destaque} />
+          <Visor3D faces={facesVisor} cor={corDe} destaque={destaque} rotulo="Prévia 3D do modelo. Arraste para girar." />
 
           <div className="linha importar-opcoes">
             <label className="campo">Unidade do desenho
@@ -170,8 +177,8 @@ export function ImportarModelo({ cenario, catalogo, aoImportar, aoFechar }: Prop
               </thead>
               <tbody onMouseLeave={() => setDestaque(null)}>
                 {quadro.linhas.map((l) => (
-                  <tr key={l.chave} className={destaque === l.layer ? 'destacada' : undefined} onMouseEnter={() => setDestaque(l.layer)}>
-                    <td><i className="sw" style={{ background: corDe(l.layer) }} /><b>{l.chave}</b></td>
+                  <tr key={l.chave} className={destaque === l.chave ? 'destacada' : undefined} onMouseEnter={() => setDestaque(l.chave)}>
+                    <td><i className="sw" style={{ background: corDe(l.chave) }} /><b>{l.chave}</b></td>
                     <td className="num">{l.faces}</td>
                     {ORIENTACOES.map((o) => <td key={o} className="num">{l.areas[o] > 0.005 ? fmt(l.areas[o]) : '·'}</td>)}
                     <td className="num"><b>{fmt(l.total)}</b></td>

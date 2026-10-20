@@ -106,13 +106,13 @@ export function Editor({ projeto, catalogo, mudarProjeto, salvarMaterial, voltar
             {ETAPAS.map((e, i) => (
               <button key={e.titulo} type="button" role="tab" className="pilula etapa" aria-selected={etapa === i} onClick={() => irPara(i)}>
                 <span className="pilula-icone"><Icone nome={e.icone} /></span>
-                <span><small>Etapa {i + 1}</small>{e.titulo}</span>
+                <span className="etapa-texto"><small>Etapa {i + 1}</small>{e.titulo.split('/').flatMap((t, k, partes) => (k < partes.length - 1 ? [`${t}/`, <wbr key={k} />] : [t]))}</span>
               </button>
             ))}
           </nav>
           <section className="painel" key={`${cenario.id}-${etapa}`}>
-            {etapa === 0 && <EtapaAmbiente cenario={cenario} catalogo={catalogo} mudar={mudarCenario} irParaSuperficies={() => setEtapa(1)} />}
-            {etapa === 1 && <EtapaSuperficies cenario={cenario} catalogo={catalogo} mudar={mudarCenario} salvarMaterial={salvarMaterial} />}
+            {etapa === 0 && <EtapaAmbiente cenario={cenario} catalogo={catalogo} mudar={mudarCenario} irParaSuperficies={() => setEtapa(1)} definirModelo={(m) => mudarProjeto((p) => { p.modelo = m })} />}
+            {etapa === 1 && <EtapaSuperficies cenario={cenario} catalogo={catalogo} mudar={mudarCenario} salvarMaterial={salvarMaterial} modelo={projeto.modelo} />}
             {etapa === 2 && <EtapaNuvens cenario={cenario} catalogo={catalogo} mudar={mudarCenario} />}
             {etapa === 3 && <EtapaOcupacao cenario={cenario} catalogo={catalogo} mudar={mudarCenario} />}
             {etapa === 4 && <EtapaComparar projeto={projeto} catalogo={catalogo} selecionados={comparar} setSelecionados={setComparar} estado={estado} setEstado={setEstado} />}

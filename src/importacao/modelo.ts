@@ -267,7 +267,11 @@ export interface Quadro {
   volumeFaces: number
   /** Área de todas as faces, em m². */
   areaTotal: number
+  /** Faces com área, em metros, com a linha do quadro a que pertencem. */
+  faces: FaceEmMetros[]
 }
+
+export interface FaceEmMetros { chave: string; pontos: Ponto[] }
 
 const zero = (): Record<Orientacao, number> => ({ piso: 0, parede: 0, teto: 0, inclinada: 0 })
 
@@ -278,6 +282,7 @@ export function quadroDeAreas(m: Modelo, unidade: Unidade, separar = false): Qua
   const zMeio = (cx.min[2] + cx.max[2]) / 2
   const centro: Ponto = [(cx.min[0] + cx.max[0]) / 2, (cx.min[1] + cx.max[1]) / 2, zMeio]
   const linhas = new Map<string, LinhaQuadro>()
+  const faces: FaceEmMetros[] = []
   let volume = 0, areaTotal = 0
   for (const f of m.faces) {
     const p = f.pontos.map(([x, y, z]) => [x * e, y * e, z * e] as Ponto)
@@ -285,6 +290,7 @@ export function quadroDeAreas(m: Modelo, unidade: Unidade, separar = false): Qua
     if (a < 1e-6) continue
     const o = orientacao(p, zMeio)
     const chave = separar ? `${f.layer} · ${NOME_ORIENTACAO[o]}` : f.layer
+    faces.push({ chave, pontos: p })
     let l = linhas.get(chave)
     if (!l) { l = { chave, layer: f.layer, orientacao: separar ? o : undefined, faces: 0, areas: zero(), total: 0 }; linhas.set(chave, l) }
     l.faces++
@@ -305,6 +311,7 @@ export function quadroDeAreas(m: Modelo, unidade: Unidade, separar = false): Qua
     volumeCaixa: lado(0) * lado(1) * lado(2),
     volumeFaces: volume,
     areaTotal,
+    faces,
   }
 }
 
@@ -312,4 +319,9 @@ export function quadroDeAreas(m: Modelo, unidade: Unidade, separar = false): Qua
 export function orientacaoPrincipal(l: LinhaQuadro): Orientacao {
   if (l.orientacao) return l.orientacao
   return (Object.keys(l.areas) as Orientacao[]).reduce((a, b) => (l.areas[b] > l.areas[a] ? b : a))
+}
+
+/** Cores dos materiais no modelo 3D, na ordem em que aparecem. */
+export function coresDosMateriais(ids: string[]): Map<string, string> {
+  return new Map([...new Set(ids)].map((id, i) => [id, CORES_LAYER[i % CORES_LAYER.length]]))
 }

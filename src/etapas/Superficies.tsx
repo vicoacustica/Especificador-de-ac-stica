@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { areaInformada, areaLivre, dimensionar, ehBase, itensSobre, validarSuperficies, type Dimensionamento } from '../motor/acustica'
 import { paraSuperficie, type Catalogo } from '../motor/materiais'
-import { CATEGORIAS, type Cenario, type CategoriaSuperficie, type Superficie } from '../motor/tipos'
+import { CATEGORIAS, type Cenario, type CategoriaSuperficie, type ModeloProjeto, type Superficie } from '../motor/tipos'
+import { SuperficiesNoModelo } from './SuperficiesModelo'
 import { novoId } from '../dados/exemplo'
 import { Icone } from '../ui/Icone'
 import { Numero, Segmentado, SeletorMaterial, Texto } from '../ui/campos'
@@ -13,12 +14,15 @@ interface Props {
   catalogo: Catalogo
   mudar: (f: (c: Cenario) => void) => void
   salvarMaterial: (s: SalvarMaterial) => void
+  modelo?: ModeloProjeto
 }
 
-export function EtapaSuperficies({ cenario, catalogo, mudar, salvarMaterial }: Props) {
+export function EtapaSuperficies({ cenario, catalogo, mudar, salvarMaterial, modelo }: Props) {
   const [erro, setErro] = useState<{ id: string; texto: string } | null>(null)
   const [dims, setDims] = useState<Record<string, Dimensionamento>>({})
   const [criando, setCriando] = useState(false)
+  const comModelo = !!modelo && Object.keys(cenario.grupos ?? {}).length > 0
+  const [vista, setVista] = useState<'modelo' | 'lista'>('modelo')
   const materiais = catalogo.todos.filter(paraSuperficie)
   const bases = cenario.superficies.filter(ehBase)
 
@@ -146,6 +150,29 @@ export function EtapaSuperficies({ cenario, catalogo, mudar, salvarMaterial }: P
     <>
       <h2>Superfícies</h2>
       <p className="lead">Crie as superfícies do ambiente com a área ou as dimensões e o material de cada uma. Revestimentos, esquadrias e elementos são descontados da superfície base onde estão.</p>
+      {comModelo && (
+        <div className="vista-superficies">
+          <Segmentado
+            rotulo="Como ver as superfícies"
+            valor={vista}
+            opcoes={[{ valor: 'modelo', rotulo: 'Modelo 3D' }, { valor: 'lista', rotulo: 'Lista de superfícies' }]}
+            aoMudar={setVista}
+          />
+          <span className="nota">{vista === 'modelo' ? 'Escolha os materiais sobre o modelo importado. Áreas, bases e itens se ajustam na lista.' : 'Áreas, bases e itens das superfícies importadas.'}</span>
+        </div>
+      )}
+      {comModelo && vista === 'modelo' && (
+        <SuperficiesNoModelo
+          cenario={cenario}
+          catalogo={catalogo}
+          modelo={modelo!}
+          materiais={materiais}
+          erro={erro}
+          mudarMaterial={(id, material) => alterar(id, (x) => { x.material = material })}
+          mudarCategoria={(id, cat) => alterar(id, (x, c) => mudarCategoria(x, c, cat))}
+        />
+      )}
+      {(!comModelo || vista === 'lista') && <>
       <div className="sups">
         {bases.map((b) => [
           linha(b),
@@ -161,6 +188,7 @@ export function EtapaSuperficies({ cenario, catalogo, mudar, salvarMaterial }: P
         <button type="button" className="btn primario" onClick={adicionarBase}><Icone nome="mais" />Nova superfície base</button>
         <button type="button" className="btn secundario" onClick={() => setCriando(true)}><Icone nome="mais" />Criar material</button>
       </div>
+      </>}
       {criando && <EditorMaterial catalogo={catalogo} aoSalvar={(m) => { salvarMaterial(m); setCriando(false) }} aoFechar={() => setCriando(false)} />}
       <p className="nota">Aqui não entram público, assentos, nuvens, baffles nem materiais com absorção por unidade. Eles ficam nas etapas Nuvens/Baffles e Ocupação.</p>
     </>

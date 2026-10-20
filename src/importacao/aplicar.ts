@@ -46,16 +46,19 @@ export interface OpcoesImportacao {
 const m2 = (x: number) => Math.round(x * 100) / 100
 
 /** Devolve as novas superfícies do cenário, ou o motivo de não importar. */
-export function aplicarImportacao(cenario: Cenario, escolhas: Escolha[], opcoes: OpcoesImportacao, catalogo: Catalogo): { superficies: Superficie[] } | { erro: string } {
+export function aplicarImportacao(cenario: Cenario, escolhas: Escolha[], opcoes: OpcoesImportacao, catalogo: Catalogo): { superficies: Superficie[]; grupos: Record<string, string> } | { erro: string } {
   const material = (c: CategoriaSuperficie, nome: string) =>
     catalogo.porNome(c === 'esquadria' && /porta|door/i.test(nome) ? 'MADEIRA PINTADA OU ENVERNIZADA' : MATERIAL_PADRAO[c]).id
   const usadas = escolhas.filter((e) => e.destino !== 'ignorar' && m2(e.linha.total) > 0)
   if (!usadas.length) return { erro: 'Escolha ao menos uma layer para importar.' }
 
   const existentes = opcoes.substituir ? [] : structuredClone(cenario.superficies)
+  const grupos: Record<string, string> = {}
   const nova = (e: Escolha): Superficie => {
     const c = e.destino as CategoriaSuperficie
-    return { id: novoId(), nome: e.linha.chave, categoria: c, modo: 'area', area: m2(e.linha.total), material: material(c, e.linha.layer) }
+    const id = novoId()
+    grupos[e.linha.chave] = id
+    return { id, nome: e.linha.chave, categoria: c, modo: 'area', area: m2(e.linha.total), material: material(c, e.linha.layer) }
   }
   const bases = usadas.filter((e) => CATEGORIAS[e.destino as CategoriaSuperficie].base).map(nova)
   const todasBases = [...existentes.filter(ehBase), ...bases]
@@ -84,5 +87,5 @@ export function aplicarImportacao(cenario: Cenario, escolhas: Escolha[], opcoes:
     const b = superficies.find((s) => s.id === problema.superficie)!
     return { erro: `Os itens sobre “${b.nome}” somam mais que a área dela. Marque que os vãos já estão recortados no modelo, ou mude o destino de alguma layer.` }
   }
-  return { superficies }
+  return { superficies, grupos }
 }

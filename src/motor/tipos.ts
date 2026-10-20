@@ -122,6 +122,8 @@ export interface Cenario {
   ocupacoes: Record<EstadoOcupacao, boolean>
   superficies: Superficie[]
   itens: ItemOcupacao[]
+  /** Superfície de cada grupo do modelo 3D (id da superfície por grupo). */
+  grupos?: Record<string, string>
 }
 
 export interface Projeto {
@@ -130,8 +132,16 @@ export interface Projeto {
   cenarios: Cenario[]
   materiaisProprios: Material[]
   atualizadoEm: string
-  /** Imagem de capa enviada pelo usuário (data URL). Sem ela, usa a foto da tipologia do primeiro cenário. */
+  /** Imagem de capa enviada pelo usuário (data URL). */
   imagem?: string
+  /** Geometria do modelo 3D importado, compartilhada pelos cenários. */
+  modelo?: ModeloProjeto
+}
+
+export interface ModeloProjeto {
+  arquivo: string
+  /** Faces em metros: g é o grupo (linha do quadro de importação) e p os pontos x, y, z em sequência. */
+  faces: { g: string; p: number[] }[]
 }
 
 export type Formula = 'sabine' | 'eyring'

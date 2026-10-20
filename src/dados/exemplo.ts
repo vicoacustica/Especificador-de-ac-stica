@@ -22,6 +22,7 @@ export function duplicarCenario(c: Cenario, nome: string): Cenario {
   const mapa = new Map(n.superficies.map((s) => [s.id, novoId()]))
   n.superficies = n.superficies.map((s) => ({ ...s, id: mapa.get(s.id)!, base: s.base ? mapa.get(s.base) : undefined }))
   n.itens = n.itens.map((it) => ({ ...it, id: novoId() }))
+  if (n.grupos) n.grupos = Object.fromEntries(Object.entries(n.grupos).map(([g, id]) => [g, mapa.get(id) ?? id]))
   return n
 }
 

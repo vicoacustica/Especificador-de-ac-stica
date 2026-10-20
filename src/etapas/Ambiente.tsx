@@ -1,7 +1,7 @@
 import { CURVAS_NBR, DIN, GRUPOS_A, NBR, GRUPOS_B, metaDoCriterio } from '../motor/criterios'
 import { useState } from 'react'
 import type { Catalogo } from '../motor/materiais'
-import type { Cenario, Criterio, Umidade } from '../motor/tipos'
+import type { Cenario, Criterio, ModeloProjeto, Umidade } from '../motor/tipos'
 import { ImportarModelo, type ResultadoImportacao } from '../importacao/ImportarModelo'
 import { Icone } from '../ui/Icone'
 import { Numero } from '../ui/campos'
@@ -31,9 +31,10 @@ interface Props {
   catalogo: Catalogo
   mudar: (f: (c: Cenario) => void) => void
   irParaSuperficies: () => void
+  definirModelo: (m: ModeloProjeto) => void
 }
 
-export function EtapaAmbiente({ cenario, catalogo, mudar, irParaSuperficies }: Props) {
+export function EtapaAmbiente({ cenario, catalogo, mudar, irParaSuperficies, definirModelo }: Props) {
   const meta = metaDoCriterio(cenario.criterio, cenario.volume, cenario.peDireito)
   const [importando, setImportando] = useState(false)
   const [importado, setImportado] = useState<ResultadoImportacao | null>(null)
@@ -41,9 +42,11 @@ export function EtapaAmbiente({ cenario, catalogo, mudar, irParaSuperficies }: P
   function aplicar(r: ResultadoImportacao) {
     mudar((c) => {
       c.superficies = r.superficies
+      c.grupos = { ...(c.grupos ?? {}), ...r.grupos }
       if (r.volume) c.volume = r.volume
       if (r.peDireito) c.peDireito = r.peDireito
     })
+    definirModelo(r.modelo)
     setImportado(r)
     setImportando(false)
   }
@@ -63,7 +66,7 @@ export function EtapaAmbiente({ cenario, catalogo, mudar, irParaSuperficies }: P
       {importado && (
         <p className="importado">
           <Icone nome="ok" tamanho={16} />
-          <span>“{importado.arquivo}” importado: {importado.superficies.length} superfícies{importado.volume ? `, volume ${fmt(importado.volume, 1)} m³` : ''}{importado.peDireito ? `, pé-direito ${fmt(importado.peDireito)} m` : ''}. Ajuste o tipo e o material de cada superfície na próxima etapa.</span>
+          <span>“{importado.arquivo}” importado: {importado.superficies.length} superfícies{importado.volume ? `, volume ${fmt(importado.volume, 1)} m³` : ''}{importado.peDireito ? `, pé-direito ${fmt(importado.peDireito)} m` : ''}. Na próxima etapa, clique nas superfícies do modelo para ajustar o tipo e o material.</span>
           <button type="button" className="btn fantasma pequeno" onClick={irParaSuperficies}>Revisar superfícies<Icone nome="seta" tamanho={14} /></button>
         </p>
       )}

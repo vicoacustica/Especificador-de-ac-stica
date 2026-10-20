@@ -1,4 +1,5 @@
 import { avaliar, NOME_SITUACAO } from '../motor/acustica'
+import { ModeloResultado } from '../resultado/ModeloResultado'
 import type { Catalogo } from '../motor/materiais'
 import { BANDAS, ESTADOS, NOME_ESTADO, type EstadoOcupacao, type Projeto } from '../motor/tipos'
 import { GraficoTempo } from '../resultado/Graficos'
@@ -96,6 +97,7 @@ export function EtapaComparar({ projeto, catalogo, selecionados, setSelecionados
           </table>
         </div>
       )}
+      <ModeloResultado projeto={projeto} catalogo={catalogo} />
     </>
   )
 }
