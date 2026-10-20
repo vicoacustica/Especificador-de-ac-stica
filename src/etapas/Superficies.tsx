@@ -130,10 +130,10 @@ export function EtapaSuperficies({ cenario, catalogo, mudar, salvarMaterial, mod
         {d && (
           <p className="dimres">
             {!d.encontrado ? (
-              <span className="pill bad">{d.motivo === 'insuficiente' ? `Nem com ${fmt(d.limite, 1)} m² este material atende sozinho` : 'Nenhuma área equilibra todas as bandas'}</span>
+              <span className="pill bad">{d.motivo === 'insuficiente' ? `Nem com ${fmt(d.limite, 1)} m², este material sozinho leva o cenário às margens` : 'Nenhuma área equilibra todas as bandas'}</span>
             ) : (
               <>
-                Com os demais itens deste cenário, <b>{d.semLimiteSuperior ? `a partir de ${fmt(d.minimo, 1)} m²` : `${fmt(d.minimo, 1)} a ${fmt(d.maximo, 1)} m²`}</b> deste material atendem.
+                Com os demais itens deste cenário, <b>{d.semLimiteSuperior ? `a partir de ${fmt(d.minimo, 1)} m²` : `${fmt(d.minimo, 1)} a ${fmt(d.maximo, 1)} m²`}</b> deste material deixam o cenário dentro das margens.
                 {!d.semLimiteSuperior && (
                   <button type="button" className="btn primario pequeno" onClick={() => alterar(s.id, (x) => { x.modo = 'area'; x.area = Math.round(d.minimo + d.maximo) / 2 })}>Usar {fmt(Math.round(d.minimo + d.maximo) / 2, 1)} m²</button>
                 )}

@@ -46,7 +46,7 @@ export function Inicio({ perfil, mudarPerfil, projetos, catalogo, biblioteca, ab
           <button type="button" className="btn fantasma" onClick={() => ir('projetos')}>Ver todos<Icone nome="seta" tamanho={16} /></button>
         </div>
         <div className="grade-projetos">
-          {recentes.map((p) => <CartaoProjeto key={p.id} projeto={p} catalogo={catalogo} abrir={() => abrir(p.id)} />)}
+          {recentes.map((p) => <CartaoProjeto key={p.id} projeto={p} abrir={() => abrir(p.id)} />)}
           {recentes.length < 3 && (
             <button type="button" className="cartao-novo" onClick={novo}>
               <span className="cartao-novo-icone"><Icone nome="mais" tamanho={22} /></span>

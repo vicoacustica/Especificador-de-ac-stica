@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import casos from './casos-planilha.json'
 import { areaEfetiva, avaliar, calcular, dimensionar, LIMITE_EYRING, situacaoDasBandas, validarSuperficies } from './acustica'
-import { avMinimo, tempoAlvo, tempoOtimoNBR } from './criterios'
+import { avMinimo, MARGENS_DIN_PCT, metaDoCriterio, tempoAlvo, tempoOtimoNBR } from './criterios'
 import { Catalogo, MATERIAIS_BASE, paraSuperficie } from './materiais'
 import { areaDaForma, ESTADOS, type Cenario, type Umidade } from './tipos'
 
@@ -178,5 +178,14 @@ describe('formas de nuvens e baffles', () => {
     expect(areaDaForma({ tipo: 'trapezio', medidas: [1.2, 0.6, 0.5], quantidade: 2 })).toBeCloseTo(0.9, 9)
     // Baffle: base C × L e duas laterais C × H.
     expect(areaDaForma({ tipo: 'baffle', medidas: [1.2, 0.05, 0.3], quantidade: 10 })).toBeCloseTo(10 * (1.2 * 0.05 + 2 * 1.2 * 0.3), 9)
+  })
+
+  it('aplica o tempo ótimo e as margens em % do critério personalizado', () => {
+    const m = metaDoCriterio({ norma: 'personalizado', t: 0.8, superior: [50, 20, 20, 20, 20, 10], inferior: [30, 20, 20, 20, 20, 40] }, 200, 3)
+    if (m.tipo !== 'tempo') throw new Error('esperava critério de tempo')
+    expect(m.superior.map((v) => +v.toFixed(3))).toEqual([1.2, 0.96, 0.96, 0.96, 0.96, 0.88])
+    expect(m.inferior.map((v) => +v.toFixed(3))).toEqual([0.56, 0.64, 0.64, 0.64, 0.64, 0.48])
+    // Ponto de partida igual às margens da DIN 18041.
+    expect(MARGENS_DIN_PCT).toEqual({ superior: [45, 20, 20, 20, 20, 20], inferior: [35, 20, 20, 20, 20, 35] })
   })
 })

@@ -106,6 +106,8 @@ export type Criterio =
   | { norma: 'A'; grupo: GrupoA }
   | { norma: 'B'; grupo: GrupoB }
   | { norma: 'NBR'; curva: CurvaNBR }
+  /** Tempo ótimo (s) e margens por banda em %, definidos pelo projetista: limites T·(1 + superior/100) e T·(1 − inferior/100). */
+  | { norma: 'personalizado'; t: number; superior: PorBanda; inferior: PorBanda }
 
 export type Umidade = 0 | 40 | 50 | 60
 

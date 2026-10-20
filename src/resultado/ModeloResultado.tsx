@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
-import { areaEfetiva, avaliar, NOME_SITUACAO } from '../motor/acustica'
+import { areaEfetiva } from '../motor/acustica'
 import type { Catalogo } from '../motor/materiais'
 import { elementoDe, FORMAS, type Cenario, type ItemOcupacao, type Projeto } from '../motor/tipos'
 import { coresDoCenario, facesDoModelo } from '../importacao/cena'
 import { Visor3D } from '../importacao/Visor3D'
-import { CLASSE_SITUACAO, fmt } from '../ui/formato'
+import { fmt } from '../ui/formato'
 
 const GRUPOS_ITENS: { titulo: string; filtro: (it: ItemOcupacao) => boolean }[] = [
   { titulo: 'Mobiliário', filtro: (it) => it.tipo === 'assento' },
@@ -49,7 +49,6 @@ export function ModeloResultado({ projeto, catalogo }: { projeto: Projeto; catal
   if (!projeto.modelo || !comModelo.length) return null
   const cenario = comModelo.find((c) => c.id === id) ?? comModelo[0]
   const { cor, cores, superficieDo } = coresDoCenario(cenario)
-  const situacao = avaliar(cenario, catalogo).situacao
 
   // Legenda: materiais das superfícies ligadas ao modelo, com a área de cada um.
   const ligadas = new Set(Object.keys(cenario.grupos ?? {}).map((g) => superficieDo(g)?.id).filter(Boolean))
@@ -86,7 +85,6 @@ export function ModeloResultado({ projeto, catalogo }: { projeto: Projeto; catal
           rotulo={`Modelo 3D do cenário ${cenario.nome}`}
         />
         <div className="modelo-legenda" onMouseLeave={() => setDestaque(null)}>
-          <span className={`pill ${CLASSE_SITUACAO[situacao]}`}>{cenario.nome}: {NOME_SITUACAO[situacao]}</span>
           <ul>
             {[...legenda.entries()].map(([mat, l]) => (
               <li key={mat} onMouseEnter={() => setDestaque(mat)}>

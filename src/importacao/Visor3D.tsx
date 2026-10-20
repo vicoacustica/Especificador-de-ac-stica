@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Icone } from '../ui/Icone'
+import { contornos } from './contornos'
 import type { Ponto } from './modelo'
 
 /** Face pronta para desenhar: chave do grupo (layer ou superfície) e pontos em metros. */
@@ -50,7 +51,8 @@ export function Visor3D({ faces, cor, destaque, selecionado, ocultos, aoClicar, 
     for (const f of faces) for (const p of f.pontos) for (let k = 0; k < 3; k++) { min[k] = Math.min(min[k], p[k]); max[k] = Math.max(max[k], p[k]) }
     const centro = [0, 1, 2].map((k) => (min[k] + max[k]) / 2)
     const raio = Math.max(1e-6, Math.hypot(max[0] - min[0], max[1] - min[1], max[2] - min[2]) / 2)
-    return { raio, lista: faces.slice(0, LIMITE_FACES).map((f) => ({ c: f.c, pontos: f.pontos.map((p) => p.map((v, k) => v - centro[k]) as Ponto) })) }
+    const lista = faces.slice(0, LIMITE_FACES).map((f) => ({ c: f.c, pontos: f.pontos.map((p) => p.map((v, k) => v - centro[k]) as Ponto) }))
+    return { raio, lista, arestas: contornos(lista) }
   }, [faces])
 
   useEffect(() => {
@@ -126,11 +128,21 @@ export function Visor3D({ faces, cor, destaque, selecionado, ocultos, aoClicar, 
       g.globalAlpha = apagada ? 0.06 : realce ? 0.85 : 0.22 + 0.33 * d.luz
       g.fillStyle = cor(d.c)
       g.fill()
-      const marcada = d.c === selecionado
-      g.globalAlpha = apagada ? 0.18 : marcada ? 1 : 0.85
-      g.strokeStyle = marcada ? '#e0523e' : '#2b2622'
-      g.lineWidth = marcada ? 2.4 : 0.6
-      g.stroke()
+    }
+    // Só os contornos das superfícies: as divisões internas de cada uma não aparecem.
+    const linhas = cena.arestas.filter((e) => !ocultos?.has(e.c))
+    const tela2 = (p: Ponto) => { const [x, , z] = ver(p); return [largura / 2 + x * escala, altura / 2 - z * escala] }
+    for (const marcada of [false, true]) {
+      for (const e of linhas) {
+        if ((e.c === selecionado) !== marcada) continue
+        const apagada = realce && !realce.has(e.c)
+        const [x0, y0] = tela2(e.a), [x1, y1] = tela2(e.b)
+        g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1)
+        g.globalAlpha = apagada ? 0.18 : marcada ? 1 : 0.85
+        g.strokeStyle = marcada ? '#e0523e' : '#2b2622'
+        g.lineWidth = marcada ? 2.4 : 0.6
+        g.stroke()
+      }
     }
     g.globalAlpha = 1
   }, [cena, vista, largura, altura, cor, realce, selecionado, ocultos])

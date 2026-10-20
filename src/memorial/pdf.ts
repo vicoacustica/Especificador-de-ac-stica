@@ -1,11 +1,12 @@
 // Memorial de especificação acústica em PDF: identificação, plantas e vistas do modelo 3D com cotas e
 // especificações, quadro de especificações, resultados dos cenários e memória de cálculo.
 import { jsPDF } from 'jspdf'
-import { avaliar, areaEfetiva, NOME_SITUACAO, type Avaliacao } from '../motor/acustica'
-import { CURVAS_NBR, GRUPOS_B, TOLERANCIA_INFERIOR, TOLERANCIA_SUPERIOR } from '../motor/criterios'
+import { avaliar, areaEfetiva, type Avaliacao } from '../motor/acustica'
+import { CURVAS_NBR, GRUPOS_B } from '../motor/criterios'
 import { ABSORCAO_AR, type Catalogo } from '../motor/materiais'
 import { BANDAS, CATEGORIAS, FRACAO_OCUPADA, NOME_ESTADO, type Cenario, type Projeto } from '../motor/tipos'
-import { coresDosMateriais } from '../importacao/modelo'
+import { contornos } from '../importacao/contornos'
+import { coresDosMateriais, type Ponto } from '../importacao/modelo'
 import { fmt } from '../ui/formato'
 import { especificacao, quantidadeTexto, type ItemEspecificacao } from './conteudo'
 import { analisarModelo, areaPoligono, centroide, cortarFace, marcos, naPlanta, naVista, type AnaliseModelo, type FacePlana, type P2 } from './geometria'
@@ -222,6 +223,15 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
     doc.text(e.codigo, x, yy + 0.9, { align: 'center' })
   }
 
+  /** Contornos das superfícies, sem as divisões internas de cada uma. */
+  function linhasContorno(faces: FacePlana[], proj: (p: Ponto) => P2, cor: Cor = SUAVE, larg = 0.18) {
+    linhaFina(cor, larg)
+    for (const e of contornos(faces.map((f) => ({ c: f.g, pontos: f.pontos })))) {
+      const a2 = proj(e.a), b2 = proj(e.b)
+      doc.line(a2[0], a2[1], b2[0], b2[1])
+    }
+  }
+
   function poligono(pts: P2[], estilo: 'F' | 'S' | 'FD') {
     if (pts.length < 3) return
     const deltas = pts.slice(1).map((p, i) => [p[0] - pts[i][0], p[1] - pts[i][1]])
@@ -283,6 +293,22 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
     return [...melhor.values()]
   }
 
+  /** Trechos cortados de um mesmo grupo que se tocam viram um só, para as divisões não gerarem cotas. */
+  function unirPorGrupo(trechos: { f: FacePlana; u0: number; u1: number }[]): [number, number][] {
+    const porGrupo = new Map<string, [number, number][]>()
+    for (const t of trechos) porGrupo.set(t.f.g, [...(porGrupo.get(t.f.g) ?? []), [t.u0, t.u1]])
+    return [...porGrupo.values()].flatMap((l) => {
+      l.sort((x, y) => x[0] - y[0])
+      const r: [number, number][] = []
+      for (const [a0, a1] of l) {
+        const u = r[r.length - 1]
+        if (u && a0 <= u[1] + 0.005) u[1] = Math.max(u[1], a1)
+        else r.push([a0, a1])
+      }
+      return r
+    })
+  }
+
   function desenharPlantas(a: AnaliseModelo) {
     const W = a.max[0] - a.min[0], D = a.max[1] - a.min[1]
     const esc = escalaQueCabe(W, D, AREA.w - 52, AREA.h - 52)
@@ -301,9 +327,10 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
     const pisos = [...a.pisos].sort((p, q) => Math.min(...p.pontos.map((x) => x[2])) - Math.min(...q.pontos.map((x) => x[2])))
     for (const f of pisos) {
       const c = corDo(f.g)
-      doc.setFillColor(...(especDo(f.g) ? clarear(c, 0.55) : c)); linhaFina(LINHA, 0.15)
-      poligono(f.pontos.map((p) => P(p[0], p[1])), 'FD')
+      doc.setFillColor(...(especDo(f.g) ? clarear(c, 0.55) : c))
+      poligono(f.pontos.map((p) => P(p[0], p[1])), 'F')
     }
+    linhasContorno(pisos, (p) => P(p[0], p[1]), LINHA, 0.15)
     const desenharTrecho = (t: (typeof trechos)[number], fase: 'base' | 'itens') => {
       const s = superficieDo(t.f.g)
       const cat = s?.categoria
@@ -340,7 +367,7 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
       if (!meus.length) return
       const o = naPlanta(w, 0)
       const fora = dirPapel([-w.normal[0], -w.normal[1]])
-      cadeia(P(o[0], o[1]), dirPapel(w.eixo), k, [0, w.u[1], ...meus.flatMap((t) => [t.u0, t.u1])], fora)
+      cadeia(P(o[0], o[1]), dirPapel(w.eixo), k, [0, w.u[1], ...unirPorGrupo(meus).flat()], fora)
     })
     // Indicação das vistas internas.
     a.paredes.forEach((w, i) => {
@@ -371,16 +398,18 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
     const tetos = [...a.tetos].sort((p, q) => Math.max(...q.pontos.map((x) => x[2])) - Math.max(...p.pontos.map((x) => x[2])))
     for (const f of tetos) {
       const c = corDo(f.g)
-      doc.setFillColor(...(especDo(f.g) ? clarear(c, 0.45) : c)); linhaFina(especDo(f.g) ? escurecer(c, 0.2) : LINHA, 0.2)
-      poligono(f.pontos.map((p) => P(p[0], p[1])), 'FD')
+      doc.setFillColor(...(especDo(f.g) ? clarear(c, 0.45) : c))
+      poligono(f.pontos.map((p) => P(p[0], p[1])), 'F')
     }
+    linhasContorno(tetos, (p) => P(p[0], p[1]), SUAVE, 0.2)
     for (const t of trechos) {
       const p0 = naPlanta(t.w, t.u0), p1 = naPlanta(t.w, t.u1)
       const A = P(p0[0], p0[1]), B = P(p1[0], p1[1])
       doc.setDrawColor(...TINTA); doc.setLineWidth(0.5); doc.line(A[0], A[1], B[0], B[1])
     }
-    const xs = [a.min[0], a.max[0], ...tetos.flatMap((f) => [Math.min(...f.pontos.map((p) => p[0])), Math.max(...f.pontos.map((p) => p[0]))])]
-    const ys = [a.min[1], a.max[1], ...tetos.flatMap((f) => [Math.min(...f.pontos.map((p) => p[1])), Math.max(...f.pontos.map((p) => p[1]))])]
+    const bordasForro = contornos(tetos.map((f) => ({ c: f.g, pontos: f.pontos }))).flatMap((e) => [e.a, e.b])
+    const xs = [a.min[0], a.max[0], ...bordasForro.map((p) => p[0])]
+    const ys = [a.min[1], a.max[1], ...bordasForro.map((p) => p[1])]
     cadeia(P(a.min[0], a.max[1]), [1, 0], k, xs.map((x) => x - a.min[0]), [0, -1])
     cadeia(P(a.min[0], a.min[1]), [0, -1], k, ys.map((v) => v - a.min[1]), [-1, 0])
     // Altura de cada forro em relação ao piso: junto da etiqueta nos acústicos, no canto nos demais.
@@ -422,15 +451,18 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
       for (const f of faces) {
         const pts = f.pontos.map((p) => { const [u, z] = naVista(w, p); return V(u, z) })
         const c = corDo(f.g)
-        doc.setFillColor(...(especDo(f.g) ? clarear(c, 0.4) : c)); linhaFina(especDo(f.g) ? escurecer(c, 0.25) : SUAVE, 0.18)
-        poligono(pts, 'FD')
+        doc.setFillColor(...(especDo(f.g) ? clarear(c, 0.4) : c))
+        poligono(pts, 'F')
         cand.push({ g: f.g, ponto: centroide(pts), tamanho: areaPoligono(pts) })
       }
+      linhasContorno(faces, (p) => { const [u, z] = naVista(w, p); return V(u, z) })
       // Linhas de piso e de forro.
       linhaFina(TINTA, 0.45)
       doc.line(V(0, w.z[0])[0] - 3, V(0, w.z[0])[1], V(L, w.z[0])[0] + 3, V(L, w.z[0])[1])
-      const us = w.faces.flatMap((f) => { const v = f.pontos.map((p) => naVista(w, p)[0]); return [Math.min(...v), Math.max(...v)] })
-      const zs = w.faces.flatMap((f) => { const v = f.pontos.map((p) => p[2] - w.z[0]); return [Math.min(...v), Math.max(...v)] })
+      // Cotas nos vértices dos contornos: as divisões internas das superfícies não geram cotas.
+      const bordas = contornos(w.faces.map((f) => ({ c: f.g, pontos: f.pontos }))).flatMap((e) => [e.a, e.b])
+      const us = bordas.map((p) => naVista(w, p)[0])
+      const zs = bordas.map((p) => p[2] - w.z[0])
       cadeia(V(0, w.z[0]), [1, 0], kv, us, [0, 1], 6)
       cadeia(V(L, w.z[0]), [0, -1], kv, zs, [1, 0], 6)
       etiquetasPorGrupo(cand)
@@ -456,7 +488,6 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
     ...(d.projetista.empresa ? [['Empresa', d.projetista.empresa] as [string, string]] : []),
     ['Data de emissão', dataTexto],
     ['Critério', avEspec.meta.nome],
-    ['Resultado do cenário', NOME_SITUACAO[avEspec.situacao]],
   ]
   for (const [r, v] of identificacao) {
     fonte(8, false, SUAVE); doc.text(r.toUpperCase(), MARGEM, y)
@@ -512,7 +543,7 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
   secao('Resultados dos cenários')
   for (const c of projeto.cenarios) {
     const av = avaliar(c, catalogo)
-    subtitulo(`${c.nome}${c.id === cenario.id ? ' (especificado)' : ''}: ${NOME_SITUACAO[av.situacao].toLowerCase()}`)
+    subtitulo(`${c.nome}${c.id === cenario.id ? ' (especificado)' : ''}`)
     paragrafo(`${av.meta.nome} · Volume (V) ${m(c.volume)} m³${av.tipo === 'tempo' ? ` · ${av.resultado.formula === 'eyring' ? 'Eyring' : 'Sabine'}, Coeficiente de absorção médio (ᾱ) ${fmt(av.resultado.alfaMedioSala)}` : ''}`, 8.5, SUAVE)
     tabelaResultado(av)
   }
@@ -564,6 +595,13 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
       `a, b e c: coeficientes da curva (a = ${fmt(a1, 4)}, b = ${fmt(b1, 4)}, c = ${fmt(c1, 4)}).`,
       'Volume (V) do ambiente, em m³; lg é o logaritmo na base 10.',
     ], `Tót = ${fmt(avEspec.meta.t)} s, com as margens por banda da DIN 18041:2016`)
+  } else if (crit.norma === 'personalizado' && avEspec.tipo === 'tempo') {
+    paragrafo(`Critério personalizado: o projetista definiu o Tempo de reverberação ótimo (Tót) em ${fmt(crit.t)} s, aplicado a todas as bandas, e as margens superior e inferior de cada banda em porcentagem.`)
+    equacao('Tmáx = Tót · (1 + ms/100)      Tmín = Tót · (1 − mi/100)', [
+      'Tempo de reverberação máximo (Tmáx) e mínimo (Tmín) da banda, em s.',
+      'Tempo de reverberação ótimo (Tót), em s, definido pelo projetista.',
+      'Margem superior (ms) e margem inferior (mi) da banda, em %.',
+    ])
   } else if (crit.norma === 'B' && avEspec.tipo === 'absorcao') {
     const g = GRUPOS_B[crit.grupo]
     if (cenario.peDireito <= 2.5) paragrafo(`Com Pé-direito (h) até 2,50 m, a DIN 18041:2016 fixa a Área de absorção por volume mínima (A/V) do grupo ${crit.grupo} em ${fmt(g.minimoAte2_5m)} m²/m³.`)
@@ -576,8 +614,8 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
   }
   if (avEspec.tipo === 'tempo') {
     tabela([{ titulo: 'Margens por banda', largura: 46 }, ...BANDAS.map((b) => ({ titulo: `${b} Hz`, largura: 21, direita: true }))], [
-      ['Fator máximo', ...TOLERANCIA_SUPERIOR.map((f) => fmt(f))],
-      ['Fator mínimo', ...TOLERANCIA_INFERIOR.map((f) => fmt(f))],
+      ['Margem superior (%)', ...avEspec.meta.superior.map((v) => `+${fmt((v / avEspec.meta.t - 1) * 100, 0)}`)],
+      ['Margem inferior (%)', ...avEspec.meta.inferior.map((v) => `−${fmt((1 - v / avEspec.meta.t) * 100, 0)}`)],
       ['Máximo (s)', ...avEspec.meta.superior.map((v) => fmt(v))],
       ['Mínimo (s)', ...avEspec.meta.inferior.map((v) => fmt(v))],
     ])

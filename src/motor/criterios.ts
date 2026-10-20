@@ -58,6 +58,12 @@ export function avMinimo(grupo: GrupoB, altura: number): number {
 export const TOLERANCIA_SUPERIOR: PorBanda = [1.45, 1.2, 1.2, 1.2, 1.2, 1.2]
 export const TOLERANCIA_INFERIOR: PorBanda = [0.65, 0.8, 0.8, 0.8, 0.8, 0.65]
 
+/** Margens da DIN 18041 em %, ponto de partida do critério personalizado. */
+export const MARGENS_DIN_PCT: { superior: PorBanda; inferior: PorBanda } = {
+  superior: TOLERANCIA_SUPERIOR.map((f) => Math.round((f - 1) * 100)) as PorBanda,
+  inferior: TOLERANCIA_INFERIOR.map((f) => Math.round((1 - f) * 100)) as PorBanda,
+}
+
 /** Bandas avaliadas no grupo B: 250 a 2000 Hz. */
 export const BANDAS_GRUPO_B = [1, 2, 3, 4]
 
@@ -77,6 +83,14 @@ export function metaDoCriterio(criterio: Criterio, volume: number, peDireito: nu
       tipo: 'tempo', nome: `${DIN}, grupo ${criterio.grupo} (${g.uso})`, t, ...faixa(t), otimo: false,
       foraDaFaixa: volume < g.volumeMin || volume > g.volumeMax,
       faixaVolume: `${g.volumeMin} a ${g.volumeMax === Infinity ? '∞' : g.volumeMax} m³`,
+    }
+  }
+  if (criterio.norma === 'personalizado') {
+    const t = criterio.t
+    return {
+      tipo: 'tempo', nome: 'Critério personalizado', t, otimo: true, foraDaFaixa: false, faixaVolume: '',
+      superior: criterio.superior.map((p) => t * (1 + p / 100)) as PorBanda,
+      inferior: criterio.inferior.map((p) => Math.max(0, t * (1 - p / 100))) as PorBanda,
     }
   }
   if (criterio.norma === 'NBR') {

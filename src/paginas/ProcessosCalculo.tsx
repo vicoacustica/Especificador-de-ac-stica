@@ -126,7 +126,7 @@ export function ProcessosCalculo() {
         </Topico>
 
         <Topico n={5} titulo="Cenários de ocupação">
-          <p>Pessoas absorvem muito som, então a mesma sala soa diferente vazia e cheia. O sistema avalia a sala com 0%, 50% e 100% de ocupação, conforme você marcar, e só considera que atende quando todas as situações marcadas ficam dentro da faixa. Com uma fração ocupada x, essa parte dos assentos usa a absorção do assento ocupado e o restante a do assento vazio. O público sem assento entra com x da quantidade cadastrada. Superfícies, nuvens e baffles não mudam.</p>
+          <p>Pessoas absorvem muito som, então a mesma sala soa diferente vazia e cheia. O sistema avalia a sala com 0%, 50% e 100% de ocupação, conforme você marcar, e mostra o resultado de cada situação marcada ao lado das margens. Com uma fração ocupada x, essa parte dos assentos usa a absorção do assento ocupado e o restante a do assento vazio. O público sem assento entra com x da quantidade cadastrada. Superfícies, nuvens e baffles não mudam.</p>
           <Equacao
             formula={<>A<sub>assentos</sub> = n·[(1 − x)·A<sub>vazio</sub> + x·A<sub>ocupado</sub>]</>}
             legenda={[

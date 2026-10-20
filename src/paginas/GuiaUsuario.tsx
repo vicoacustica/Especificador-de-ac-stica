@@ -15,7 +15,7 @@ const PASSOS: Passo[] = [
     figuras: [
       {
         imagem: '01-inicio', legenda: 'Tela inicial',
-        marcas: [<>Clique em <b>Novo projeto</b>.</>, <>Os projetos recentes aparecem em cartões. Clique no cartão para abrir. O selo mostra quantos cenários atendem à norma.</>],
+        marcas: [<>Clique em <b>Novo projeto</b>.</>, <>Os projetos recentes aparecem em cartões. Clique no cartão para abrir.</>],
       },
       {
         imagem: '01-novo-projeto', legenda: 'Janela de novo projeto',
@@ -23,7 +23,7 @@ const PASSOS: Passo[] = [
       },
       {
         imagem: '01-editor', legenda: 'Editor do projeto',
-        marcas: [<>A imagem do projeto. Clique nela para trocar a imagem ou o nome.</>, <>Os cenários. No exemplo há dois: “Forro acústico” e “Nuvens no teto”. O ponto verde ou laranja indica se o cenário atende. Use <b>Duplicar cenário</b> para testar uma variação sem perder a original.</>, <>As cinco etapas do cálculo. Você pode ir e voltar entre elas a qualquer momento.</>, <>O painel de resultado, que recalcula a cada mudança.</>],
+        marcas: [<>A imagem do projeto. Clique nela para trocar a imagem ou o nome.</>, <>Os cenários. No exemplo há dois: “Forro acústico” e “Nuvens no teto”. Use <b>Duplicar cenário</b> para testar uma variação sem perder a original.</>, <>As cinco etapas do cálculo. Você pode ir e voltar entre elas a qualquer momento.</>, <>O painel de resultado, que recalcula a cada mudança.</>],
       },
     ],
   },
@@ -67,17 +67,17 @@ const PASSOS: Passo[] = [
   {
     titulo: 'Ocupação',
     resumo: 'Público, assentos e cenários de ocupação',
-    intro: <>Na etapa 4 você cadastra quem ocupa a sala e escolhe em quais situações ela deve atender. A sala de aula tem 40 carteiras.</>,
+    intro: <>Na etapa 4 você cadastra quem ocupa a sala e escolhe em quais situações ela é avaliada. A sala de aula tem 40 carteiras.</>,
     figuras: [{
       imagem: '05-ocupacao', legenda: 'Etapa 4 · Ocupação',
-      marcas: [<>Marque os cenários de ocupação avaliados: 0%, 50% e 100%. A sala só “atende” se ficar dentro da faixa em todos os marcados.</>, <>A quantidade de assentos.</>, <>A absorção do assento vazio e do assento ocupado (carteira com aluno sentado). Com 50% de ocupação, metade das carteiras usa cada um.</>],
+      marcas: [<>Marque os cenários de ocupação avaliados: 0%, 50% e 100%. Os resultados mostram o Tempo de reverberação (T) de cada situação marcada, comparado às margens.</>, <>A quantidade de assentos.</>, <>A absorção do assento vazio e do assento ocupado (carteira com aluno sentado). Com 50% de ocupação, metade das carteiras usa cada um.</>],
     }],
     dica: <>Público em pé, sem assento, entra com a fração ocupada da quantidade cadastrada.</>,
   },
   {
     titulo: 'Resultados',
     resumo: 'Comparar cenários',
-    intro: <>Na etapa 5 os cenários são comparados lado a lado. No exemplo, o forro acústico atende em todas as bandas, e as 18 nuvens deixam a sala reverberante demais nos graves.</>,
+    intro: <>Na etapa 5 os cenários são comparados lado a lado. No exemplo, o forro acústico fica dentro das margens em todas as bandas, e com as 18 nuvens o Tempo de reverberação (T) fica abaixo das margens.</>,
     figuras: [{
       imagem: '06-resultados', legenda: 'Etapa 5 · Resultados',
       marcas: [<>Escolha os cenários que entram na comparação.</>, <>Escolha a situação de ocupação mostrada no gráfico e na tabela.</>, <>As curvas do Tempo de reverberação (T) de cada cenário. As linhas verdes tracejadas são as margens máxima e mínima do tempo ótimo.</>, <>A tabela com o T de cada banda. Valores fora da faixa ficam destacados em laranja.</>],
@@ -89,7 +89,7 @@ const PASSOS: Passo[] = [
     intro: <>O painel à direita acompanha todas as etapas e mostra o resultado do cenário aberto, recalculado a cada mudança.</>,
     figuras: [{
       imagem: '07-resultado', legenda: 'Painel de resultado',
-      marcas: [<>Se o cenário atende e qual fórmula foi usada, Sabine ou Eyring.</>, <>O Tempo de reverberação (T) por banda em cada situação de ocupação, dentro da faixa aceita.</>, <>Os valores de T comparados aos limites mínimo e máximo.</>, <>A observação sobre o Coeficiente de absorção médio (ᾱ) da sala: acima de 0,30 o cálculo passa a usar Eyring. No exemplo, ᾱ = 0,23 e vale Sabine.</>, <>O botão “Gerar memorial” cria o PDF com plantas e vistas do modelo 3D, quadro de especificações, resultados e memória de cálculo.</>],
+      marcas: [<>O cenário, o critério e a fórmula usada, Sabine ou Eyring.</>, <>O Tempo de reverberação (T) por banda em cada situação de ocupação, dentro da faixa aceita.</>, <>Os valores de T comparados aos limites mínimo e máximo.</>, <>A observação sobre o Coeficiente de absorção médio (ᾱ) da sala: acima de 0,30 o cálculo passa a usar Eyring. No exemplo, ᾱ = 0,23 e vale Sabine.</>, <>O botão “Gerar memorial” cria o PDF com plantas e vistas do modelo 3D, quadro de especificações, resultados e memória de cálculo.</>],
     }],
   },
   {

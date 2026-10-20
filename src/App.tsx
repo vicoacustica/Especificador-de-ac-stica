@@ -156,7 +156,7 @@ export default function App() {
       />
     )
   } else if (rota.pagina === 'projetos' || rota.pagina === 'projeto') {
-    conteudo = <Projetos projetos={projetos} catalogo={catalogo} abrir={(id) => ir({ pagina: 'projeto', id })} novo={novoProjeto} duplicar={duplicarProjeto} excluir={excluirProjeto} />
+    conteudo = <Projetos projetos={projetos} abrir={(id) => ir({ pagina: 'projeto', id })} novo={novoProjeto} duplicar={duplicarProjeto} excluir={excluirProjeto} />
   } else if (rota.pagina === 'materiais') {
     conteudo = <Materiais catalogo={catalogo} projetos={projetos} salvarMaterial={salvarMaterial} excluirMaterial={excluirMaterial} restaurarMateriais={restaurarMateriais} />
   } else if (rota.pagina === 'ajuda') {

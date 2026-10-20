@@ -592,3 +592,10 @@ details p { margin: 8px 0 0; color: var(--ink-2); max-width: 75ch; }
 .memorial-conteudo { margin: 14px 0 4px; padding: 12px 14px 12px 30px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); display: grid; gap: 4px; font-size: 13.5px; color: var(--ink-2); }
 .memorial-conteudo li.fora { color: var(--ink-3); }
 .modal .nota a { color: var(--accent); font-weight: 600; }
+.personalizado { display: grid; gap: 12px; justify-items: start; margin-top: 12px; padding: 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); }
+.personalizado .tabela-rolagem { width: 100%; overflow-x: auto; }
+.margens { border-collapse: collapse; font-size: 13px; min-width: 620px; width: 100%; }
+.margens th, .margens td { padding: 4px 6px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.margens th.num, .margens td.num { text-align: right; }
+.margens input { width: 68px; text-align: right; }
+.margens tr.suave td { color: var(--ink-2); }

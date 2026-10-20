@@ -1,19 +1,17 @@
 import { useState } from 'react'
-import type { Catalogo } from '../motor/materiais'
 import type { Projeto } from '../motor/tipos'
 import { Icone } from '../ui/Icone'
 import { CartaoProjeto } from './CartaoProjeto'
 
 interface Props {
   projetos: Projeto[]
-  catalogo: Catalogo
   abrir: (id: string) => void
   novo: () => void
   duplicar: (p: Projeto) => void
   excluir: (id: string) => void
 }
 
-export function Projetos({ projetos, catalogo, abrir, novo, duplicar, excluir }: Props) {
+export function Projetos({ projetos, abrir, novo, duplicar, excluir }: Props) {
   const [busca, setBusca] = useState('')
   const [excluindo, setExcluindo] = useState<string | null>(null)
   const termo = busca.trim().toLowerCase()
@@ -41,7 +39,6 @@ export function Projetos({ projetos, catalogo, abrir, novo, duplicar, excluir }:
           <CartaoProjeto
             key={p.id}
             projeto={p}
-            catalogo={catalogo}
             abrir={() => abrir(p.id)}
             acoes={excluindo === p.id ? (
               <span className="confirmar">Excluir este projeto?

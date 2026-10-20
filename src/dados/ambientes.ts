@@ -28,6 +28,7 @@ export const AMBIENTES: Record<Tipologia, Ambiente> = {
 export function tipologiaDoCriterio(c: Criterio): Tipologia {
   if (c.norma === 'A') return ({ A1: 'sala-musica', A2: 'auditorio', A3: 'sala-aula', A4: 'sala-aula', A5: 'ginasio' } as const)[c.grupo]
   if (c.norma === 'B') return ({ B2: 'circulacao', B3: 'biblioteca', B4: 'escritorio', B5: 'restaurante' } as const)[c.grupo]
+  if (c.norma === 'personalizado') return 'auditorio'
   return ({ igreja: 'igreja', concerto: 'sala-concerto', musica: 'estudio', conferencia: 'cinema', palavra: 'estudio' } as const)[c.curva]
 }
 

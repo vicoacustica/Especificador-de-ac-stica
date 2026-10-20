@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { avaliar, NOME_SITUACAO } from '../motor/acustica'
+import { avaliar } from '../motor/acustica'
 import type { Catalogo } from '../motor/materiais'
 import { BANDAS, NOME_ESTADO, type Cenario, type EstadoOcupacao, type Projeto } from '../motor/tipos'
 import { Segmentado } from '../ui/campos'
-import { CLASSE_SITUACAO, fmt } from '../ui/formato'
+import { fmt } from '../ui/formato'
 import { GraficoAV, GraficoTempo } from './Graficos'
 import { GerarMemorial } from './GerarMemorial'
 import type { Perfil } from '../dados/conta'
@@ -26,7 +26,6 @@ export function PainelResultado({ projeto, cenario, catalogo, estado, setEstado,
   const av = avaliar(cenario, catalogo)
   const r = av.resultado
 
-  let falhas: string[] = []
   let corpo
   if (av.tipo === 'absorcao') {
     corpo = (
@@ -43,10 +42,6 @@ export function PainelResultado({ projeto, cenario, catalogo, estado, setEstado,
     )
   } else {
     const est = r.estados.includes(estado) ? estado : r.estados[r.estados.length - 1]
-    falhas = r.estados.flatMap((e) => {
-      const acima = av.bandas[e].includes('acima'), abaixo = av.bandas[e].some((b) => b === 'abaixo' || b === 'invalido')
-      return acima || abaixo ? [`${NOME_ESTADO[e]}: ${[acima && 'reverberante demais', abaixo && 'seca demais'].filter(Boolean).join(' e ')}`] : []
-    })
     corpo = (
       <>
         <div className="kv">
@@ -94,11 +89,10 @@ export function PainelResultado({ projeto, cenario, catalogo, estado, setEstado,
     <>
       <section className="cartao">
         <div className="status">
-          <span className={`big ${CLASSE_SITUACAO[av.situacao]}`}>{NOME_SITUACAO[av.situacao]}</span>
+          <span className="big">{cenario.nome}</span>
           {av.tipo === 'tempo' && <span className={`pill ${r.formula === 'eyring' ? 'warn' : 'ok'}`}>{r.formula === 'eyring' ? 'Eyring' : 'Sabine'}</span>}
         </div>
-        <div className="nota">{cenario.nome} · {av.meta.nome}</div>
-        {falhas.length > 0 && <p className="nota">{falhas.join(' · ')}</p>}
+        <div className="nota">{av.meta.nome}</div>
         {corpo}
       </section>
       <section className="cartao memorial-cartao">

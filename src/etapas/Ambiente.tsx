@@ -1,7 +1,7 @@
-import { CURVAS_NBR, DIN, GRUPOS_A, NBR, GRUPOS_B, metaDoCriterio } from '../motor/criterios'
+import { CURVAS_NBR, DIN, GRUPOS_A, MARGENS_DIN_PCT, NBR, GRUPOS_B, metaDoCriterio } from '../motor/criterios'
 import { useState } from 'react'
 import type { Catalogo } from '../motor/materiais'
-import type { Cenario, Criterio, ModeloProjeto, Umidade } from '../motor/tipos'
+import { BANDAS, type Cenario, type Criterio, type ModeloProjeto, type PorBanda, type Umidade } from '../motor/tipos'
 import { ImportarModelo, type ResultadoImportacao } from '../importacao/ImportarModelo'
 import { Icone } from '../ui/Icone'
 import { Numero } from '../ui/campos'
@@ -25,6 +25,31 @@ const GRUPOS: { titulo: string; opcoes: Opcao[] }[] = [
 ]
 
 const igual = (a: Criterio, b: Criterio) => JSON.stringify(a) === JSON.stringify(b)
+
+/** Tempo ótimo e margens por banda definidos pelo projetista. */
+function CriterioPersonalizado({ criterio, mudar }: { criterio: Extract<Criterio, { norma: 'personalizado' }>; mudar: (f: (c: Extract<Criterio, { norma: 'personalizado' }>) => void) => void }) {
+  const t = criterio.t
+  const margem = (lado: 'superior' | 'inferior', i: number, v: number) => mudar((c) => { c[lado] = c[lado].map((x, k) => (k === i ? Math.max(0, Math.min(lado === 'inferior' ? 100 : 500, v)) : x)) as PorBanda })
+  return (
+    <div className="personalizado">
+      <label className="campo"><span>Tempo de reverberação ótimo (T<sub>ót</sub>) em s</span>
+        <Numero valor={t} minimo={0.05} passo={0.05} aoMudar={(v) => mudar((c) => { c.t = Math.max(0.05, v) })} />
+      </label>
+      <div className="tabela-rolagem">
+        <table className="margens">
+          <thead><tr><th>Banda</th>{BANDAS.map((b) => <th key={b} className="num">{b} Hz</th>)}</tr></thead>
+          <tbody>
+            <tr><td>Limite superior (+%)</td>{BANDAS.map((b, i) => <td key={b}><Numero rotulo={`Limite superior em ${b} Hz, em %`} valor={criterio.superior[i]} minimo={0} passo={5} aoMudar={(v) => margem('superior', i, v)} /></td>)}</tr>
+            <tr><td>Limite inferior (−%)</td>{BANDAS.map((b, i) => <td key={b}><Numero rotulo={`Limite inferior em ${b} Hz, em %`} valor={criterio.inferior[i]} minimo={0} passo={5} aoMudar={(v) => margem('inferior', i, v)} /></td>)}</tr>
+            <tr className="suave"><td>Máximo (s)</td>{criterio.superior.map((p, i) => <td key={i} className="num">{fmt(t * (1 + p / 100))}</td>)}</tr>
+            <tr className="suave"><td>Mínimo (s)</td>{criterio.inferior.map((p, i) => <td key={i} className="num">{fmt(Math.max(0, t * (1 - p / 100)))}</td>)}</tr>
+          </tbody>
+        </table>
+      </div>
+      <button type="button" className="btn fantasma pequeno" onClick={() => mudar((c) => { c.superior = [...MARGENS_DIN_PCT.superior]; c.inferior = [...MARGENS_DIN_PCT.inferior] })}>Usar as margens da {DIN}</button>
+    </div>
+  )
+}
 
 interface Props {
   cenario: Cenario
@@ -54,7 +79,7 @@ export function EtapaAmbiente({ cenario, catalogo, mudar, irParaSuperficies, def
   return (
     <>
       <h2>Ambiente</h2>
-      <p className="lead">Escolha a classificação do ambiente pela norma, informe o volume e a umidade relativa do ar.</p>
+      <p className="lead">Escolha a classificação do ambiente pela norma ou defina um critério personalizado, e informe o volume e a umidade relativa do ar.</p>
       <div className="importar-chamada">
         <span className="importar-chamada-icone"><Icone nome="enviar" tamanho={20} /></span>
         <span>
@@ -84,6 +109,21 @@ export function EtapaAmbiente({ cenario, catalogo, mudar, irParaSuperficies, def
           </div>
         </div>
       ))}
+      <div>
+        <h3>Critério personalizado: tempo ótimo e margens definidos por você</h3>
+        <div className="usos">
+          <button type="button" className="uso" aria-pressed={cenario.criterio.norma === 'personalizado'} onClick={() => {
+            if (cenario.criterio.norma === 'personalizado') return
+            mudar((c) => { c.criterio = { norma: 'personalizado', t: +(meta.tipo === 'tempo' ? meta.t : 1).toFixed(2), superior: [...MARGENS_DIN_PCT.superior], inferior: [...MARGENS_DIN_PCT.inferior] } })
+          }}>
+            <b>Personalizado</b>
+            <small>Informe o tempo ótimo de reverberação e as margens superior e inferior de cada banda, em %.</small>
+          </button>
+        </div>
+        {cenario.criterio.norma === 'personalizado' && (
+          <CriterioPersonalizado criterio={cenario.criterio} mudar={(f) => mudar((c) => { if (c.criterio.norma === 'personalizado') f(c.criterio) })} />
+        )}
+      </div>
       <h3>Volume e ar</h3>
       <div className="linha">
         <label className="campo">Volume (V) em m³
@@ -107,7 +147,10 @@ export function EtapaAmbiente({ cenario, catalogo, mudar, irParaSuperficies, def
         {meta.tipo === 'tempo' && !meta.otimo && (
           <span>Tempo de reverberação alvo (T<sub>alvo</sub>) = <b>{fmt(meta.t)} s</b>. Faixa aceita: 65% a 145% em 125 Hz, 80% a 120% de 250 a 2000 Hz e 65% a 120% em 4000 Hz.</span>
         )}
-        {meta.tipo === 'tempo' && meta.otimo && (
+        {cenario.criterio.norma === 'personalizado' && meta.tipo === 'tempo' && (
+          <span>Tempo de reverberação ótimo (T<sub>ót</sub>) = <b>{fmt(meta.t)} s</b>, definido pelo projetista e aplicado a todas as bandas, com as margens informadas acima.</span>
+        )}
+        {meta.tipo === 'tempo' && meta.otimo && cenario.criterio.norma === 'NBR' && (
           <span>Tempo de reverberação ótimo (T<sub>ót</sub>) = <b>{fmt(meta.t)} s</b>, lido no ábaco da {NBR} a 500 Hz e aplicado a todas as bandas, com as margens da {DIN}.</span>
         )}
         {meta.tipo === 'absorcao' && (

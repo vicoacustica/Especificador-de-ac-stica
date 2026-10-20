@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { avaliar, NOME_SITUACAO } from '../motor/acustica'
 import type { Catalogo } from '../motor/materiais'
 import type { Cenario, EstadoOcupacao, Projeto } from '../motor/tipos'
 import type { Perfil } from '../dados/conta'
@@ -82,10 +81,9 @@ export function Editor({ projeto, catalogo, mudarProjeto, salvarMaterial, perfil
 
       <div className="cenarios" role="tablist" aria-label="Cenários">
         {projeto.cenarios.map((c) => {
-          const sit = avaliar(c, catalogo).situacao
           return (
             <button key={c.id} type="button" role="tab" className="pilula" aria-selected={c.id === cenario.id} onClick={() => setCenarioId(c.id)}>
-              <span className={`ponto ${sit === 'atende' ? 'ok' : sit === 'parcial' ? 'parcial' : 'ruim'}`} aria-label={NOME_SITUACAO[sit].toLowerCase()} />{c.nome}
+              {c.nome}
             </button>
           )
         })}
