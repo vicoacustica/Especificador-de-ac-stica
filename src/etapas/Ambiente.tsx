@@ -1,4 +1,4 @@
-import { CURVAS_NBR, GRUPOS_A, GRUPOS_B, metaDoCriterio } from '../motor/criterios'
+import { CURVAS_NBR, DIN, GRUPOS_A, NBR, GRUPOS_B, metaDoCriterio } from '../motor/criterios'
 import type { Cenario, Criterio, Umidade } from '../motor/tipos'
 import { Numero } from '../ui/campos'
 import { fmt } from '../ui/formato'
@@ -7,15 +7,15 @@ interface Opcao { criterio: Criterio; titulo: string; exemplos: string }
 
 const GRUPOS: { titulo: string; opcoes: Opcao[] }[] = [
   {
-    titulo: 'DIN 18041, grupo A: o alvo é um tempo de reverberação',
+    titulo: `${DIN}, grupo A: o alvo é um tempo de reverberação`,
     opcoes: Object.entries(GRUPOS_A).map(([g, d]) => ({ criterio: { norma: 'A', grupo: g as keyof typeof GRUPOS_A }, titulo: `${g} · ${d.uso}`, exemplos: d.exemplos })),
   },
   {
-    titulo: 'DIN 18041, grupo B: o alvo é uma absorção mínima (A/V)',
+    titulo: `${DIN}, grupo B: o alvo é uma absorção mínima (A/V)`,
     opcoes: Object.entries(GRUPOS_B).map(([g, d]) => ({ criterio: { norma: 'B', grupo: g as keyof typeof GRUPOS_B }, titulo: `${g} · ${d.uso}`, exemplos: d.exemplos })),
   },
   {
-    titulo: 'NBR 12179: salas de performance, com margens da DIN 18041',
+    titulo: `${NBR}: salas de performance, com margens da ${DIN}`,
     opcoes: Object.entries(CURVAS_NBR).map(([c, d]) => ({ criterio: { norma: 'NBR', curva: c as keyof typeof CURVAS_NBR }, titulo: `NBR · ${d.usos}`, exemplos: d.exemplos })),
   },
 ]
@@ -65,7 +65,7 @@ export function EtapaAmbiente({ cenario, mudar }: { cenario: Cenario; mudar: (f:
           <span>Tempo de reverberação alvo (T<sub>alvo</sub>) = <b>{fmt(meta.t)} s</b>. Faixa aceita: 65% a 145% em 125 Hz, 80% a 120% de 250 a 2000 Hz e 65% a 120% em 4000 Hz.</span>
         )}
         {meta.tipo === 'tempo' && meta.otimo && (
-          <span>Tempo de reverberação ótimo (T<sub>ót</sub>) = <b>{fmt(meta.t)} s</b>, lido no ábaco da NBR 12179 a 500 Hz e aplicado a todas as bandas, com as margens da DIN 18041.</span>
+          <span>Tempo de reverberação ótimo (T<sub>ót</sub>) = <b>{fmt(meta.t)} s</b>, lido no ábaco da {NBR} a 500 Hz e aplicado a todas as bandas, com as margens da {DIN}.</span>
         )}
         {meta.tipo === 'absorcao' && (
           <span>Relação mínima entre área de absorção equivalente e volume (A/V) = <b>{fmt(meta.avMinimo, 3)} m²/m³</b> para o pé-direito (h) informado, com 100% de ocupação, de 250 a 2000 Hz.</span>

@@ -1,6 +1,10 @@
 // Critérios de projeto: DIN 18041 (grupos A e B) e NBR 12179 com as margens da DIN 18041.
 import type { Criterio, CurvaNBR, GrupoA, GrupoB, PorBanda } from './tipos'
 
+/** Normas com o ano de publicação, como aparecem nos textos. */
+export const DIN = 'DIN 18041:2016'
+export const NBR = 'NBR 12179:1992'
+
 export const GRUPOS_A: Record<GrupoA, { uso: string; exemplos: string; volumeMin: number; volumeMax: number }> = {
   A1: { uso: 'Música', exemplos: 'Salas de música e de ensaio', volumeMin: 30, volumeMax: 1000 },
   A2: { uso: 'Fala e palestra', exemplos: 'Auditórios, salas de palestra, tribunais, plenários', volumeMin: 50, volumeMax: 5000 },
@@ -70,7 +74,7 @@ export function metaDoCriterio(criterio: Criterio, volume: number, peDireito: nu
     const g = GRUPOS_A[criterio.grupo]
     const t = tempoAlvo(criterio.grupo, volume)
     return {
-      tipo: 'tempo', nome: `DIN 18041, grupo ${criterio.grupo} (${g.uso})`, t, ...faixa(t), otimo: false,
+      tipo: 'tempo', nome: `${DIN}, grupo ${criterio.grupo} (${g.uso})`, t, ...faixa(t), otimo: false,
       foraDaFaixa: volume < g.volumeMin || volume > g.volumeMax,
       faixaVolume: `${g.volumeMin} a ${g.volumeMax === Infinity ? '∞' : g.volumeMax} m³`,
     }
@@ -79,10 +83,10 @@ export function metaDoCriterio(criterio: Criterio, volume: number, peDireito: nu
     const c = CURVAS_NBR[criterio.curva]
     const t = tempoOtimoNBR(criterio.curva, volume)
     return {
-      tipo: 'tempo', nome: `NBR 12179 (${c.usos}), margens da DIN 18041`, t, ...faixa(t), otimo: true,
+      tipo: 'tempo', nome: `${NBR} (${c.usos}), margens da ${DIN}`, t, ...faixa(t), otimo: true,
       foraDaFaixa: volume < c.volumeMin || volume > c.volumeMax,
       faixaVolume: `${c.volumeMin} a ${c.volumeMax} m³`,
     }
   }
-  return { tipo: 'absorcao', nome: `DIN 18041, grupo ${criterio.grupo} (${GRUPOS_B[criterio.grupo].uso})`, avMinimo: avMinimo(criterio.grupo, peDireito) }
+  return { tipo: 'absorcao', nome: `${DIN}, grupo ${criterio.grupo} (${GRUPOS_B[criterio.grupo].uso})`, avMinimo: avMinimo(criterio.grupo, peDireito) }
 }

@@ -117,6 +117,8 @@ export interface Projeto {
   cenarios: Cenario[]
   materiaisProprios: Material[]
   atualizadoEm: string
+  /** Imagem de capa enviada pelo usuário (data URL). Sem ela, usa a foto da tipologia do primeiro cenário. */
+  imagem?: string
 }
 
 export type Formula = 'sabine' | 'eyring'

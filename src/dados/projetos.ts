@@ -4,7 +4,8 @@ import type { Projeto } from '../motor/tipos'
 
 export interface RepositorioProjetos {
   listar(): Projeto[]
-  salvar(projeto: Projeto): void
+  /** Devolve false quando o armazenamento recusa (cota cheia). */
+  salvar(projeto: Projeto): boolean
   excluir(id: string): void
 }
 
@@ -21,20 +22,22 @@ export class RepositorioLocal implements RepositorioProjetos {
     }
   }
 
-  salvar(projeto: Projeto): void {
+  salvar(projeto: Projeto): boolean {
     const lista = this.listar().filter((p) => p.id !== projeto.id)
-    this.gravar([{ ...projeto, atualizadoEm: new Date().toISOString() }, ...lista])
+    return this.gravar([{ ...projeto, atualizadoEm: new Date().toISOString() }, ...lista])
   }
 
   excluir(id: string): void {
     this.gravar(this.listar().filter((p) => p.id !== id))
   }
 
-  private gravar(lista: Projeto[]) {
+  private gravar(lista: Projeto[]): boolean {
     try {
       localStorage.setItem(CHAVE, JSON.stringify(lista))
+      return true
     } catch {
       // Sem armazenamento (janela privada, cota cheia): o projeto continua aberto, só não fica salvo.
+      return false
     }
   }
 }

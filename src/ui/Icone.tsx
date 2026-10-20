@@ -25,6 +25,7 @@ const CAMINHOS = {
   calculo: 'M5 3h14v18H5zM8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01',
   onda: 'M2 12c2-5 4-5 6 0s4 5 6 0 4-5 6 0',
   copiarTexto: 'M8 4h10a2 2 0 0 1 2 2v12M4 8h10a2 2 0 0 1 2 2v10H6a2 2 0 0 1-2-2z',
+  nuvem: 'M3 9h18M5 9v-3M19 9V6M7 13h10l-1.5 5h-7z',
   regua: 'M3 17 17 3l4 4L7 21zM7 13l2 2M10 10l2 2M13 7l2 2',
 } as const
 

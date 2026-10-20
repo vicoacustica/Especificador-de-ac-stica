@@ -7,6 +7,8 @@ export interface Perfil {
   email: string
   empresa: string
   profissao: string
+  /** Link de uma pasta pública do Pinterest para o carrossel de inspirações. */
+  pinterest: string
 }
 
 export interface Biblioteca {
@@ -38,7 +40,7 @@ function gravar(chave: string, valor: unknown): boolean {
   }
 }
 
-export const PERFIL_VAZIO: Perfil = { nome: '', email: '', empresa: '', profissao: '' }
+export const PERFIL_VAZIO: Perfil = { nome: '', email: '', empresa: '', profissao: '', pinterest: '' }
 
 export const lerPerfil = () => ler(CHAVE_PERFIL, PERFIL_VAZIO)
 export const salvarPerfil = (p: Perfil) => gravar(CHAVE_PERFIL, p)

@@ -13,7 +13,7 @@ interface Props {
   apagarDados: () => void
 }
 
-const CAMPOS: { chave: keyof Perfil; rotulo: string; exemplo: string }[] = [
+const CAMPOS: { chave: Exclude<keyof Perfil, 'pinterest'>; rotulo: string; exemplo: string }[] = [
   { chave: 'nome', rotulo: 'Nome', exemplo: 'Seu nome completo' },
   { chave: 'email', rotulo: 'E-mail', exemplo: 'voce@empresa.com.br' },
   { chave: 'empresa', rotulo: 'Empresa ou escritório', exemplo: 'ex.: Viço Acústica' },

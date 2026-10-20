@@ -5,16 +5,20 @@ import type { Cenario, EstadoOcupacao, Projeto } from '../motor/tipos'
 import { cenarioVazio, duplicarCenario } from '../dados/exemplo'
 import { EtapaAmbiente } from '../etapas/Ambiente'
 import { EtapaComparar } from '../etapas/Comparar'
+import { EtapaNuvens } from '../etapas/NuvensBaffles'
 import { EtapaOcupacao } from '../etapas/Ocupacao'
 import { EtapaSuperficies } from '../etapas/Superficies'
 import { PainelResultado } from '../resultado/Painel'
 import { Texto } from '../ui/campos'
+import { DadosProjeto } from '../ui/DadosProjeto'
 import type { SalvarMaterial } from '../ui/EditorMaterial'
+import { ImagemProjeto } from '../ui/ImagemProjeto'
 import { Icone, type NomeIcone } from '../ui/Icone'
 
 const ETAPAS: { titulo: string; icone: NomeIcone }[] = [
   { titulo: 'Ambiente', icone: 'ambiente' },
   { titulo: 'Superfícies', icone: 'superficies' },
+  { titulo: 'Nuvens/Baffles', icone: 'nuvem' },
   { titulo: 'Ocupação', icone: 'ocupacao' },
   { titulo: 'Resultados', icone: 'comparar' },
 ]
@@ -35,6 +39,7 @@ export function Editor({ projeto, catalogo, mudarProjeto, salvarMaterial, voltar
   const [estado, setEstado] = useState<EstadoOcupacao>('cheio')
   const [comparar, setComparar] = useState<string[]>(projeto.cenarios.map((c) => c.id))
   const [confirmarExclusao, setConfirmarExclusao] = useState(false)
+  const [editandoProjeto, setEditandoProjeto] = useState(false)
 
   function mudarCenario(f: (c: Cenario) => void) {
     mudarProjeto((p) => { f(p.cenarios.find((c) => c.id === cenario.id)!) })
@@ -57,6 +62,10 @@ export function Editor({ projeto, catalogo, mudarProjeto, salvarMaterial, voltar
     <div className="pagina">
       <button type="button" className="link-voltar" onClick={voltar}><Icone nome="voltar" tamanho={16} />Projetos</button>
       <header className="cabecalho">
+        <button type="button" className="capa-projeto" aria-label="Trocar imagem do projeto" onClick={() => setEditandoProjeto(true)}>
+          <ImagemProjeto projeto={projeto} largura={240} />
+          <span className="capa-projeto-editar"><Icone nome="imagem" tamanho={16} /></span>
+        </button>
         <div className="cabecalho-texto">
           <Texto className="titulo-editavel" rotulo="Nome do projeto" valor={projeto.nome} aoMudar={(v) => mudarProjeto((p) => { p.nome = v || 'Projeto sem nome' })} />
           <p>{projeto.cenarios.length} {projeto.cenarios.length === 1 ? 'cenário' : 'cenários'} · cada cenário é uma alternativa de projeto para a mesma sala.</p>
@@ -104,11 +113,12 @@ export function Editor({ projeto, catalogo, mudarProjeto, salvarMaterial, voltar
           <section className="painel" key={`${cenario.id}-${etapa}`}>
             {etapa === 0 && <EtapaAmbiente cenario={cenario} mudar={mudarCenario} />}
             {etapa === 1 && <EtapaSuperficies cenario={cenario} catalogo={catalogo} mudar={mudarCenario} salvarMaterial={salvarMaterial} />}
-            {etapa === 2 && <EtapaOcupacao cenario={cenario} catalogo={catalogo} mudar={mudarCenario} />}
-            {etapa === 3 && <EtapaComparar projeto={projeto} catalogo={catalogo} selecionados={comparar} setSelecionados={setComparar} estado={estado} setEstado={setEstado} />}
+            {etapa === 2 && <EtapaNuvens cenario={cenario} catalogo={catalogo} mudar={mudarCenario} />}
+            {etapa === 3 && <EtapaOcupacao cenario={cenario} catalogo={catalogo} mudar={mudarCenario} />}
+            {etapa === 4 && <EtapaComparar projeto={projeto} catalogo={catalogo} selecionados={comparar} setSelecionados={setComparar} estado={estado} setEstado={setEstado} />}
             <div className="navegacao">
               {etapa > 0 ? <button type="button" className="btn secundario" onClick={() => irPara(etapa - 1)}><Icone nome="voltar" />Voltar</button> : <span />}
-              {etapa < 3 && <button type="button" className="btn primario" onClick={() => irPara(etapa + 1)}>Avançar para {ETAPAS[etapa + 1].titulo.toLowerCase()}</button>}
+              {etapa < ETAPAS.length - 1 && <button type="button" className="btn primario" onClick={() => irPara(etapa + 1)}>Avançar para {ETAPAS[etapa + 1].titulo.toLowerCase()}</button>}
             </div>
           </section>
         </main>
@@ -116,6 +126,11 @@ export function Editor({ projeto, catalogo, mudarProjeto, salvarMaterial, voltar
           <PainelResultado projeto={projeto} cenario={cenario} catalogo={catalogo} estado={estado} setEstado={setEstado} />
         </aside>
       </div>
+      {editandoProjeto && (
+        <DadosProjeto titulo="Nome e imagem do projeto" acao="Salvar" nome={projeto.nome} imagem={projeto.imagem}
+          aoSalvar={(nome, imagem) => { mudarProjeto((p) => { p.nome = nome; p.imagem = imagem }); setEditandoProjeto(false) }}
+          aoFechar={() => setEditandoProjeto(false)} />
+      )}
     </div>
   )
 }

@@ -12,6 +12,7 @@ import { Materiais } from './paginas/Materiais'
 import { Projetos } from './paginas/Projetos'
 import type { SalvarMaterial } from './ui/EditorMaterial'
 import { Icone, type NomeIcone } from './ui/Icone'
+import { DadosProjeto } from './ui/DadosProjeto'
 import { iniciais } from './ui/formato'
 
 const repositorio = new RepositorioLocal()
@@ -49,6 +50,7 @@ export default function App() {
   const [perfil, setPerfil] = useState<Perfil>(lerPerfil)
   const [rota, setRota] = useState<Rota>({ pagina: 'inicio' })
   const [aviso, setAviso] = useState<string | null>(null)
+  const [criando, setCriando] = useState(false)
 
   const projeto = rota.pagina === 'projeto' ? projetos.find((p) => p.id === rota.id) : undefined
   const catalogo = useMemo(
@@ -71,13 +73,15 @@ export default function App() {
       const copia = structuredClone(p)
       f(copia)
       copia.atualizadoEm = new Date().toISOString()
-      repositorio.salvar(copia)
+      if (!repositorio.salvar(copia)) setAviso('O navegador não tem mais espaço para salvar este projeto. Remova imagens de projetos ou materiais para liberar espaço.')
       return copia
     }))
   }
-  function novoProjeto() {
-    const p: Projeto = { id: novoId(), nome: 'Novo projeto', cenarios: [cenarioVazio('Cenário 1')], materiaisProprios: [], atualizadoEm: new Date().toISOString() }
-    repositorio.salvar(p)
+  function novoProjeto() { setCriando(true) }
+  function criarProjeto(nome: string, imagem: string | undefined) {
+    setCriando(false)
+    const p: Projeto = { id: novoId(), nome, imagem, cenarios: [cenarioVazio('Cenário 1')], materiaisProprios: [], atualizadoEm: new Date().toISOString() }
+    if (!repositorio.salvar(p)) setAviso('O navegador não tem mais espaço para salvar este projeto. Remova imagens de projetos ou materiais para liberar espaço.')
     setProjetos((l) => [p, ...l])
     ir({ pagina: 'projeto', id: p.id })
   }
@@ -151,6 +155,7 @@ export default function App() {
     conteudo = (
       <Inicio
         perfil={perfil}
+        mudarPerfil={mudarPerfil}
         projetos={projetos}
         catalogo={catalogo}
         biblioteca={biblioteca}
@@ -181,6 +186,7 @@ export default function App() {
         </div>
       </header>
       <div className="conteudo">{conteudo}</div>
+      {criando && <DadosProjeto titulo="Novo projeto" acao="Criar projeto" aoSalvar={criarProjeto} aoFechar={() => setCriando(false)} />}
       {aviso && <div className="aviso" role="status">{aviso}<button type="button" className="icone-btn" aria-label="Fechar aviso" onClick={() => setAviso(null)}><Icone nome="fechar" tamanho={16} /></button></div>}
     </div>
   )
