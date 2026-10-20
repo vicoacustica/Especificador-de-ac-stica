@@ -27,8 +27,8 @@ export function EtapaComparar({ projeto, catalogo, selecionados, setSelecionados
 
   return (
     <>
-      <h2>Comparar cenários</h2>
-      <p className="lead">Marque os cenários que quer comparar. Para criar um cenário, duplique o atual no topo e altere o que quiser.</p>
+      <h2>Resultados</h2>
+      <p className="lead">Compare os cenários do projeto com as margens do tempo ótimo. Para criar um cenário, duplique o atual no topo e altere o que quiser.</p>
       <div className="chips">
         {projeto.cenarios.map((c) => (
           <button key={c.id} type="button" className="chip" aria-pressed={selecionados.includes(c.id)}
@@ -40,6 +40,12 @@ export function EtapaComparar({ projeto, catalogo, selecionados, setSelecionados
         <Segmentado rotulo="Ocupação" valor={estado} aoMudar={setEstado} opcoes={ESTADOS.map((e) => ({ valor: e, rotulo: NOME_ESTADO[e] }))} />
       </div>
       {!linhas.length && <p className="suave">Selecione ao menos um cenário.</p>}
+      {comTempo.length > 0 && (
+        <div className="legend">
+          {comTempo.map(({ c, cor }) => <span key={c.id}><i style={{ background: cor }} />{c.nome}</span>)}
+          <span><i className="tracejado" />{alvoUnico ? 'margens máx. e mín.' : 'margens de cada cenário'}</span>
+        </div>
+      )}
       {comTempo.length > 0 && (
         <div className="tbl">
           <div style={{ minWidth: 420 }}>
@@ -58,7 +64,7 @@ export function EtapaComparar({ projeto, catalogo, selecionados, setSelecionados
       )}
       {comTempo.length > 0 && (
         <p className="nota">{alvoUnico
-          ? 'A faixa verde vai da margem inferior à superior do tempo de reverberação ótimo.'
+          ? 'As linhas verdes tracejadas são as margens superior e inferior do tempo de reverberação ótimo, e a faixa entre elas é a região aceita.'
           : 'Os cenários têm alvos diferentes. As linhas tracejadas mostram as margens superior e inferior de cada um, na cor do cenário.'}</p>
       )}
       {linhas.length > 0 && comTempo.length === 0 && <p className="nota">Os cenários selecionados usam o grupo B e são comparados pela tabela de A/V.</p>}

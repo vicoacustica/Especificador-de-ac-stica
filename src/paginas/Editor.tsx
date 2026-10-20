@@ -16,7 +16,7 @@ const ETAPAS: { titulo: string; icone: NomeIcone }[] = [
   { titulo: 'Ambiente', icone: 'ambiente' },
   { titulo: 'Superfícies', icone: 'superficies' },
   { titulo: 'Ocupação', icone: 'ocupacao' },
-  { titulo: 'Comparar', icone: 'comparar' },
+  { titulo: 'Resultados', icone: 'comparar' },
 ]
 
 interface Props {

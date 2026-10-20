@@ -57,10 +57,14 @@ export function EtapaSuperficies({ cenario, catalogo, mudar, salvarMaterial }: P
   function adicionarBase() {
     mudar((c) => { c.superficies.push({ id: novoId(), nome: 'Nova superfície', categoria: 'parede', modo: 'dimensoes', area: 15, largura: 5, altura: 3, material: catalogo.porNome('ALVENARIA LISA OU PINTADA').id }) })
   }
-  function adicionarItem() {
-    const base = bases[0]
-    const livre = Math.max(0, areaLivre(cenario, base.id))
-    mudar((c) => { c.superficies.push({ id: novoId(), nome: 'Novo revestimento', categoria: 'revestimento', base: base.id, modo: 'area', area: Math.min(5, +livre.toFixed(2)), material: catalogo.porNome('AMBI 16.1 PAREDE').id }) })
+  function adicionarItem(baseId: string) {
+    const livre = Math.max(0, areaLivre(cenario, baseId))
+    setDims({})
+    mudar((c) => {
+      // Entra logo depois dos itens que já estão sobre a mesma base.
+      const ultimo = c.superficies.map((x) => x.id === baseId || x.base === baseId).lastIndexOf(true)
+      c.superficies.splice(ultimo + 1, 0, { id: novoId(), nome: 'Novo revestimento', categoria: 'revestimento', base: baseId, modo: 'area', area: Math.min(5, +livre.toFixed(2)), material: catalogo.porNome('AMBI 16.1 PAREDE').id })
+    })
   }
   function remover(id: string) {
     setDims({})
@@ -143,13 +147,18 @@ export function EtapaSuperficies({ cenario, catalogo, mudar, salvarMaterial }: P
       <h2>Superfícies</h2>
       <p className="lead">Crie as superfícies do ambiente com a área ou as dimensões e o material de cada uma. Revestimentos, esquadrias e elementos são descontados da superfície base onde estão.</p>
       <div className="sups">
-        {bases.map((b) => [linha(b), ...itensSobre(cenario, b.id).map(linha)])}
+        {bases.map((b) => [
+          linha(b),
+          ...itensSobre(cenario, b.id).map(linha),
+          <button key={`novo-${b.id}`} type="button" className="adicionar-item" onClick={() => adicionarItem(b.id)}>
+            <Icone nome="mais" tamanho={16} />Novo revestimento, esquadria ou elemento sobre “{b.nome}”
+          </button>,
+        ])}
         {orfas.map(linha)}
         {!cenario.superficies.length && <p className="suave">Nenhuma superfície ainda. Comece pelo piso, pelas paredes e pelo forro/teto.</p>}
       </div>
       <div className="linha" style={{ marginTop: 12 }}>
         <button type="button" className="btn primario" onClick={adicionarBase}><Icone nome="mais" />Nova superfície base</button>
-        <button type="button" className="btn secundario" disabled={!bases.length} onClick={adicionarItem}><Icone nome="mais" />Novo revestimento, esquadria ou elemento</button>
         <button type="button" className="btn secundario" onClick={() => setCriando(true)}><Icone nome="mais" />Criar material</button>
       </div>
       {criando && <EditorMaterial catalogo={catalogo} aoSalvar={(m) => { salvarMaterial(m); setCriando(false) }} aoFechar={() => setCriando(false)} />}

@@ -55,7 +55,30 @@ export interface ItemOcupacao {
   material: string
   /** Só para assentos: material do assento ocupado. */
   materialOcupado?: string
+  /** Nuvens e baffles com coeficiente de absorção (α): a área total vem do formato, das medidas e da quantidade de peças. */
+  forma?: Forma
 }
+
+export type TipoForma = 'quadrado' | 'retangulo' | 'circulo' | 'triangulo' | 'trapezio'
+
+export interface Forma {
+  tipo: TipoForma
+  /** Medidas em m, na ordem de FORMAS[tipo].medidas. */
+  medidas: number[]
+  quantidade: number
+}
+
+/** Formatos usuais de nuvens e baffles e a área de uma face de cada um. */
+export const FORMAS: Record<TipoForma, { nome: string; medidas: string[]; area: (m: number[]) => number }> = {
+  quadrado: { nome: 'Quadrado', medidas: ['Lado (L)'], area: ([l]) => l * l },
+  retangulo: { nome: 'Retângulo', medidas: ['Largura (L)', 'Comprimento (C)'], area: ([l, c]) => l * c },
+  circulo: { nome: 'Círculo', medidas: ['Diâmetro (D)'], area: ([d]) => (Math.PI * d * d) / 4 },
+  triangulo: { nome: 'Triângulo', medidas: ['Base (b)', 'Altura (h)'], area: ([b, h]) => (b * h) / 2 },
+  trapezio: { nome: 'Trapézio', medidas: ['Base maior (B)', 'Base menor (b)', 'Altura (h)'], area: ([B, b, h]) => ((B + b) * h) / 2 },
+}
+
+/** Área total (m²) das peças: área de uma face × quantidade. */
+export const areaDaForma = (f: Forma) => FORMAS[f.tipo].area(f.medidas) * f.quantidade
 
 export type EstadoOcupacao = 'vazio' | 'meio' | 'cheio'
 export const ESTADOS: EstadoOcupacao[] = ['vazio', 'meio', 'cheio']

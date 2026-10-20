@@ -3,7 +3,7 @@ import casos from './casos-planilha.json'
 import { areaEfetiva, avaliar, calcular, dimensionar, LIMITE_EYRING, validarSuperficies } from './acustica'
 import { avMinimo, tempoAlvo, tempoOtimoNBR } from './criterios'
 import { Catalogo, MATERIAIS_BASE, paraSuperficie } from './materiais'
-import { ESTADOS, type Cenario, type Umidade } from './tipos'
+import { areaDaForma, ESTADOS, type Cenario, type Umidade } from './tipos'
 
 const cat = new Catalogo()
 const id = (nome: string) => cat.porNome(nome).id
@@ -159,5 +159,15 @@ describe('dimensionamento', () => {
     c.superficies[4].material = id('CARPETE')
     const d = dimensionar(c, cat, { superficie: 'forro' })
     expect(d).toMatchObject({ encontrado: false, motivo: 'insuficiente' })
+  })
+})
+
+describe('formas de nuvens e baffles', () => {
+  it('calcula a área total de cada formato', () => {
+    expect(areaDaForma({ tipo: 'quadrado', medidas: [1.2], quantidade: 10 })).toBeCloseTo(14.4, 9)
+    expect(areaDaForma({ tipo: 'retangulo', medidas: [1.2, 0.6], quantidade: 5 })).toBeCloseTo(3.6, 9)
+    expect(areaDaForma({ tipo: 'circulo', medidas: [1], quantidade: 4 })).toBeCloseTo(Math.PI, 9)
+    expect(areaDaForma({ tipo: 'triangulo', medidas: [1, 1], quantidade: 2 })).toBeCloseTo(1, 9)
+    expect(areaDaForma({ tipo: 'trapezio', medidas: [1.2, 0.6, 0.5], quantidade: 2 })).toBeCloseTo(0.9, 9)
   })
 })

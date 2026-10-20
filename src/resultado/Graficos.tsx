@@ -32,7 +32,12 @@ export function GraficoTempo(props: { series: Serie[]; faixa?: { superior: PorBa
       {props.faixa && (
         <>
           <polygon points={`${linha(props.faixa.superior)} ${linha([...props.faixa.inferior]).split(' ').reverse().join(' ')}`} fill="var(--band)" />
-          <polyline points={linha(BANDAS.map(() => props.faixa!.alvo))} fill="none" stroke="var(--ok)" strokeDasharray="4 3" />
+          {[props.faixa.superior, props.faixa.inferior].map((m, j) => (
+            <polyline key={j} points={linha(m)} fill="none" stroke="var(--ok)" strokeWidth={1.6} strokeDasharray="6 4" />
+          ))}
+          <polyline points={linha(BANDAS.map(() => props.faixa!.alvo))} fill="none" stroke="var(--ok)" strokeWidth={1} opacity={0.6} />
+          <text x={W - pr} y={y(props.faixa.superior[5]) - 4} textAnchor="end" style={{ fill: 'var(--ok)' }}>máx.</text>
+          <text x={W - pr} y={y(props.faixa.inferior[5]) + 12} textAnchor="end" style={{ fill: 'var(--ok)' }}>mín.</text>
         </>
       )}
       {props.series.map((s, k) => {

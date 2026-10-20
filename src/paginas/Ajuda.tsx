@@ -34,14 +34,14 @@ const PASSOS: { titulo: string; texto: ReactNode }[] = [
   },
   {
     titulo: 'Superfícies',
-    texto: <>Cadastre primeiro as <b>superfícies base</b>: piso, paredes e forro/teto, pela área ou por largura × altura. Depois cadastre revestimentos, esquadrias e elementos, indicando sobre qual base estão: a área deles é descontada da base, e o sistema não deixa passar da área livre. Use <i>Dimensionar área</i> para descobrir quantos m² de um revestimento fazem a sala atender.</>,
+    texto: <>Cadastre primeiro as <b>superfícies base</b>: piso, paredes e forro/teto, pela área ou por largura × altura. Depois use o botão <i>Novo revestimento, esquadria ou elemento</i> logo abaixo de cada base para cadastrar o que fica sobre ela: a área deles é descontada da base, e o sistema não deixa passar da área livre. Use <i>Dimensionar área</i> para descobrir quantos m² de um revestimento fazem a sala atender.</>,
   },
   {
     titulo: 'Ocupação, nuvens e baffles',
-    texto: <>Cadastre assentos, público em pé e elementos suspensos, que absorvem por unidade. Marque em quais situações de ocupação a sala deve atender: 0%, 50% e 100%. O resultado só aparece como “Atende” quando todas as situações marcadas ficam dentro da faixa. No grupo B, a verificação usa 100% de ocupação.</>,
+    texto: <>Cadastre assentos, público em pé, nuvens e baffles. Nuvens e baffles com absorção por peça pedem a quantidade; os que têm coeficiente de absorção sonora (α) pedem a área total, ou o formato (quadrado, retângulo, círculo, triângulo ou trapézio), as dimensões e a quantidade de peças. Marque em quais situações de ocupação a sala deve atender: 0%, 50% e 100%. O resultado só aparece como “Atende” quando todas as situações marcadas ficam dentro da faixa. No grupo B, a verificação usa 100% de ocupação.</>,
   },
   {
-    titulo: 'Comparar cenários',
+    titulo: 'Resultados',
     texto: <>Selecione os cenários para ver as curvas lado a lado com as margens do tempo ótimo, e a tabela com o resultado de cada banda.</>,
   },
   {
@@ -81,7 +81,7 @@ function Guia() {
         </details>
         <details>
           <summary>O que entra como superfície e o que entra como ocupação?</summary>
-          <p>Superfícies são áreas em m² com um coeficiente de absorção sonora (α). Assentos, pessoas, nuvens e baffles absorvem por unidade, em m² Sabine por peça, por isso ficam na etapa de ocupação.</p>
+          <p>Superfícies são áreas em m² com um coeficiente de absorção sonora (α). Assentos, pessoas, nuvens e baffles ficam na etapa de ocupação, porque contam por peça ou valem em todas as situações de ocupação.</p>
         </details>
       </section>
     </>
@@ -247,7 +247,7 @@ function Calculo() {
 
       <section className="bloco">
         <h2>Dimensionar</h2>
-        <p>O botão <i>Dimensionar</i> mantém todo o resto do cenário e varia apenas a área (ou a quantidade de peças) do item escolhido, procurando a faixa em que todas as bandas e todas as situações de ocupação ficam dentro da tolerância. Se nenhum valor atende, o sistema diz se o material é insuficiente sozinho ou se desequilibra as bandas.</p>
+        <p>O botão <i>Dimensionar</i> dos revestimentos e elementos mantém todo o resto do cenário e varia apenas a área do item escolhido, procurando a faixa em que todas as bandas e todas as situações de ocupação ficam dentro da tolerância. Se nenhum valor atende, o sistema diz se o material é insuficiente sozinho ou se desequilibra as bandas.</p>
       </section>
     </div>
   )
