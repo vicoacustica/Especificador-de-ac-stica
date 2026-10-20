@@ -3,6 +3,7 @@ import { Catalogo } from '../motor/materiais'
 import { cenarioVazio } from '../dados/exemplo'
 import { C_SOM, leque, planoDa, reflexoes } from './motor'
 import { montarCena, segmentosDaVista } from './cena'
+import { paresParalelos, patologiasDa } from './patologias'
 
 describe('traçado de raios', () => {
   const cat = new Catalogo()
@@ -46,5 +47,26 @@ describe('traçado de raios', () => {
     const t = leque(segs, [2, 3], 36, 3, 3, 50)
     expect(t.filter((x) => x.ordem === 0)).toHaveLength(36)
     expect(Math.max(...t.filter((x) => x.ordem === 3).map((x) => x.energia))).toBeLessThan(1)
+  })
+})
+
+describe('reflexões que podem prejudicar a audição', () => {
+  const cat = new Catalogo()
+  const c = cenarioVazio('teste')
+  c.raios = { fonte: [2, 3, 1.5], receptor: [8, 3, 1.2], elementos: [], caixa: { comprimento: 10, largura: 6 } }
+  const cena = montarCena(c, cat)
+  const segs = segmentosDaVista(cena, planoDa('planta', c.raios.fonte, cena.eixo), 'planta', c.raios, cat, '#000')
+
+  it('acha os dois pares de paredes paralelas da sala sem tratamento', () => {
+    const pares = paresParalelos(segs, 3)
+    expect(pares.map((p) => p.distancia)).toEqual([10, 6])
+    expect(pares[0].periodo).toBeCloseTo((20 / C_SOM) * 1000)
+  })
+
+  it('marca eco quando a reflexão chega depois de 50 ms e forte', () => {
+    const r = reflexoes(segs, [2, 3], [8, 3], 1, 3).lista[0]
+    expect(patologiasDa({ ...r, atraso: 60, nivel: -8 }, segs, 3)).toContain('eco')
+    expect(patologiasDa({ ...r, atraso: 60, nivel: -14 }, segs, 3)).not.toContain('eco')
+    expect(patologiasDa({ ...r, atraso: 3, nivel: -2 }, segs, 3)).toContain('coloracao')
   })
 })

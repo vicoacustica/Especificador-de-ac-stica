@@ -1,4 +1,4 @@
-// Traçado de raios em 2D: a planta baixa e os cortes viram segmentos com a absorção (α) de cada superfície.
+// Traçado de raios em 2D: a planta baixa e o corte longitudinal viram segmentos com a absorção (α) de cada superfície.
 // O leque de raios mostra como o som se espalha; as fontes-imagem dão as reflexões especulares exatas
 // entre a fonte e o receptor, com o tempo de atraso e o nível em relação ao som direto.
 import type { PorBanda } from '../motor/tipos'

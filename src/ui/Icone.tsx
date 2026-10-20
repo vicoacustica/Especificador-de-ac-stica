@@ -30,6 +30,7 @@ const CAMINHOS = {
   copiarTexto: 'M8 4h10a2 2 0 0 1 2 2v12M4 8h10a2 2 0 0 1 2 2v10H6a2 2 0 0 1-2-2z',
   nuvem: 'M3 9h18M5 9v-3M19 9V6M7 13h10l-1.5 5h-7z',
   raios: 'M4 20h.01M4 20 20 8M4 20l9-15M4 20l16 0M13 5l7 3',
+  borracha: 'M7 21h13M5.5 14.5l7-7a2 2 0 0 1 2.8 0l3.2 3.2a2 2 0 0 1 0 2.8L12 20H8l-2.5-2.5a2.1 2.1 0 0 1 0-3zM9 11l6 6',
   regua: 'M3 17 17 3l4 4L7 21zM7 13l2 2M10 10l2 2M13 7l2 2',
 } as const
 

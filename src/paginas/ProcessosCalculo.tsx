@@ -248,7 +248,7 @@ export function ProcessosCalculo() {
         </Topico>
 
         <Topico n={13} titulo="Traçado de raios e tempo de atraso das reflexões">
-          <p>Na etapa 6 a planta baixa e os cortes viram desenhos em 2D com as superfícies cortadas pelo plano. O leque de raios parte da fonte em todas as direções; a cada superfície o raio reflete como em um espelho (ângulo de incidência igual ao de reflexão) e perde a parcela de energia absorvida, (1 − α). Isso mostra como o som se espalha pela sala.</p>
+          <p>Na etapa 6 a planta baixa e o corte longitudinal viram desenhos em 2D com as superfícies cortadas pelo plano. O leque de raios parte da fonte em todas as direções; a cada superfície o raio reflete como em um espelho (ângulo de incidência igual ao de reflexão) e perde a parcela de energia absorvida, (1 − α). Isso mostra como o som se espalha pela sala.</p>
           <p>As reflexões que chegam ao receptor são calculadas pelo método das fontes-imagem: a fonte é espelhada na reta de cada superfície, e a imagem é espelhada de novo para as reflexões de 2ª e 3ª ordem. Quando o caminho da imagem até o receptor cruza as superfícies na ordem certa e sem obstáculos, a reflexão existe, e o comprimento do percurso é a distância da imagem ao receptor.</p>
           <Equacao
             formula={<>Δt = (r − r₀) / c</>}
@@ -266,7 +266,17 @@ export function ProcessosCalculo() {
               [<>Coeficiente de absorção sonora (α)</>, 'de cada superfície em que a reflexão bate, na banda escolhida'],
             ]}
           />
-          <p className="nota">As linhas de 50 ms e 80 ms do reflectograma são as referências usuais de integração do ouvido: reflexões que chegam antes de 50 ms reforçam a fala, e até 80 ms reforçam a música. Reflexões fortes bem depois disso podem ser percebidas como eco.</p>
+          <p className="nota">As linhas de 50 ms e 80 ms do reflectograma são as referências usuais de integração do ouvido: reflexões que chegam antes de 50 ms reforçam a fala, e até 80 ms reforçam a música.</p>
+          <h3>Reflexões que podem prejudicar a audição</h3>
+          <p>O programa marca três situações de atenção. <b>Eco potencial (E)</b>: reflexão que chega mais de 50 ms depois do som direto com nível de até 10 dB abaixo dele (efeito de precedência, Haas, 1951; Kuttruff, Room Acoustics, 2009). <b>Eco palpitante (P)</b>: o som vai e volta entre duas superfícies paralelas e refletoras (α abaixo de 0,20), repetindo-se a cada 2d/c (Long, Architectural Acoustics, 2014). <b>Coloração (C)</b>: reflexão forte, até 6 dB abaixo do som direto, que chega em até 5 ms e altera o timbre por filtro pente (Everest e Pohlmann, Master Handbook of Acoustics, 2015).</p>
+          <Equacao
+            formula={<>T<sub>rep</sub> = 2·d / c</>}
+            legenda={[
+              [<>Período de repetição do eco palpitante (T<sub>rep</sub>)</>, 's (mostrado em ms)'],
+              [<>Distância entre as superfícies paralelas (d)</>, 'm'],
+              [<>Velocidade do som (c)</>, '343 m/s'],
+            ]}
+          />
         </Topico>
       </div>
     </div>

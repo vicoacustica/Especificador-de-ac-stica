@@ -4,6 +4,7 @@ import { paraSuperficie, type Catalogo } from '../motor/materiais'
 import { BANDAS, type Cenario, type ModeloProjeto, type TracadoRaios, type VistaRaios } from '../motor/tipos'
 import type { Ponto } from '../importacao/modelo'
 import { caixaPadrao, montarCena, posicoesPadrao, segmentosDaVista } from '../raios/cena'
+import { PATOLOGIAS, paresParalelos, patologiasDa, type Patologia } from '../raios/patologias'
 import { dist, leque, NOME_VISTA, planoDa, projetar, reflexoes, voltar, type P2, type Reflexao } from '../raios/motor'
 import { Numero, Segmentado, SeletorMaterial } from '../ui/campos'
 import { fmt } from '../ui/formato'
@@ -13,13 +14,14 @@ import { Icone } from '../ui/Icone'
 const COR_ORDEM = ['#141414', '#e0523e', '#3d7ea6', '#2f9c8f', '#c9932b', '#8a5aa8', '#7a6a58']
 const COR_ELEMENTO = '#141414'
 const MATERIAL_ELEMENTO = 'painel-mdf-padrao'
-const VISTAS: VistaRaios[] = ['planta', 'longitudinal', 'transversal']
+const VISTAS: VistaRaios[] = ['planta', 'longitudinal']
 const ATRASO_MAX = 200
 
 type Arrasto =
   | { tipo: 'fonte' | 'receptor' }
   | { tipo: 'desenho'; a: P2; b: P2 }
   | { tipo: 'ponta'; id: string; ponta: 'a' | 'b' }
+  | { tipo: 'borracha' }
 
 interface Props {
   cenario: Cenario
@@ -31,7 +33,7 @@ interface Props {
 const passo = (v: number, p = 0.05) => +(Math.round(v / p) * p).toFixed(2)
 
 /**
- * Traçado de raios em planta baixa e cortes: leque de raios a partir da fonte e reflexões especulares
+ * Traçado de raios em planta baixa e corte longitudinal: leque de raios a partir da fonte e reflexões especulares
  * até o receptor, com atraso e nível em relação ao som direto. O usuário pode desenhar elementos refletores.
  */
 export function EtapaRaios({ cenario, catalogo, modelo, mudar }: Props) {
@@ -44,7 +46,7 @@ export function EtapaRaios({ cenario, catalogo, modelo, mudar }: Props) {
   const [ordem, setOrdem] = useState(2)
   const [quantidade, setQuantidade] = useState(90)
   const [ordemLeque, setOrdemLeque] = useState(3)
-  const [ferramenta, setFerramenta] = useState<'mover' | 'desenhar'>('mover')
+  const [ferramenta, setFerramenta] = useState<'mover' | 'desenhar' | 'apagar'>('mover')
   const materiais = useMemo(() => catalogo.todos.filter(paraSuperficie), [catalogo])
   const [materialNovo, setMaterialNovo] = useState(() => (materiais.some((m) => m.id === MATERIAL_ELEMENTO) ? MATERIAL_ELEMENTO : materiais[0]?.id ?? ''))
   const [selecionada, setSelecionada] = useState<number | null>(null)
@@ -100,6 +102,12 @@ export function EtapaRaios({ cenario, catalogo, modelo, mudar }: Props) {
     if (ferramenta === 'desenhar') {
       const q: P2 = [passo(p[0]), passo(p[1])]
       a = { tipo: 'desenho', a: q, b: q }
+    } else if (ferramenta === 'apagar') {
+      // A borracha apaga o elemento tocado e os que forem tocados enquanto o ponteiro é arrastado.
+      e.currentTarget.setPointerCapture(e.pointerId)
+      setArrasto({ tipo: 'borracha' })
+      setRascunho(apagarPerto(structuredClone(raios), p, perto))
+      return
     } else if (dist(p, fonte) < perto) a = { tipo: 'fonte' }
     else if (dist(p, receptor) < perto) a = { tipo: 'receptor' }
     else {
@@ -122,6 +130,7 @@ export function EtapaRaios({ cenario, catalogo, modelo, mudar }: Props) {
     const p = pontoDo(e)
     const q: P2 = [passo(p[0]), passo(p[1])]
     if (arrasto.tipo === 'desenho') { setArrasto({ ...arrasto, b: q }); return }
+    if (arrasto.tipo === 'borracha') { setRascunho(apagarPerto(structuredClone(rascunho), p, 0.9 * k * 2)); return }
     const r = structuredClone(rascunho)
     if (arrasto.tipo === 'fonte') r.fonte = prender(voltar(plano, p, r.fonte))
     else if (arrasto.tipo === 'receptor') r.receptor = prender(voltar(plano, p, r.receptor))
@@ -141,16 +150,24 @@ export function EtapaRaios({ cenario, catalogo, modelo, mudar }: Props) {
     setSelecionada(null)
     salvar(r)
   }
+  function apagarPerto(r: TracadoRaios, p: P2, perto: number): TracadoRaios {
+    r.elementos = r.elementos.filter((x) => x.vista !== vista || distSeg(p, x.a, x.b) >= perto)
+    return r
+  }
   const mudarRaios = (f: (r: TracadoRaios) => void) => { const r = structuredClone(raios); f(r); salvar(r) }
 
   const elementosDaVista = raios.elementos.filter((e) => e.vista === vista)
-  const outros = raios.elementos.length - elementosDaVista.length
+  const outros = raios.elementos.filter((e) => e.vista !== vista && VISTAS.includes(e.vista)).length
+  const patologias = lista.map((r) => patologiasDa(r, segs, banda))
+  const pares = paresParalelos(segs, banda)
+  const emPar = new Set(pares.flatMap((x) => [x.a, x.b]))
+  const contagem = (Object.keys(PATOLOGIAS) as Patologia[]).map((t) => ({ t, n: patologias.filter((x) => x.includes(t)).length }))
   const nomeSeg = (i: number) => segs[i]?.nome ?? ''
   const fs = 1.6 * k
 
-  // Linhas dos cortes na planta, pela fonte.
-  const cortesNaPlanta = vista === 'planta' ? (['longitudinal', 'transversal'] as const).map((v) => {
-    const e = v === 'longitudinal' ? cena.eixo : ([-cena.eixo[1], cena.eixo[0]] as P2)
+  // Linha do corte longitudinal na planta, pela fonte.
+  const cortesNaPlanta = vista === 'planta' ? (['longitudinal'] as const).map((v) => {
+    const e = cena.eixo
     const L = Math.max(quadro.w, quadro.h)
     return { v, a: [fonte[0] - e[0] * L, fonte[1] - e[1] * L] as P2, b: [fonte[0] + e[0] * L, fonte[1] + e[1] * L] as P2 }
   }) : []
@@ -160,7 +177,7 @@ export function EtapaRaios({ cenario, catalogo, modelo, mudar }: Props) {
   return (
     <>
       <h2>Traçado de raios</h2>
-      <p className="lead">Veja os principais pontos de reflexão entre a fonte (F) e o receptor (R) em planta baixa e nos cortes. As superfícies refletem com a absorção (α) do material escolhido no cenário, e você pode desenhar elementos novos para testar planos de reflexão.</p>
+      <p className="lead">Veja os principais pontos de reflexão entre a fonte (F) e o receptor (R) em planta baixa e no corte longitudinal. As superfícies refletem com a absorção (α) do material escolhido no cenário, e você pode desenhar elementos novos para testar planos de reflexão.</p>
       {cena.caixa && (
         <div className="raios-caixa">
           <p className="nota">Este cenário não tem um modelo 3D importado. O traçado usa uma sala retangular de referência com o pé-direito do cenário ({fmt(cenario.peDireito)} m) e o α médio das superfícies de piso, paredes e teto.</p>
@@ -206,6 +223,7 @@ export function EtapaRaios({ cenario, catalogo, modelo, mudar }: Props) {
         <Segmentado rotulo="Ferramenta" valor={ferramenta} aoMudar={setFerramenta} opcoes={[
           { valor: 'mover', rotulo: 'Mover fonte e receptor' },
           { valor: 'desenhar', rotulo: 'Desenhar elemento' },
+          { valor: 'apagar', rotulo: <><Icone nome="borracha" tamanho={15} />Borracha</> },
         ]} />
         {ferramenta === 'desenhar' && (
           <div className="raios-material">
@@ -215,7 +233,7 @@ export function EtapaRaios({ cenario, catalogo, modelo, mudar }: Props) {
         )}
       </div>
 
-      <div className={`raios-visor ${ferramenta === 'desenhar' ? 'desenhando' : ''}`}>
+      <div className={`raios-visor ${ferramenta === 'desenhar' ? 'desenhando' : ferramenta === 'apagar' ? 'apagando' : ''}`}>
         <svg ref={svg} viewBox={`${quadro.x0} ${-quadro.y0 - quadro.h} ${quadro.w} ${quadro.h}`} role="img"
           aria-label={`${NOME_VISTA[vista]} com a fonte, o receptor, ${segs.length} superfícies e ${lista.length} reflexões`}
           onPointerDown={aoApertar} onPointerMove={aoMover} onPointerUp={aoSoltar} onPointerCancel={aoSoltar}>
@@ -229,6 +247,9 @@ export function EtapaRaios({ cenario, catalogo, modelo, mudar }: Props) {
             <g key={c.v} className="raios-corte">
               <line x1={c.a[0]} y1={-c.a[1]} x2={c.b[0]} y2={-c.b[1]} vectorEffect="non-scaling-stroke" />
             </g>
+          ))}
+          {[...emPar].map((i) => (
+            <line key={`par${i}`} x1={segs[i].a[0]} y1={-segs[i].a[1]} x2={segs[i].b[0]} y2={-segs[i].b[1]} className="raios-paralela" vectorEffect="non-scaling-stroke" />
           ))}
           {segs.map((s, i) => (
             <line key={i} x1={s.a[0]} y1={-s.a[1]} x2={s.b[0]} y2={-s.b[1]} stroke={s.cor} strokeWidth={s.elemento ? 5 : 4} strokeLinecap="round" vectorEffect="non-scaling-stroke"
@@ -267,8 +288,9 @@ export function EtapaRaios({ cenario, catalogo, modelo, mudar }: Props) {
       </div>
       <p className="nota raios-legenda">
         {COR_ORDEM.slice(0, ordem + 1).map((c, i) => <span key={i}><i style={{ background: c }} />{i === 0 ? 'Som direto' : `${i}ª reflexão`}</span>)}
-        {vista === 'planta' ? ' · Planta cortada na altura da fonte; as linhas tracejadas são os cortes, que passam pela fonte.' : ` · O corte passa pela fonte; o receptor aparece projetado no plano do corte.`}
-        {ferramenta === 'desenhar' ? ' Arraste no desenho para criar um elemento.' : ' Arraste F e R para mudar as posições.'}
+        {vista === 'planta' ? ' · Planta cortada na altura da fonte; a linha tracejada é o corte longitudinal, que passa pela fonte.' : ` · O corte passa pela fonte; o receptor aparece projetado no plano do corte.`}
+        {pares.length > 0 && ' As faixas amarelas marcam superfícies paralelas e refletoras, com risco de eco palpitante.'}
+        {ferramenta === 'desenhar' ? ' Arraste no desenho para criar um elemento.' : ferramenta === 'apagar' ? ' Clique em um elemento desenhado, ou passe a borracha sobre vários, para apagá-los.' : ' Arraste F e R para mudar as posições.'}
       </p>
 
       <div className="raios-posicoes">
@@ -290,11 +312,26 @@ export function EtapaRaios({ cenario, catalogo, modelo, mudar }: Props) {
         {resultado.direto.obstruido && ' Nesta vista o som direto está obstruído por uma superfície.'}
         {' '}O atraso (Δt) de cada reflexão é a diferença de percurso dividida pela velocidade do som (c = 343 m/s). O nível relativo considera a divergência esférica e a absorção (α) das superfícies em {BANDAS[banda]} Hz.
       </p>
-      <Reflectograma lista={lista} selecionada={selecionada} selecionar={setSelecionada} />
+      <Reflectograma lista={lista} patologias={patologias} selecionada={selecionada} selecionar={setSelecionada} />
+      <div className="raios-atencao">
+        <h4>Reflexões que podem prejudicar a audição</h4>
+        <ul>
+          {contagem.map(({ t, n }) => (
+            <li key={t}>
+              <span className={`raios-pato ${t}`}>{PATOLOGIAS[t].sigla}</span>
+              <span><b>{PATOLOGIAS[t].nome}</b>{t === 'palpitante' ? ` · ${n} ${n === 1 ? 'reflexão' : 'reflexões'} e ${pares.length} ${pares.length === 1 ? 'par de superfícies paralelas' : 'pares de superfícies paralelas'}` : ` · ${n} ${n === 1 ? 'reflexão' : 'reflexões'}`}<br /><span className="suave">{PATOLOGIAS[t].criterio}</span></span>
+            </li>
+          ))}
+        </ul>
+        {pares.length > 0 && (
+          <p className="nota">Superfícies paralelas e refletoras em {BANDAS[banda]} Hz: {pares.slice(0, 6).map((x) => `${nomeSeg(x.a)} e ${nomeSeg(x.b)} a ${fmt(x.distancia)} m (repetição a cada ${fmt(x.periodo, 1)} ms)`).join('; ')}{pares.length > 6 ? ` e mais ${pares.length - 6}` : ''}.</p>
+        )}
+        <p className="nota">Critérios de Haas (1951), Kuttruff (Room Acoustics, 2009), Long (Architectural Acoustics, 2014) e Everest e Pohlmann (Master Handbook of Acoustics, 2015). São indicações de atenção no plano desta vista; a audição real depende também da difusão, da direção de chegada e do ruído de fundo.</p>
+      </div>
       {lista.length ? (
         <div className="tabela-rolagem">
           <table className="raios-tabela">
-            <thead><tr><th>Nº</th><th>Ordem</th><th>Superfícies refletoras</th><th className="num">Percurso (m)</th><th className="num">Atraso Δt (ms)</th><th className="num">Nível (dB)</th></tr></thead>
+            <thead><tr><th>Nº</th><th>Ordem</th><th>Superfícies refletoras</th><th className="num">Percurso (m)</th><th className="num">Atraso Δt (ms)</th><th className="num">Nível (dB)</th><th>Atenção</th></tr></thead>
             <tbody>
               {lista.map((r, i) => (
                 <tr key={i} aria-selected={i === selecionada} onClick={() => setSelecionada(i === selecionada ? null : i)}>
@@ -304,6 +341,7 @@ export function EtapaRaios({ cenario, catalogo, modelo, mudar }: Props) {
                   <td className="num">{fmt(r.percurso)}</td>
                   <td className="num"><b>{fmt(r.atraso, 1)}</b></td>
                   <td className="num">{fmt(r.nivel, 1)}</td>
+                  <td>{patologias[i].map((t) => <span key={t} className={`raios-pato ${t}`} title={PATOLOGIAS[t].nome}>{PATOLOGIAS[t].sigla}</span>)}</td>
                 </tr>
               ))}
             </tbody>
@@ -361,7 +399,7 @@ function Escala({ quadro, k }: { quadro: Quadro; k: number }) {
 }
 
 /** Reflectograma: cada reflexão é uma barra no tempo de atraso, com a altura do nível em relação ao som direto. */
-function Reflectograma({ lista, selecionada, selecionar }: { lista: Reflexao[]; selecionada: number | null; selecionar: (i: number | null) => void }) {
+function Reflectograma({ lista, patologias, selecionada, selecionar }: { lista: Reflexao[]; patologias: Patologia[][]; selecionada: number | null; selecionar: (i: number | null) => void }) {
   const W = 640, H = 190, esq = 44, dir = 12, topo = 14, base = 30
   const tMax = Math.max(100, Math.min(ATRASO_MAX, Math.ceil((Math.max(0, ...lista.map((r) => r.atraso)) + 10) / 20) * 20))
   const dbMin = -30
@@ -378,6 +416,9 @@ function Reflectograma({ lista, selecionada, selecionar }: { lista: Reflexao[]; 
       ))}
       {marcasT.map((t) => <text key={t} className="eixo" x={x(t)} y={H - base + 16} textAnchor="middle">{t}</text>)}
       <text className="eixo" x={W - dir} y={H - 2} textAnchor="end">Atraso em relação ao som direto (ms)</text>
+      {/* Zona de eco: depois de 50 ms e até 10 dB abaixo do som direto. */}
+      <rect className="zona-eco" x={x(50)} y={y(0)} width={x(tMax) - x(50)} height={y(-10) - y(0)} />
+      <text className="zona-eco-texto" x={x(tMax) - 4} y={y(-10) - 4} textAnchor="end">zona de eco</text>
       {[50, 80].filter((t) => t <= tMax).map((t) => (
         <g key={t} className="limite">
           <line x1={x(t)} x2={x(t)} y1={topo} y2={H - base} />
@@ -388,9 +429,12 @@ function Reflectograma({ lista, selecionada, selecionar }: { lista: Reflexao[]; 
       {lista.map((r, i) => (
         <line key={i} x1={x(r.atraso)} x2={x(r.atraso)} y1={y(dbMin)} y2={y(r.nivel)} stroke={COR_ORDEM[r.ordem]} strokeWidth={i === selecionada ? 5 : 3}
           strokeOpacity={selecionada === null || i === selecionada ? 1 : 0.3} className="barra" onClick={() => selecionar(i === selecionada ? null : i)}>
-          <title>{`Reflexão ${i + 1}: ${fmt(r.atraso, 1)} ms, ${fmt(r.nivel, 1)} dB`}</title>
+          <title>{`Reflexão ${i + 1}: ${fmt(r.atraso, 1)} ms, ${fmt(r.nivel, 1)} dB${patologias[i].length ? ` · ${patologias[i].map((t) => PATOLOGIAS[t].nome).join(', ')}` : ''}`}</title>
         </line>
       ))}
+      {lista.map((r, i) => patologias[i].length ? (
+        <text key={`p${i}`} className="marca-pato" x={x(r.atraso)} y={y(r.nivel) - 4} textAnchor="middle">{patologias[i].map((t) => PATOLOGIAS[t].sigla).join('')}</text>
+      ) : null)}
     </svg>
   )
 }
