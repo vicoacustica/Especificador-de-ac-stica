@@ -614,13 +614,13 @@ details p { margin: 8px 0 0; color: var(--ink-2); max-width: 75ch; }
 .raios-leque line { stroke-width: 0.7; }
 .raios-corte line { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 10 4 2 4; }
 .raios-el-sel { filter: drop-shadow(0 0 3px var(--accent)); }
-.raios-ponta { fill: #fff; stroke: var(--accent); stroke-width: 2; cursor: grab; }
+.raios-ponta { fill: var(--surface); stroke: var(--accent); stroke-width: 2; cursor: grab; }
 .raios-fonte circle { fill: var(--accent); cursor: grab; }
 .raios-fonte text, .raios-receptor text { text-anchor: middle; font-weight: 700; pointer-events: none; }
 .raios-fonte text { fill: #fff; }
-.raios-receptor circle { fill: #fff; stroke: #3d7ea6; stroke-width: 2.5; cursor: grab; }
+.raios-receptor circle { fill: var(--surface); stroke: #3d7ea6; stroke-width: 2.5; cursor: grab; }
 .raios-receptor text { fill: #3d7ea6; }
-.raios-num { font-weight: 700; fill: var(--ink); paint-order: stroke; stroke: #fff; stroke-width: 3px; vector-effect: non-scaling-stroke; pointer-events: none; }
+.raios-num { font-weight: 700; fill: var(--ink); paint-order: stroke; stroke: var(--surface); stroke-width: 3px; vector-effect: non-scaling-stroke; pointer-events: none; }
 .raios-escala line { stroke: var(--ink); stroke-width: 1.5; }
 .raios-escala text { text-anchor: middle; fill: var(--ink-2); }
 .raios-legenda span { display: inline-flex; align-items: center; gap: 5px; margin-right: 12px; white-space: nowrap; }
@@ -657,3 +657,27 @@ details p { margin: 8px 0 0; color: var(--ink-2); max-width: 75ch; }
 .raios-pato.eco { background: var(--bad); }
 .raios-pato.palpitante { background: #c9932b; }
 .raios-pato.coloracao { background: #8a5aa8; }
+.raios-visor svg, .raios-reflectograma { color: var(--ink); }
+.raios-ponto-refl { stroke: var(--surface); stroke-width: 1; }
+
+/* ---------- Aparência ---------- */
+.aparencia { display: grid; gap: 14px; }
+.aparencia-titulo { margin-top: 10px; }
+.aparencia-estilos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.aparencia-estilo { display: grid; gap: 4px; text-align: left; padding: 10px; border: 1px solid var(--line-2); background: var(--surface); color: var(--ink); border-radius: var(--r); }
+.aparencia-estilo[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); }
+.aparencia-estilo small { color: var(--ink-2); font-size: 12px; }
+.aparencia-amostra { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 4px; height: 54px; padding: 6px; margin-bottom: 4px; }
+.aparencia-estilo.classico .aparencia-amostra { background: #f4f1eb; border-radius: 10px; }
+.aparencia-estilo.classico .aparencia-amostra i { background: #fff; border: 1px solid #d8d0c3; border-radius: 8px; }
+.aparencia-estilo.classico .aparencia-amostra i:first-child { background: #e0523e; border-color: #e0523e; }
+.aparencia-estilo.grade .aparencia-amostra { background-color: #f3f4f6; background-image: linear-gradient(color-mix(in srgb, var(--accent) 22%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--accent) 22%, transparent) 1px, transparent 1px); background-size: 8px 8px; border: 1px solid #b7bdc8; }
+.aparencia-estilo.grade .aparencia-amostra i { background: #fff; border: 1px solid #b7bdc8; border-top: 3px solid var(--accent); }
+.aparencia-estilo.grade .aparencia-amostra i:first-child { background: var(--accent); }
+.aparencia-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.aparencia-linha > .suave { min-width: 110px; font-size: 13px; }
+.aparencia-linha .seg button { display: inline-flex; align-items: center; gap: 6px; }
+.paleta { display: flex; flex-wrap: wrap; gap: 8px; }
+.paleta-cor { width: 34px; height: 34px; border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--line-2); border-radius: var(--r); display: grid; place-items: center; padding: 0; }
+.paleta-cor[aria-checked="true"] { box-shadow: 0 0 0 2px var(--ink); }
+@media (max-width: 480px) { .aparencia-estilos { grid-template-columns: minmax(0, 1fr); } }

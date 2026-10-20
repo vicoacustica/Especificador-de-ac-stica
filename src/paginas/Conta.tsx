@@ -4,8 +4,12 @@ import type { Biblioteca, Perfil } from '../dados/conta'
 import { Texto } from '../ui/campos'
 import { iniciais } from '../ui/formato'
 import { Icone } from '../ui/Icone'
+import type { Aparencia } from '../dados/aparencia'
+import { EscolhaAparencia } from '../ui/Aparencia'
 
 interface Props {
+  aparencia: Aparencia
+  mudarAparencia: (a: Aparencia) => void
   perfil: Perfil
   mudarPerfil: (p: Perfil) => void
   biblioteca: Biblioteca
@@ -30,7 +34,7 @@ function espacoUsado(): number {
   }
 }
 
-export function Conta({ perfil, mudarPerfil, biblioteca, projetos, apagarDados }: Props) {
+export function Conta({ aparencia, mudarAparencia, perfil, mudarPerfil, biblioteca, projetos, apagarDados }: Props) {
   const [confirmar, setConfirmar] = useState(false)
   return (
     <div className="pagina">
@@ -54,6 +58,8 @@ export function Conta({ perfil, mudarPerfil, biblioteca, projetos, apagarDados }
             ))}
           </div>
           <p className="nota">As alterações são salvas quando você sai do campo.</p>
+          <h2 className="aparencia-titulo">Aparência</h2>
+          <EscolhaAparencia aparencia={aparencia} mudar={mudarAparencia} />
         </section>
         <div className="coluna">
           <section className="bloco escuro">

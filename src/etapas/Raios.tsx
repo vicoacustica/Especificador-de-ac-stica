@@ -11,8 +11,9 @@ import { fmt } from '../ui/formato'
 import { Icone } from '../ui/Icone'
 
 /** Cores por ordem de reflexão; o som direto usa a cor do texto. */
-const COR_ORDEM = ['#141414', '#e0523e', '#3d7ea6', '#2f9c8f', '#c9932b', '#8a5aa8', '#7a6a58']
-const COR_ELEMENTO = '#141414'
+// O som direto e os elementos desenhados usam a cor do texto, que muda no modo escuro.
+const COR_ORDEM = ['currentColor', '#e0523e', '#3d7ea6', '#2f9c8f', '#c9932b', '#8a5aa8', '#7a6a58']
+const COR_ELEMENTO = 'currentColor'
 const MATERIAL_ELEMENTO = 'painel-mdf-padrao'
 const VISTAS: VistaRaios[] = ['planta', 'longitudinal']
 const ATRASO_MAX = 200
@@ -221,7 +222,7 @@ export function EtapaRaios({ cenario, catalogo, modelo, mudar }: Props) {
 
       <div className="raios-ferramentas">
         <Segmentado rotulo="Ferramenta" valor={ferramenta} aoMudar={setFerramenta} opcoes={[
-          { valor: 'mover', rotulo: 'Mover fonte e receptor' },
+          { valor: 'mover', rotulo: 'Mover F e R' },
           { valor: 'desenhar', rotulo: 'Desenhar elemento' },
           { valor: 'apagar', rotulo: <><Icone nome="borracha" tamanho={15} />Borracha</> },
         ]} />
@@ -267,7 +268,7 @@ export function EtapaRaios({ cenario, catalogo, modelo, mudar }: Props) {
             strokeDasharray={resultado.direto.obstruido ? '2 4' : undefined} strokeOpacity={sel ? 0.3 : 0.9} />
           {lista.map((r, i) => (sel && i !== selecionada ? null : r.pontos.slice(1, -1).map((p, j) => (
             <g key={`${i}-${j}`}>
-              <circle cx={p[0]} cy={-p[1]} r={0.32 * k} fill={COR_ORDEM[r.ordem]} stroke="#fff" strokeWidth={1} vectorEffect="non-scaling-stroke" />
+              <circle cx={p[0]} cy={-p[1]} r={0.32 * k} fill={COR_ORDEM[r.ordem]} className="raios-ponto-refl" vectorEffect="non-scaling-stroke" />
               {(r.ordem === 1 || i === selecionada) && <text x={p[0] + 0.5 * k} y={-p[1] - 0.5 * k} style={{ fontSize: fs }} className="raios-num">{i + 1}</text>}
             </g>
           ))))}

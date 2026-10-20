@@ -14,6 +14,9 @@ import type { SalvarMaterial } from './ui/EditorMaterial'
 import { Icone, type NomeIcone } from './ui/Icone'
 import { DadosProjeto } from './ui/DadosProjeto'
 import { iniciais } from './ui/formato'
+import { aplicarAparencia, lerAparencia, salvarAparencia, type Aparencia } from './dados/aparencia'
+import { EscolhaAparencia } from './ui/Aparencia'
+import { Modal } from './ui/Modal'
 
 const repositorio = new RepositorioLocal()
 
@@ -51,6 +54,13 @@ export default function App() {
   const [rota, setRota] = useState<Rota>({ pagina: 'inicio' })
   const [aviso, setAviso] = useState<string | null>(null)
   const [criando, setCriando] = useState(false)
+  const [aparencia, setAparencia] = useState<Aparencia>(lerAparencia)
+  const [editandoAparencia, setEditandoAparencia] = useState(false)
+  function mudarAparencia(a: Aparencia) {
+    setAparencia(a)
+    aplicarAparencia(a)
+    salvarAparencia(a)
+  }
 
   const projeto = rota.pagina === 'projeto' ? projetos.find((p) => p.id === rota.id) : undefined
   const catalogo = useMemo(
@@ -162,7 +172,7 @@ export default function App() {
   } else if (rota.pagina === 'ajuda') {
     conteudo = <Ajuda aba={rota.aba ?? 'guia'} mudarAba={(aba) => ir({ pagina: 'ajuda', aba })} />
   } else if (rota.pagina === 'conta') {
-    conteudo = <Conta perfil={perfil} mudarPerfil={mudarPerfil} biblioteca={biblioteca} projetos={projetos} apagarDados={apagarDados} />
+    conteudo = <Conta aparencia={aparencia} mudarAparencia={mudarAparencia} perfil={perfil} mudarPerfil={mudarPerfil} biblioteca={biblioteca} projetos={projetos} apagarDados={apagarDados} />
   } else {
     conteudo = (
       <Inicio
@@ -193,11 +203,12 @@ export default function App() {
           ))}
         </nav>
         <div className="barra-conta">
-          <button type="button" className="icone-btn redondo" aria-label="Configurações e ajuda" onClick={() => ir({ pagina: 'ajuda', aba: 'guia' })}><Icone nome="ajustes" /></button>
+          <button type="button" className="icone-btn redondo" aria-label="Aparência: estilo, cor de destaque e modo escuro" title="Aparência" onClick={() => setEditandoAparencia(true)}><Icone nome="paleta" /></button>
           <button type="button" className="avatar" aria-label="Minha conta" aria-current={ativa === 'conta' ? 'page' : undefined} onClick={() => ir({ pagina: 'conta' })}>{iniciais(perfil.nome)}</button>
         </div>
       </header>
       <div className="conteudo">{conteudo}</div>
+      {editandoAparencia && <Modal titulo="Aparência" aoFechar={() => setEditandoAparencia(false)}><EscolhaAparencia aparencia={aparencia} mudar={mudarAparencia} /></Modal>}
       {criando && <DadosProjeto titulo="Novo projeto" acao="Criar projeto" aoSalvar={criarProjeto} aoFechar={() => setCriando(false)} />}
       {aviso && <div className="aviso" role="status">{aviso}<button type="button" className="icone-btn" aria-label="Fechar aviso" onClick={() => setAviso(null)}><Icone nome="fechar" tamanho={16} /></button></div>}
     </div>
