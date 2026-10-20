@@ -1,3 +1,6 @@
+/** Cor de cada situação: atende (verde), parcialmente (âmbar), não atende (vermelho). */
+export const CLASSE_SITUACAO = { atende: 'ok', parcial: 'warn', nao: 'bad' } as const
+
 export function fmt(x: number | null | undefined, casas = 2): string {
   if (x === null || x === undefined || Number.isNaN(x)) return '—'
   return x.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas })

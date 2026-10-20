@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { avaliar } from '../motor/acustica'
+import { avaliar, NOME_SITUACAO } from '../motor/acustica'
 import type { Catalogo } from '../motor/materiais'
 import { BANDAS, NOME_ESTADO, type Cenario, type EstadoOcupacao, type Projeto } from '../motor/tipos'
 import { Segmentado } from '../ui/campos'
-import { fmt } from '../ui/formato'
+import { CLASSE_SITUACAO, fmt } from '../ui/formato'
 import { GraficoAV, GraficoTempo } from './Graficos'
 import { memorial } from './memorial'
 
@@ -87,7 +87,7 @@ export function PainelResultado({ projeto, cenario, catalogo, estado, setEstado 
     <>
       <section className="cartao">
         <div className="status">
-          <span className={`big ${av.aprovado ? 'ok' : 'bad'}`}>{av.aprovado ? 'Atende' : 'Não atende'}</span>
+          <span className={`big ${CLASSE_SITUACAO[av.situacao]}`}>{NOME_SITUACAO[av.situacao]}</span>
           {av.tipo === 'tempo' && <span className={`pill ${r.formula === 'eyring' ? 'warn' : 'ok'}`}>{r.formula === 'eyring' ? 'Eyring' : 'Sabine'}</span>}
         </div>
         <div className="nota">{cenario.nome} · {av.meta.nome}</div>

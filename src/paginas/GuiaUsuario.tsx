@@ -34,6 +34,9 @@ const PASSOS: Passo[] = [
     figuras: [{
       imagem: '02-ambiente', legenda: 'Etapa 1 · Ambiente',
       marcas: [<>Escolha a classificação. Os grupos A e as curvas da NBR 12179:1992 definem um Tempo de reverberação alvo (T<sub>alvo</sub>); os grupos B definem uma absorção mínima por volume.</>, <>Digite o Volume (V) em m³: 189.</>, <>Escolha a Umidade relativa do ar (UR). Ela define quanto o ar absorve nas bandas agudas; no exemplo, 50%.</>, <>O quadro mostra o critério resultante: T<sub>alvo</sub> = 0,32·lg 189 − 0,17 = 0,56 s, e a faixa aceita em cada banda.</>],
+    }, {
+      imagem: '02-importar', legenda: 'Importar um modelo DXF ou OBJ',
+      marcas: [<>A prévia 3D do modelo aberto pelo botão “Importar modelo”, no início da etapa 1, com uma cor por layer. Arraste para girar e role para aproximar.</>, <>O quadro de áreas: cada layer (ou etiqueta) com a área de piso, paredes, forro/teto e faces inclinadas. Passe o mouse numa layer para destacá-la na prévia e confira a unidade pela caixa envolvente.</>, <>Escolha de onde vem o volume e o pé-direito, e se as paredes do modelo já têm os vãos recortados.</>, <>Importe. Cada layer vira uma superfície; ajuste o tipo e o material na etapa 2.</>],
     }],
     dica: <>No grupo B o sistema também pede o Pé-direito (h), porque o mínimo de absorção depende dele.</>,
   },
@@ -49,10 +52,6 @@ const PASSOS: Passo[] = [
       {
         imagem: '03-superficies-itens', legenda: 'Itens sobre as bases',
         marcas: [<>O tipo do item: revestimento (o forro acústico de 53 m²), esquadria (janelas de 8 × 1,2 m e porta de 0,9 × 2,1 m) ou elemento.</>, <>A base sobre a qual ele está. As janelas e a porta estão sobre as paredes.</>, <>A área livre da base. A laje tem 63 m², o forro ocupa 53 m² e restam 10 m² de gesso aparente. O sistema não deixa a soma passar da área da base.</>, <><b>Dimensionar área</b> mostra a faixa de área deste material que faz a sala atender, mantendo o resto do cenário.</>],
-      },
-      {
-        imagem: '03-importar', legenda: 'Importar um modelo DXF ou OBJ',
-        marcas: [<>O botão “Importar modelo DXF ou OBJ” lê o arquivo e mostra o quadro de áreas antes de importar: cada layer (ou etiqueta) com a área de piso, paredes, forro/teto e faces inclinadas. Confira a unidade pela caixa envolvente.</>, <>Escolha o que cada layer vira no projeto. O sistema sugere pelo nome da layer e pela orientação das faces; layers que não são superfícies ficam como “Não importar”.</>, <>Diga se as paredes do modelo já têm os vãos recortados, se as superfícies atuais serão substituídas e se o volume vem do modelo.</>, <>Importe. Cada layer entra com um material padrão; depois escolha o material de cada superfície.</>],
       },
     ],
   },

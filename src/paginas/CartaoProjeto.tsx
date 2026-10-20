@@ -7,14 +7,16 @@ import { quando } from '../ui/formato'
 import { Icone } from '../ui/Icone'
 import { ImagemProjeto } from '../ui/ImagemProjeto'
 
-function cenariosQueAtendem(p: Projeto, catalogo: Catalogo) {
-  return p.cenarios.filter((c) => {
-    try { return avaliar(c, catalogo).aprovado } catch { return false }
-  }).length
+function situacoes(p: Projeto, catalogo: Catalogo) {
+  return p.cenarios.map((c) => {
+    try { return avaliar(c, catalogo).situacao } catch { return 'nao' as const }
+  })
 }
 
 export function CartaoProjeto({ projeto, catalogo, abrir, acoes }: { projeto: Projeto; catalogo: Catalogo; abrir: () => void; acoes?: ReactNode }) {
-  const atendem = cenariosQueAtendem(projeto, catalogo)
+  const sit = situacoes(projeto, catalogo)
+  const atendem = sit.filter((s) => s === 'atende').length
+  const parciais = sit.filter((s) => s === 'parcial').length
   const n = projeto.cenarios.length
   const c = projeto.cenarios[0]
   const classificacao = metaDoCriterio(c.criterio, c.volume, c.peDireito).nome
@@ -23,7 +25,7 @@ export function CartaoProjeto({ projeto, catalogo, abrir, acoes }: { projeto: Pr
       <button type="button" className="cartao-projeto-abrir" onClick={abrir}>
         <span className="cartao-projeto-imagem">
           <ImagemProjeto projeto={projeto} />
-          <span className={`etiqueta ${atendem === n ? 'ok' : atendem ? 'parcial' : 'ruim'}`}>{atendem}/{n} {n === 1 ? 'atende' : 'atendem'}</span>
+          <span className={`etiqueta ${atendem === n ? 'ok' : atendem || parciais ? 'parcial' : 'ruim'}`}>{atendem}/{n} {n === 1 ? 'atende' : 'atendem'}{parciais ? ` · ${parciais} ${parciais === 1 ? 'parcial' : 'parciais'}` : ''}</span>
           <span className="seta-canto"><Icone nome="seta" tamanho={16} /></span>
         </span>
         <span className="cartao-projeto-corpo">

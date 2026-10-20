@@ -1,5 +1,9 @@
 import { CURVAS_NBR, DIN, GRUPOS_A, NBR, GRUPOS_B, metaDoCriterio } from '../motor/criterios'
+import { useState } from 'react'
+import type { Catalogo } from '../motor/materiais'
 import type { Cenario, Criterio, Umidade } from '../motor/tipos'
+import { ImportarModelo, type ResultadoImportacao } from '../importacao/ImportarModelo'
+import { Icone } from '../ui/Icone'
 import { Numero } from '../ui/campos'
 import { fmt } from '../ui/formato'
 
@@ -22,12 +26,48 @@ const GRUPOS: { titulo: string; opcoes: Opcao[] }[] = [
 
 const igual = (a: Criterio, b: Criterio) => JSON.stringify(a) === JSON.stringify(b)
 
-export function EtapaAmbiente({ cenario, mudar }: { cenario: Cenario; mudar: (f: (c: Cenario) => void) => void }) {
+interface Props {
+  cenario: Cenario
+  catalogo: Catalogo
+  mudar: (f: (c: Cenario) => void) => void
+  irParaSuperficies: () => void
+}
+
+export function EtapaAmbiente({ cenario, catalogo, mudar, irParaSuperficies }: Props) {
   const meta = metaDoCriterio(cenario.criterio, cenario.volume, cenario.peDireito)
+  const [importando, setImportando] = useState(false)
+  const [importado, setImportado] = useState<ResultadoImportacao | null>(null)
+
+  function aplicar(r: ResultadoImportacao) {
+    mudar((c) => {
+      c.superficies = r.superficies
+      if (r.volume) c.volume = r.volume
+      if (r.peDireito) c.peDireito = r.peDireito
+    })
+    setImportado(r)
+    setImportando(false)
+  }
+
   return (
     <>
       <h2>Ambiente</h2>
       <p className="lead">Escolha a classificação do ambiente pela norma, informe o volume e a umidade relativa do ar.</p>
+      <div className="importar-chamada">
+        <span className="importar-chamada-icone"><Icone nome="enviar" tamanho={20} /></span>
+        <span>
+          <b>Tem o modelo 3D do ambiente?</b>
+          <span className="suave">Importe um DXF ou OBJ: o sistema mostra a prévia e as áreas de cada layer, cria as superfícies e pode trazer o volume e o pé-direito.</span>
+        </span>
+        <button type="button" className="btn secundario" onClick={() => setImportando(true)}>Importar modelo</button>
+      </div>
+      {importado && (
+        <p className="importado">
+          <Icone nome="ok" tamanho={16} />
+          <span>“{importado.arquivo}” importado: {importado.superficies.length} superfícies{importado.volume ? `, volume ${fmt(importado.volume, 1)} m³` : ''}{importado.peDireito ? `, pé-direito ${fmt(importado.peDireito)} m` : ''}. Ajuste o tipo e o material de cada superfície na próxima etapa.</span>
+          <button type="button" className="btn fantasma pequeno" onClick={irParaSuperficies}>Revisar superfícies<Icone nome="seta" tamanho={14} /></button>
+        </p>
+      )}
+      {importando && <ImportarModelo cenario={cenario} catalogo={catalogo} aoImportar={aplicar} aoFechar={() => setImportando(false)} />}
       {GRUPOS.map((g) => (
         <div key={g.titulo}>
           <h3>{g.titulo}</h3>

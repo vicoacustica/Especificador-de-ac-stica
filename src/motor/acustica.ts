@@ -135,9 +135,18 @@ export function calcular(c: Cenario, cat: Catalogo): Resultado {
 
 export type SituacaoBanda = 'ok' | 'acima' | 'abaixo' | 'invalido'
 
+/** Atende: todas as bandas avaliadas dentro das margens. Parcialmente: mais da metade delas. */
+export type Situacao = 'atende' | 'parcial' | 'nao'
+export const NOME_SITUACAO: Record<Situacao, string> = { atende: 'Atende', parcial: 'Atende parcialmente', nao: 'Não atende' }
+
+export const situacaoDasBandas = (bandasOk: boolean[]): Situacao => {
+  const ok = bandasOk.filter(Boolean).length
+  return ok === bandasOk.length ? 'atende' : ok > bandasOk.length / 2 ? 'parcial' : 'nao'
+}
+
 export type Avaliacao =
-  | { tipo: 'tempo'; meta: Extract<MetaCriterio, { tipo: 'tempo' }>; resultado: Resultado; bandas: Record<EstadoOcupacao, SituacaoBanda[]>; aprovado: boolean }
-  | { tipo: 'absorcao'; meta: Extract<MetaCriterio, { tipo: 'absorcao' }>; resultado: Resultado; av: PorBanda; bandas: SituacaoBanda[]; aprovado: boolean }
+  | { tipo: 'tempo'; meta: Extract<MetaCriterio, { tipo: 'tempo' }>; resultado: Resultado; bandas: Record<EstadoOcupacao, SituacaoBanda[]>; aprovado: boolean; situacao: Situacao }
+  | { tipo: 'absorcao'; meta: Extract<MetaCriterio, { tipo: 'absorcao' }>; resultado: Resultado; av: PorBanda; bandas: SituacaoBanda[]; aprovado: boolean; situacao: Situacao }
 
 export function avaliar(c: Cenario, cat: Catalogo): Avaliacao {
   const resultado = calcular(c, cat)
@@ -145,14 +154,16 @@ export function avaliar(c: Cenario, cat: Catalogo): Avaliacao {
   if (meta.tipo === 'absorcao') {
     const av = porBanda((i) => resultado.porEstado.cheio.absorcao[i] / c.volume)
     const bandas = av.map((v, i): SituacaoBanda => (!BANDAS_GRUPO_B.includes(i) || v >= meta.avMinimo ? 'ok' : 'abaixo'))
-    return { tipo: 'absorcao', meta, resultado, av, bandas, aprovado: bandas.every((b) => b === 'ok') }
+    const s = situacaoDasBandas(BANDAS_GRUPO_B.map((i) => bandas[i] === 'ok'))
+    return { tipo: 'absorcao', meta, resultado, av, bandas, aprovado: s === 'atende', situacao: s }
   }
   const bandas = {} as Record<EstadoOcupacao, SituacaoBanda[]>
   for (const e of ESTADOS) {
     bandas[e] = resultado.tempo[e].map((t, i) => (t === null ? 'invalido' : t > meta.superior[i] ? 'acima' : t < meta.inferior[i] ? 'abaixo' : 'ok'))
   }
-  const aprovado = resultado.estados.every((e) => bandas[e].every((b) => b === 'ok'))
-  return { tipo: 'tempo', meta, resultado, bandas, aprovado }
+  // Uma banda conta como dentro das margens quando está dentro em todas as ocupações avaliadas.
+  const s = situacaoDasBandas(BANDAS.map((_, i) => resultado.estados.every((e) => bandas[e][i] === 'ok')))
+  return { tipo: 'tempo', meta, resultado, bandas, aprovado: s === 'atende', situacao: s }
 }
 
 export type Dimensionamento =

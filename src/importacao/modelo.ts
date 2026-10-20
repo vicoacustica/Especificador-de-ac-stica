@@ -17,6 +17,9 @@ export interface Modelo {
   ignoradas: Record<string, number>
 }
 
+/** Cores das layers na prévia 3D e no quadro de áreas, na ordem do quadro. */
+export const CORES_LAYER = ['#e0523e', '#3d7ea6', '#6a9a3a', '#c9932b', '#8a5aa8', '#2f9c8f', '#b85c8a', '#7a6a58', '#d4733a', '#4f6bb5']
+
 export type Unidade = 'mm' | 'cm' | 'm' | 'in' | 'ft'
 export const ESCALA: Record<Unidade, number> = { mm: 0.001, cm: 0.01, m: 1, in: 0.0254, ft: 0.3048 }
 export const NOME_UNIDADE: Record<Unidade, string> = { mm: 'milímetros', cm: 'centímetros', m: 'metros', in: 'polegadas', ft: 'pés' }
@@ -260,7 +263,7 @@ export interface Quadro {
   caixa: Caixa
   /** Volume da caixa envolvente, em m³. */
   volumeCaixa: number
-  /** Volume pelo teorema da divergência; só vale para modelos fechados e com faces orientadas. */
+  /** Volume pelas faces, a partir do centro do modelo; só vale para modelos fechados e sem superfícies internas. */
   volumeFaces: number
   /** Área de todas as faces, em m². */
   areaTotal: number
@@ -273,6 +276,7 @@ export function quadroDeAreas(m: Modelo, unidade: Unidade, separar = false): Qua
   const e = ESCALA[unidade]
   const cx = caixa(m.faces, e)
   const zMeio = (cx.min[2] + cx.max[2]) / 2
+  const centro: Ponto = [(cx.min[0] + cx.max[0]) / 2, (cx.min[1] + cx.max[1]) / 2, zMeio]
   const linhas = new Map<string, LinhaQuadro>()
   let volume = 0, areaTotal = 0
   for (const f of m.faces) {
@@ -287,9 +291,11 @@ export function quadroDeAreas(m: Modelo, unidade: Unidade, separar = false): Qua
     l.areas[o] += a
     l.total += a
     areaTotal += a
+    // Tetraedros entre o centro da caixa e cada triângulo, em módulo: não depende do sentido das faces,
+    // e é exato para salas que o centro "enxerga" por inteiro.
     for (let k = 1; k + 1 < p.length; k++) {
-      const [a0, b, c] = [p[0], p[k], p[k + 1]]
-      volume += (a0[0] * (b[1] * c[2] - b[2] * c[1]) - a0[1] * (b[0] * c[2] - b[2] * c[0]) + a0[2] * (b[0] * c[1] - b[1] * c[0])) / 6
+      const [a0, b, c] = [p[0], p[k], p[k + 1]].map((q) => [q[0] - centro[0], q[1] - centro[1], q[2] - centro[2]])
+      volume += Math.abs(a0[0] * (b[1] * c[2] - b[2] * c[1]) - a0[1] * (b[0] * c[2] - b[2] * c[0]) + a0[2] * (b[0] * c[1] - b[1] * c[0])) / 6
     }
   }
   const lado = (k: number) => Math.max(0, cx.max[k] - cx.min[k])
@@ -297,7 +303,7 @@ export function quadroDeAreas(m: Modelo, unidade: Unidade, separar = false): Qua
     linhas: [...linhas.values()].sort((a, b) => a.chave.localeCompare(b.chave, 'pt-BR')),
     caixa: cx,
     volumeCaixa: lado(0) * lado(1) * lado(2),
-    volumeFaces: Math.abs(volume),
+    volumeFaces: volume,
     areaTotal,
   }
 }

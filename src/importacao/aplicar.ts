@@ -7,12 +7,14 @@ import { orientacaoPrincipal, type LinhaQuadro, type Orientacao } from './modelo
 
 export type Destino = CategoriaSuperficie | 'ignorar'
 
-/** Sugestão pelo nome da layer; sem pista no nome, vale a orientação com mais área. */
-export function sugerirDestino(l: LinhaQuadro): Destino {
+/**
+ * Tipo inicial de cada layer, ajustável depois na etapa de superfícies: pelo nome da layer
+ * e, sem pista no nome, pela orientação com mais área.
+ */
+export function sugerirDestino(l: LinhaQuadro): CategoriaSuperficie {
   const n = l.layer.toLowerCase()
   if (/porta|janela|vidr|esquadr|caixilh|door|window|glass|glaz/.test(n)) return 'esquadria'
   if (/acúst|acust|acoust|painel|panel|revest/.test(n)) return 'revestimento'
-  if (/mobili|furn|movel|móvel|pessoa|people|cota|dim|text|hatch|eixo|axis/.test(n)) return 'ignorar'
   if (!l.orientacao) {
     if (/piso|chão|chao|floor|pavim/.test(n)) return 'piso'
     if (/forro|teto|laje|ceiling|roof|cobert/.test(n)) return 'teto'

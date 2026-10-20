@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { avaliar } from '../motor/acustica'
+import { avaliar, NOME_SITUACAO } from '../motor/acustica'
 import type { Catalogo } from '../motor/materiais'
 import type { Cenario, EstadoOcupacao, Projeto } from '../motor/tipos'
 import { cenarioVazio, duplicarCenario } from '../dados/exemplo'
@@ -79,10 +79,10 @@ export function Editor({ projeto, catalogo, mudarProjeto, salvarMaterial, voltar
 
       <div className="cenarios" role="tablist" aria-label="Cenários">
         {projeto.cenarios.map((c) => {
-          const ok = avaliar(c, catalogo).aprovado
+          const sit = avaliar(c, catalogo).situacao
           return (
             <button key={c.id} type="button" role="tab" className="pilula" aria-selected={c.id === cenario.id} onClick={() => setCenarioId(c.id)}>
-              <span className={`ponto ${ok ? 'ok' : 'ruim'}`} aria-label={ok ? 'atende' : 'não atende'} />{c.nome}
+              <span className={`ponto ${sit === 'atende' ? 'ok' : sit === 'parcial' ? 'parcial' : 'ruim'}`} aria-label={NOME_SITUACAO[sit].toLowerCase()} />{c.nome}
             </button>
           )
         })}
@@ -111,7 +111,7 @@ export function Editor({ projeto, catalogo, mudarProjeto, salvarMaterial, voltar
             ))}
           </nav>
           <section className="painel" key={`${cenario.id}-${etapa}`}>
-            {etapa === 0 && <EtapaAmbiente cenario={cenario} mudar={mudarCenario} />}
+            {etapa === 0 && <EtapaAmbiente cenario={cenario} catalogo={catalogo} mudar={mudarCenario} irParaSuperficies={() => setEtapa(1)} />}
             {etapa === 1 && <EtapaSuperficies cenario={cenario} catalogo={catalogo} mudar={mudarCenario} salvarMaterial={salvarMaterial} />}
             {etapa === 2 && <EtapaNuvens cenario={cenario} catalogo={catalogo} mudar={mudarCenario} />}
             {etapa === 3 && <EtapaOcupacao cenario={cenario} catalogo={catalogo} mudar={mudarCenario} />}

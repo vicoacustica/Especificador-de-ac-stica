@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import casos from './casos-planilha.json'
-import { areaEfetiva, avaliar, calcular, dimensionar, LIMITE_EYRING, validarSuperficies } from './acustica'
+import { areaEfetiva, avaliar, calcular, dimensionar, LIMITE_EYRING, situacaoDasBandas, validarSuperficies } from './acustica'
 import { avMinimo, tempoAlvo, tempoOtimoNBR } from './criterios'
 import { Catalogo, MATERIAIS_BASE, paraSuperficie } from './materiais'
 import { areaDaForma, ESTADOS, type Cenario, type Umidade } from './tipos'
@@ -142,6 +142,13 @@ describe('critérios', () => {
     const c = salaDeAula()
     c.superficies = c.superficies.filter((s) => s.id !== 'forro')
     expect(avaliar(c, cat).aprovado).toBe(false)
+  })
+  it('atende parcialmente com mais da metade das bandas dentro das margens', () => {
+    expect(avaliar(salaDeAula(), cat).situacao).toBe('atende')
+    expect(situacaoDasBandas([true, true, true, true, false, false])).toBe('parcial')
+    expect(situacaoDasBandas([true, true, true, false, false, false])).toBe('nao')
+    // Grupo B: 3 das 4 bandas de 250 a 2000 Hz.
+    expect(situacaoDasBandas([true, true, true, false])).toBe('parcial')
   })
 })
 

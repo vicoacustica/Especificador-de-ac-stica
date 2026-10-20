@@ -1,4 +1,4 @@
-import { areaEfetiva, ehBase, type Avaliacao } from '../motor/acustica'
+import { areaEfetiva, ehBase, NOME_SITUACAO, type Avaliacao } from '../motor/acustica'
 import type { Catalogo } from '../motor/materiais'
 import { CATEGORIAS, FORMAS, NOME_ESTADO, type Cenario, type Projeto } from '../motor/tipos'
 import { fmt } from '../ui/formato'
@@ -23,7 +23,7 @@ export function memorial(projeto: Projeto, c: Cenario, av: Avaliacao, cat: Catal
       L.push(`- ${it.nome}: ${un === 'm²' ? fmt(it.quantidade) : it.quantidade} ${un}${forma} · ${cat.get(it.material).nome}${it.tipo === 'assento' && it.materialOcupado ? ` / ocupado: ${cat.get(it.materialOcupado).nome}` : ''}`)
     }
   }
-  L.push('', `RESULTADO: ${av.aprovado ? 'atende' : 'não atende'}${av.tipo === 'tempo' ? ` (ocupação ${r.estados.map((e) => NOME_ESTADO[e]).join(', ')})` : ''}`)
+  L.push('', `RESULTADO: ${NOME_SITUACAO[av.situacao].toLowerCase()}${av.tipo === 'tempo' ? ` (ocupação ${r.estados.map((e) => NOME_ESTADO[e]).join(', ')})` : ''}`)
   if (av.tipo === 'tempo') for (const e of r.estados) L.push(`T ${NOME_ESTADO[e]} (s): ${r.tempo[e].map((t) => fmt(t)).join(' | ')}`)
   else L.push(`A/V: ${av.av.map((v) => fmt(v, 3)).join(' | ')}`)
   return L.join('\n')

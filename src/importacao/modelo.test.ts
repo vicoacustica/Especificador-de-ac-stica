@@ -24,12 +24,18 @@ describe('importação de modelos', () => {
     // A porta vem de um bloco inserido com rotação de 90°: fica na parede x = 0.
     expect(l.PORTAS.areas.parede).toBeCloseTo(1.89, 6)
     expect(q.volumeCaixa).toBeCloseTo(189, 6)
+    // O forro acústico fica dentro do volume e soma tetraedros a mais: o volume pelas faces passa da caixa.
+    expect(q.volumeFaces).toBeGreaterThan(q.volumeCaixa)
   })
 
   it('lê o OBJ por grupo ou por material', () => {
     const texto = ler('sala-de-aula.obj')
     const g = porLayer(quadroDeAreas(lerOBJ(texto), 'm'))
     expect(g.PAREDES.total).toBeCloseTo(84.51, 6)
+    // Sem o forro acústico, a envoltória fechada dá o volume da sala, qualquer que seja o sentido das faces.
+    const semForro = lerOBJ(texto)
+    semForro.faces = semForro.faces.filter((f) => f.layer !== 'FORRO_ACUSTICO')
+    expect(quadroDeAreas(semForro, 'm').volumeFaces).toBeCloseTo(189, 6)
     const mat = porLayer(quadroDeAreas(lerOBJ(texto, 'material'), 'm'))
     expect(mat.Vidro.total).toBeCloseTo(9.6, 6)
   })
