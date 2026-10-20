@@ -41,8 +41,12 @@ export class Catalogo {
   private porId: Map<string, Material>
   readonly todos: Material[]
 
-  constructor(proprios: Material[] = []) {
+  /** Base da planilha, materiais próprios do usuário e as imagens que ele enviou (por id de material). */
+  constructor(proprios: Material[] = [], imagens: Record<string, string> = {}) {
+    const vistos = new Set<string>()
     this.todos = [...MATERIAIS_BASE, ...proprios]
+      .filter((m) => (vistos.has(m.id) ? false : (vistos.add(m.id), true)))
+      .map((m) => (imagens[m.id] ? { ...m, imagem: imagens[m.id] } : m))
     this.porId = new Map(this.todos.map((m) => [m.id, m]))
   }
 

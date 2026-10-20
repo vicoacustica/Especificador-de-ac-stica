@@ -1,20 +1,21 @@
 import { useState } from 'react'
 import { areaInformada, areaLivre, dimensionar, ehBase, itensSobre, validarSuperficies, type Dimensionamento } from '../motor/acustica'
 import { paraSuperficie, type Catalogo } from '../motor/materiais'
-import { CATEGORIAS, type Cenario, type CategoriaSuperficie, type Material, type Superficie } from '../motor/tipos'
+import { CATEGORIAS, type Cenario, type CategoriaSuperficie, type Superficie } from '../motor/tipos'
 import { novoId } from '../dados/exemplo'
+import { Icone } from '../ui/Icone'
 import { Numero, Segmentado, SeletorMaterial, Texto } from '../ui/campos'
 import { fmt } from '../ui/formato'
-import { NovoMaterial } from './NovoMaterial'
+import { EditorMaterial, type SalvarMaterial } from '../ui/EditorMaterial'
 
 interface Props {
   cenario: Cenario
   catalogo: Catalogo
   mudar: (f: (c: Cenario) => void) => void
-  criarMaterial: (m: Material) => void
+  salvarMaterial: (s: SalvarMaterial) => void
 }
 
-export function EtapaSuperficies({ cenario, catalogo, mudar, criarMaterial }: Props) {
+export function EtapaSuperficies({ cenario, catalogo, mudar, salvarMaterial }: Props) {
   const [erro, setErro] = useState<{ id: string; texto: string } | null>(null)
   const [dims, setDims] = useState<Record<string, Dimensionamento>>({})
   const [criando, setCriando] = useState(false)
@@ -83,7 +84,7 @@ export function EtapaSuperficies({ cenario, catalogo, mudar, criarMaterial }: Pr
               </select>
             </label>
           )}
-          <button type="button" className="btn x" aria-label={`Remover ${s.nome}`} onClick={() => remover(s.id)}>×</button>
+          <button type="button" className="icone-btn" aria-label={`Remover ${s.nome}`} onClick={() => remover(s.id)}><Icone nome="lixo" /></button>
         </div>
         <div className="sup-l2">
           <Segmentado
@@ -114,7 +115,7 @@ export function EtapaSuperficies({ cenario, catalogo, mudar, criarMaterial }: Pr
           <SeletorMaterial rotulo="Material" materiais={materiais} valor={s.material} aoMudar={(v) => alterar(s.id, (x) => { x.material = v })} />
           <span className="alfas mono">{catalogo.get(s.material).alfa.map((a) => fmt(a)).join(' · ')}</span>
           {(s.categoria === 'revestimento' || s.categoria === 'elemento') && (
-            <button type="button" className="btn ghost sm" onClick={() => setDims({ ...dims, [s.id]: dimensionar(cenario, catalogo, { superficie: s.id }) })}>Dimensionar área</button>
+            <button type="button" className="btn secundario pequeno" onClick={() => setDims({ ...dims, [s.id]: dimensionar(cenario, catalogo, { superficie: s.id }) })}><Icone nome="regua" />Dimensionar área</button>
           )}
         </div>
         {erro?.id === s.id && <p className="erro" role="alert">{erro.texto}</p>}
@@ -126,7 +127,7 @@ export function EtapaSuperficies({ cenario, catalogo, mudar, criarMaterial }: Pr
               <>
                 Com os demais itens deste cenário, <b>{d.semLimiteSuperior ? `a partir de ${fmt(d.minimo, 1)} m²` : `${fmt(d.minimo, 1)} a ${fmt(d.maximo, 1)} m²`}</b> deste material atendem.
                 {!d.semLimiteSuperior && (
-                  <button type="button" className="btn sm" onClick={() => alterar(s.id, (x) => { x.modo = 'area'; x.area = Math.round(d.minimo + d.maximo) / 2 })}>Usar {fmt(Math.round(d.minimo + d.maximo) / 2, 1)} m²</button>
+                  <button type="button" className="btn primario pequeno" onClick={() => alterar(s.id, (x) => { x.modo = 'area'; x.area = Math.round(d.minimo + d.maximo) / 2 })}>Usar {fmt(Math.round(d.minimo + d.maximo) / 2, 1)} m²</button>
                 )}
               </>
             )}
@@ -144,15 +145,15 @@ export function EtapaSuperficies({ cenario, catalogo, mudar, criarMaterial }: Pr
       <div className="sups">
         {bases.map((b) => [linha(b), ...itensSobre(cenario, b.id).map(linha)])}
         {orfas.map(linha)}
-        {!cenario.superficies.length && <p className="muted">Nenhuma superfície ainda. Comece pelo piso, pelas paredes e pelo forro/teto.</p>}
+        {!cenario.superficies.length && <p className="suave">Nenhuma superfície ainda. Comece pelo piso, pelas paredes e pelo forro/teto.</p>}
       </div>
-      <div className="row" style={{ marginTop: 12 }}>
-        <button type="button" className="btn" onClick={adicionarBase}>Nova superfície base</button>
-        <button type="button" className="btn ghost" disabled={!bases.length} onClick={adicionarItem}>Novo revestimento, esquadria ou elemento</button>
-        <button type="button" className="btn ghost" onClick={() => setCriando(true)}>Criar material</button>
+      <div className="linha" style={{ marginTop: 12 }}>
+        <button type="button" className="btn primario" onClick={adicionarBase}><Icone nome="mais" />Nova superfície base</button>
+        <button type="button" className="btn secundario" disabled={!bases.length} onClick={adicionarItem}><Icone nome="mais" />Novo revestimento, esquadria ou elemento</button>
+        <button type="button" className="btn secundario" onClick={() => setCriando(true)}><Icone nome="mais" />Criar material</button>
       </div>
-      {criando && <NovoMaterial catalogo={catalogo} aoSalvar={(m) => { criarMaterial(m); setCriando(false) }} aoCancelar={() => setCriando(false)} />}
-      <p className="note">Aqui não entram público, assentos, nuvens, baffles nem materiais com absorção por unidade. Eles ficam na etapa de ocupação.</p>
+      {criando && <EditorMaterial catalogo={catalogo} aoSalvar={(m) => { salvarMaterial(m); setCriando(false) }} aoFechar={() => setCriando(false)} />}
+      <p className="nota">Aqui não entram público, assentos, nuvens, baffles nem materiais com absorção por unidade. Eles ficam na etapa de ocupação.</p>
     </>
   )
 }

@@ -42,16 +42,16 @@ export function EtapaAmbiente({ cenario, mudar }: { cenario: Cenario; mudar: (f:
         </div>
       ))}
       <h3>Volume e ar</h3>
-      <div className="row">
-        <label className="f">Volume (V) em m³
+      <div className="linha">
+        <label className="campo">Volume (V) em m³
           <Numero valor={cenario.volume} minimo={1} passo={1} aoMudar={(v) => mudar((c) => { c.volume = v })} />
         </label>
         {meta.tipo === 'absorcao' && (
-          <label className="f">Pé-direito (h) em m
+          <label className="campo">Pé-direito (h) em m
             <Numero valor={cenario.peDireito} minimo={1} passo={0.1} aoMudar={(v) => mudar((c) => { c.peDireito = v })} />
           </label>
         )}
-        <label className="f">Umidade relativa do ar (UR)
+        <label className="campo">Umidade relativa do ar (UR)
           <select value={cenario.umidade} onChange={(e) => mudar((c) => { c.umidade = Number(e.target.value) as Umidade })}>
             <option value={0}>Desconsiderar absorção do ar</option>
             {[40, 50, 60].map((u) => <option key={u} value={u}>{u}%</option>)}
@@ -71,7 +71,7 @@ export function EtapaAmbiente({ cenario, mudar }: { cenario: Cenario; mudar: (f:
           <span>Relação mínima entre área de absorção equivalente e volume (A/V) = <b>{fmt(meta.avMinimo, 3)} m²/m³</b> para o pé-direito (h) informado, com 100% de ocupação, de 250 a 2000 Hz.</span>
         )}
         {meta.tipo === 'tempo' && meta.foraDaFaixa && <span className="pill warn">O volume está fora da faixa da norma para este uso ({meta.faixaVolume})</span>}
-        {meta.tipo === 'absorcao' && <span className="note">No grupo B a DIN usa o pé-direito (h) para definir o A/V mínimo, por isso ele é pedido aqui.</span>}
+        {meta.tipo === 'absorcao' && <span className="nota">No grupo B a DIN usa o pé-direito (h) para definir o A/V mínimo, por isso ele é pedido aqui.</span>}
       </div>
     </>
   )

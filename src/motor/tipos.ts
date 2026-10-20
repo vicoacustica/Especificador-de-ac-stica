@@ -15,6 +15,8 @@ export interface Material {
   unidade: boolean
   /** Criado pelo usuário. */
   proprio?: boolean
+  /** Foto ou textura do material (data URL), enviada pelo usuário. */
+  imagem?: string
 }
 
 export type CategoriaSuperficie = 'piso' | 'parede' | 'teto' | 'revestimento' | 'esquadria' | 'elemento'

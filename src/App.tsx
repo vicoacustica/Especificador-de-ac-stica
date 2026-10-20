@@ -1,24 +1,32 @@
 import { useEffect, useMemo, useState } from 'react'
-import { avaliar } from './motor/acustica'
 import { Catalogo } from './motor/materiais'
-import type { Cenario, EstadoOcupacao, Material, Projeto } from './motor/tipos'
+import type { Projeto } from './motor/tipos'
 import { cenarioVazio, duplicarCenario, novoId, projetoExemplo } from './dados/exemplo'
 import { RepositorioLocal } from './dados/projetos'
-import { EtapaAmbiente } from './etapas/Ambiente'
-import { EtapaComparar } from './etapas/Comparar'
-import { EtapaOcupacao } from './etapas/Ocupacao'
-import { EtapaSuperficies } from './etapas/Superficies'
-import { PainelResultado } from './resultado/Painel'
-import { Texto } from './ui/campos'
+import { lerBiblioteca, lerPerfil, salvarBiblioteca, salvarPerfil, type Biblioteca, type Perfil } from './dados/conta'
+import { Ajuda, type AbaAjuda } from './paginas/Ajuda'
+import { Conta } from './paginas/Conta'
+import { Editor } from './paginas/Editor'
+import { Inicio } from './paginas/Inicio'
+import { Materiais } from './paginas/Materiais'
+import { Projetos } from './paginas/Projetos'
+import type { SalvarMaterial } from './ui/EditorMaterial'
+import { Icone, type NomeIcone } from './ui/Icone'
+import { iniciais } from './ui/formato'
 
 const repositorio = new RepositorioLocal()
 
-const ETAPAS = [
-  ['Ambiente', 'uso, volume e ar'],
-  ['Superfícies', 'áreas e materiais'],
-  ['Ocupação', 'público, assentos, nuvens'],
-  ['Comparar', 'cenários lado a lado'],
-] as const
+type Rota =
+  | { pagina: 'inicio' | 'projetos' | 'materiais' | 'conta' }
+  | { pagina: 'ajuda'; aba?: AbaAjuda }
+  | { pagina: 'projeto'; id: string }
+
+const MENU: { pagina: 'inicio' | 'projetos' | 'materiais' | 'ajuda'; titulo: string; icone: NomeIcone }[] = [
+  { pagina: 'inicio', titulo: 'Início', icone: 'inicio' },
+  { pagina: 'projetos', titulo: 'Projetos', icone: 'projetos' },
+  { pagina: 'materiais', titulo: 'Materiais', icone: 'materiais' },
+  { pagina: 'ajuda', titulo: 'Ajuda', icone: 'ajuda' },
+]
 
 function projetosIniciais(): Projeto[] {
   const salvos = repositorio.listar()
@@ -28,141 +36,152 @@ function projetosIniciais(): Projeto[] {
   return [exemplo]
 }
 
+/** Materiais criados dentro de projetos (versão anterior) passam para a biblioteca da conta. */
+function bibliotecaInicial(): Biblioteca {
+  const b = lerBiblioteca()
+  const legado = repositorio.listar().flatMap((p) => p.materiaisProprios).filter((m) => !b.proprios.some((x) => x.id === m.id))
+  return legado.length ? { ...b, proprios: [...b.proprios, ...legado] } : b
+}
+
 export default function App() {
   const [projetos, setProjetos] = useState<Projeto[]>(projetosIniciais)
-  const [projetoId, setProjetoId] = useState(projetos[0].id)
-  const projeto = projetos.find((p) => p.id === projetoId) ?? projetos[0]
-  const [cenarioId, setCenarioId] = useState(projeto.cenarios[0].id)
-  const cenario = projeto.cenarios.find((c) => c.id === cenarioId) ?? projeto.cenarios[0]
-  const [etapa, setEtapa] = useState(1)
-  const [estado, setEstado] = useState<EstadoOcupacao>('cheio')
-  const [comparar, setComparar] = useState<string[]>(projeto.cenarios.map((c) => c.id))
-  const catalogo = useMemo(() => new Catalogo(projeto.materiaisProprios), [projeto.materiaisProprios])
+  const [biblioteca, setBiblioteca] = useState<Biblioteca>(bibliotecaInicial)
+  const [perfil, setPerfil] = useState<Perfil>(lerPerfil)
+  const [rota, setRota] = useState<Rota>({ pagina: 'inicio' })
+  const [aviso, setAviso] = useState<string | null>(null)
 
-  useEffect(() => { repositorio.salvar(projeto) }, [projeto])
+  const projeto = rota.pagina === 'projeto' ? projetos.find((p) => p.id === rota.id) : undefined
+  const catalogo = useMemo(
+    () => new Catalogo([...biblioteca.proprios, ...(projeto?.materiaisProprios ?? [])], biblioteca.imagens),
+    [biblioteca, projeto?.materiaisProprios],
+  )
 
-  function mudarProjeto(f: (p: Projeto) => void) {
+  useEffect(() => { window.scrollTo({ top: 0 }) }, [rota])
+  useEffect(() => {
+    if (!aviso) return
+    const t = setTimeout(() => setAviso(null), 5000)
+    return () => clearTimeout(t)
+  }, [aviso])
+
+  function ir(r: Rota) { setRota(r) }
+
+  function mudarProjeto(id: string, f: (p: Projeto) => void) {
     setProjetos((lista) => lista.map((p) => {
-      if (p.id !== projeto.id) return p
+      if (p.id !== id) return p
       const copia = structuredClone(p)
       f(copia)
+      copia.atualizadoEm = new Date().toISOString()
+      repositorio.salvar(copia)
       return copia
     }))
   }
-  function mudarCenario(f: (c: Cenario) => void) {
-    mudarProjeto((p) => { f(p.cenarios.find((c) => c.id === cenario.id)!) })
-  }
-  function abrirProjeto(p: Projeto) {
-    setProjetoId(p.id)
-    setCenarioId(p.cenarios[0].id)
-    setComparar(p.cenarios.map((c) => c.id))
-  }
   function novoProjeto() {
     const p: Projeto = { id: novoId(), nome: 'Novo projeto', cenarios: [cenarioVazio('Cenário 1')], materiaisProprios: [], atualizadoEm: new Date().toISOString() }
+    repositorio.salvar(p)
     setProjetos((l) => [p, ...l])
-    abrirProjeto(p)
-    setEtapa(0)
+    ir({ pagina: 'projeto', id: p.id })
   }
-  function excluirProjeto() {
-    repositorio.excluir(projeto.id)
-    const resto = projetos.filter((p) => p.id !== projeto.id)
-    const lista = resto.length ? resto : [projetoExemplo()]
-    setProjetos(lista)
-    abrirProjeto(lista[0])
+  function duplicarProjeto(p: Projeto) {
+    const n: Projeto = { ...structuredClone(p), id: novoId(), nome: `${p.nome} (cópia)`, cenarios: p.cenarios.map((c) => duplicarCenario(c, c.nome)), atualizadoEm: new Date().toISOString() }
+    repositorio.salvar(n)
+    setProjetos((l) => [n, ...l])
   }
-  function duplicar() {
-    const n = duplicarCenario(cenario, `${cenario.nome} (cópia)`)
-    mudarProjeto((p) => { p.cenarios.push(n) })
-    setCenarioId(n.id)
-    setComparar((l) => [...l, n.id])
+  function excluirProjeto(id: string) {
+    repositorio.excluir(id)
+    setProjetos((l) => l.filter((p) => p.id !== id))
   }
-  function novoCenario() {
-    const n = cenarioVazio(`Cenário ${projeto.cenarios.length + 1}`)
-    mudarProjeto((p) => { p.cenarios.push(n) })
-    setCenarioId(n.id)
-    setComparar((l) => [...l, n.id])
-    setEtapa(0)
+
+  function gravarBiblioteca(b: Biblioteca) {
+    setBiblioteca(b)
+    if (!salvarBiblioteca(b)) setAviso('O navegador não tem mais espaço para salvar a biblioteca. Remova algumas imagens para liberar espaço.')
   }
-  function excluirCenario() {
-    const resto = projeto.cenarios.filter((c) => c.id !== cenario.id)
-    mudarProjeto((p) => { p.cenarios = resto })
-    setCenarioId(resto[0].id)
-    setComparar((l) => l.filter((x) => x !== cenario.id))
+  function salvarMaterial({ material, imagem }: SalvarMaterial) {
+    const proprios = material.proprio
+      ? [...biblioteca.proprios.filter((m) => m.id !== material.id), { ...material, imagem: undefined }]
+      : biblioteca.proprios
+    const imagens = { ...biblioteca.imagens }
+    if (typeof imagem === 'string') imagens[material.id] = imagem
+    else if (imagem === null) delete imagens[material.id]
+    gravarBiblioteca({ proprios, imagens })
+    setAviso(`“${material.nome}” salvo na sua biblioteca.`)
   }
-  function criarMaterial(m: Material) {
-    mudarProjeto((p) => { p.materiaisProprios.push(m) })
+  function excluirMaterial(id: string) {
+    const imagens = { ...biblioteca.imagens }
+    delete imagens[id]
+    gravarBiblioteca({ proprios: biblioteca.proprios.filter((m) => m.id !== id), imagens })
   }
-  const irPara = (i: number) => { setEtapa(i); window.scrollTo({ top: 0 }) }
+  function mudarPerfil(p: Perfil) {
+    setPerfil(p)
+    if (!salvarPerfil(p)) setAviso('Não foi possível salvar o perfil neste navegador.')
+  }
+  function apagarDados() {
+    try {
+      for (const k of Object.keys(localStorage)) if (k.startsWith('especificador:')) localStorage.removeItem(k)
+    } catch { /* armazenamento bloqueado: só reinicia a tela */ }
+    setPerfil(lerPerfil())
+    setBiblioteca(bibliotecaInicial())
+    setProjetos(projetosIniciais())
+    ir({ pagina: 'inicio' })
+    setAviso('Os dados deste navegador foram apagados.')
+  }
+
+  const ativa = rota.pagina === 'projeto' ? 'projetos' : rota.pagina
+  let conteudo
+  if (rota.pagina === 'projeto' && projeto) {
+    conteudo = (
+      <Editor
+        key={projeto.id}
+        projeto={projeto}
+        catalogo={catalogo}
+        mudarProjeto={(f) => mudarProjeto(projeto.id, f)}
+        salvarMaterial={salvarMaterial}
+        voltar={() => ir({ pagina: 'projetos' })}
+        abrirAjuda={() => ir({ pagina: 'ajuda' })}
+      />
+    )
+  } else if (rota.pagina === 'projetos' || rota.pagina === 'projeto') {
+    conteudo = <Projetos projetos={projetos} catalogo={catalogo} abrir={(id) => ir({ pagina: 'projeto', id })} novo={novoProjeto} duplicar={duplicarProjeto} excluir={excluirProjeto} />
+  } else if (rota.pagina === 'materiais') {
+    conteudo = <Materiais catalogo={catalogo} projetos={projetos} salvarMaterial={salvarMaterial} excluirMaterial={excluirMaterial} />
+  } else if (rota.pagina === 'ajuda') {
+    conteudo = <Ajuda aba={rota.aba ?? 'guia'} mudarAba={(aba) => ir({ pagina: 'ajuda', aba })} />
+  } else if (rota.pagina === 'conta') {
+    conteudo = <Conta perfil={perfil} mudarPerfil={mudarPerfil} biblioteca={biblioteca} projetos={projetos} apagarDados={apagarDados} />
+  } else {
+    conteudo = (
+      <Inicio
+        perfil={perfil}
+        projetos={projetos}
+        catalogo={catalogo}
+        biblioteca={biblioteca}
+        abrir={(id) => ir({ pagina: 'projeto', id })}
+        novo={novoProjeto}
+        ir={(pagina, aba) => ir(pagina === 'ajuda' ? { pagina, aba } : { pagina })}
+      />
+    )
+  }
 
   return (
-    <div className="wrap">
-      <header className="top">
-        <div>
-          <h1>Especificador <span>Viço Acústica</span></h1>
-          <p>Dimensionamento de materiais acústicos pelo tempo de reverberação (DIN 18041 e NBR 12179), a partir da base de materiais da PLANILHA_TR.</p>
+    <div className="app">
+      <header className="barra">
+        <button type="button" className="marca" onClick={() => ir({ pagina: 'inicio' })}>
+          <span className="marca-simbolo"><Icone nome="onda" tamanho={18} /></span>
+          <span>Especificador<small>Viço Acústica</small></span>
+        </button>
+        <nav className="menu" aria-label="Seções">
+          {MENU.map((m) => (
+            <button key={m.pagina} type="button" className="pilula" aria-current={ativa === m.pagina ? 'page' : undefined} onClick={() => ir({ pagina: m.pagina })}>
+              <Icone nome={m.icone} /><span>{m.titulo}</span>
+            </button>
+          ))}
+        </nav>
+        <div className="barra-conta">
+          <button type="button" className="icone-btn redondo" aria-label="Configurações e ajuda" onClick={() => ir({ pagina: 'ajuda', aba: 'guia' })}><Icone nome="ajustes" /></button>
+          <button type="button" className="avatar" aria-label="Minha conta" aria-current={ativa === 'conta' ? 'page' : undefined} onClick={() => ir({ pagina: 'conta' })}>{iniciais(perfil.nome)}</button>
         </div>
       </header>
-
-      <section className="card projeto">
-        <div className="proj">
-          <label className="f">Meus projetos
-            <select value={projeto.id} onChange={(e) => abrirProjeto(projetos.find((p) => p.id === e.target.value)!)}>
-              {projetos.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
-            </select>
-          </label>
-          <label className="f grow">Nome do projeto
-            <Texto valor={projeto.nome} aoMudar={(v) => mudarProjeto((p) => { p.nome = v || 'Projeto sem nome' })} />
-          </label>
-          <div className="row">
-            <button type="button" className="btn ghost sm" onClick={novoProjeto}>Novo projeto</button>
-            <button type="button" className="btn x" onClick={excluirProjeto}>Excluir projeto</button>
-          </div>
-        </div>
-        <p className="note">Os projetos ficam salvos neste navegador. O login da comunidade, com projetos na nuvem, entra numa próxima versão.</p>
-        <div className="cens" role="tablist" aria-label="Cenários">
-          {projeto.cenarios.map((c) => {
-            const ok = avaliar(c, catalogo).aprovado
-            return (
-              <button key={c.id} type="button" role="tab" className="cen" aria-selected={c.id === cenario.id} onClick={() => setCenarioId(c.id)}>
-                <span className={`dot ${ok ? 'ok' : 'bad'}`} />{c.nome}
-              </button>
-            )
-          })}
-          <button type="button" className="btn ghost sm" onClick={duplicar}>Duplicar cenário</button>
-          <button type="button" className="btn ghost sm" onClick={novoCenario}>Novo cenário</button>
-        </div>
-        <div className="row cenedit">
-          <label className="f">Nome do cenário
-            <Texto key={cenario.id} valor={cenario.nome} aoMudar={(v) => mudarCenario((c) => { c.nome = v || 'Cenário' })} />
-          </label>
-          {projeto.cenarios.length > 1 && <button type="button" className="btn x" onClick={excluirCenario}>Excluir cenário</button>}
-        </div>
-      </section>
-
-      <div className="grid">
-        <main>
-          <nav className="steps" role="tablist">
-            {ETAPAS.map(([t, s], i) => (
-              <button key={t} type="button" role="tab" aria-selected={etapa === i} onClick={() => irPara(i)}>
-                <b>{i + 1}. {t}</b><small>{s}</small>
-              </button>
-            ))}
-          </nav>
-          <section className="card" key={`${projeto.id}-${cenario.id}-${etapa}`}>
-            {etapa === 0 && <EtapaAmbiente cenario={cenario} mudar={mudarCenario} />}
-            {etapa === 1 && <EtapaSuperficies cenario={cenario} catalogo={catalogo} mudar={mudarCenario} criarMaterial={criarMaterial} />}
-            {etapa === 2 && <EtapaOcupacao cenario={cenario} catalogo={catalogo} mudar={mudarCenario} />}
-            {etapa === 3 && <EtapaComparar projeto={projeto} catalogo={catalogo} selecionados={comparar} setSelecionados={setComparar} estado={estado} setEstado={setEstado} />}
-            <div className="nav">
-              {etapa > 0 ? <button type="button" className="btn ghost" onClick={() => irPara(etapa - 1)}>Voltar</button> : <span />}
-              {etapa < 3 && <button type="button" className="btn" onClick={() => irPara(etapa + 1)}>Avançar</button>}
-            </div>
-          </section>
-        </main>
-        <aside className="res">
-          <PainelResultado projeto={projeto} cenario={cenario} catalogo={catalogo} estado={estado} setEstado={setEstado} />
-        </aside>
-      </div>
+      <div className="conteudo">{conteudo}</div>
+      {aviso && <div className="aviso" role="status">{aviso}<button type="button" className="icone-btn" aria-label="Fechar aviso" onClick={() => setAviso(null)}><Icone nome="fechar" tamanho={16} /></button></div>}
     </div>
   )
 }

@@ -35,11 +35,11 @@ export function EtapaComparar({ projeto, catalogo, selecionados, setSelecionados
             onClick={() => setSelecionados(selecionados.includes(c.id) ? selecionados.filter((x) => x !== c.id) : [...selecionados, c.id])}>{c.nome}</button>
         ))}
       </div>
-      <div className="row" style={{ justifyContent: 'space-between', marginTop: 14 }}>
+      <div className="linha" style={{ justifyContent: 'space-between', marginTop: 14 }}>
         <h3 style={{ margin: 0 }}>Tempo de reverberação (T) com {NOME_ESTADO[estado]} de ocupação</h3>
         <Segmentado rotulo="Ocupação" valor={estado} aoMudar={setEstado} opcoes={ESTADOS.map((e) => ({ valor: e, rotulo: NOME_ESTADO[e] }))} />
       </div>
-      {!linhas.length && <p className="muted">Selecione ao menos um cenário.</p>}
+      {!linhas.length && <p className="suave">Selecione ao menos um cenário.</p>}
       {comTempo.length > 0 && (
         <div className="tbl">
           <div style={{ minWidth: 420 }}>
@@ -57,11 +57,11 @@ export function EtapaComparar({ projeto, catalogo, selecionados, setSelecionados
         </div>
       )}
       {comTempo.length > 0 && (
-        <p className="note">{alvoUnico
+        <p className="nota">{alvoUnico
           ? 'A faixa verde vai da margem inferior à superior do tempo de reverberação ótimo.'
           : 'Os cenários têm alvos diferentes. As linhas tracejadas mostram as margens superior e inferior de cada um, na cor do cenário.'}</p>
       )}
-      {linhas.length > 0 && comTempo.length === 0 && <p className="note">Os cenários selecionados usam o grupo B e são comparados pela tabela de A/V.</p>}
+      {linhas.length > 0 && comTempo.length === 0 && <p className="nota">Os cenários selecionados usam o grupo B e são comparados pela tabela de A/V.</p>}
       {linhas.length > 0 && (
         <div className="tbl">
           <table className="cmp">
@@ -73,14 +73,14 @@ export function EtapaComparar({ projeto, catalogo, selecionados, setSelecionados
                 return [
                   <tr key={c.id}>
                     <td><i className="sw" style={{ background: cor }} />{c.nome}</td>
-                    <td className="note">{av.tipo === 'absorcao' ? `A/V ≥ ${fmt(av.meta.avMinimo, 3)}` : `${av.meta.otimo ? 'T ót.' : 'T alvo'} ${fmt(av.meta.t)} s · ${av.resultado.formula === 'eyring' ? 'Eyring' : 'Sabine'}`}</td>
+                    <td className="nota">{av.tipo === 'absorcao' ? `A/V ≥ ${fmt(av.meta.avMinimo, 3)}` : `${av.meta.otimo ? 'T ót.' : 'T alvo'} ${fmt(av.meta.t)} s · ${av.resultado.formula === 'eyring' ? 'Eyring' : 'Sabine'}`}</td>
                     {valores.map((v, i) => <td key={i} className={`num ${CLASSE[bandas[i]]}`}>{fmt(v)}</td>)}
                     <td><span className={`pill ${av.aprovado ? 'ok' : 'bad'}`}>{av.aprovado ? 'Atende' : 'Não atende'}</span></td>
                   </tr>,
                   av.tipo === 'tempo' && (['superior', 'inferior'] as const).map((lado) => (
                     <tr key={c.id + lado} className="marg">
-                      <td /><td className="note">margem {lado === 'superior' ? 'máx.' : 'mín.'}</td>
-                      {av.meta[lado].map((v, i) => <td key={i} className="num muted">{fmt(v)}</td>)}
+                      <td /><td className="nota">margem {lado === 'superior' ? 'máx.' : 'mín.'}</td>
+                      {av.meta[lado].map((v, i) => <td key={i} className="num suave">{fmt(v)}</td>)}
                       <td />
                     </tr>
                   )),

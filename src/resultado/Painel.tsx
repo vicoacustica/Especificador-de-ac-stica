@@ -27,7 +27,7 @@ export function PainelResultado({ projeto, cenario, catalogo, estado, setEstado 
         </div>
         <h3>Área de absorção por volume (A/V), 100% de ocupação</h3>
         <GraficoAV av={av.av} minimo={av.meta.avMinimo} />
-        <p className="note">Contam as bandas de 250 a 2000 Hz.</p>
+        <p className="nota">Contam as bandas de 250 a 2000 Hz.</p>
       </>
     )
   } else {
@@ -52,8 +52,8 @@ export function PainelResultado({ projeto, cenario, catalogo, estado, setEstado 
           faixa={{ superior: av.meta.superior, inferior: av.meta.inferior, alvo: av.meta.t }}
           series={r.estados.map((e) => ({ cor: `var(--s-${e})`, valores: r.tempo[e] }))}
         />
-        <div className="row" style={{ justifyContent: 'space-between' }}>
-          <span className="note">Tempo de reverberação (T) em s</span>
+        <div className="linha" style={{ justifyContent: 'space-between' }}>
+          <span className="nota">Tempo de reverberação (T) em s</span>
           <Segmentado rotulo="Ocupação na tabela" valor={est} aoMudar={setEstado} opcoes={r.estados.map((e) => ({ valor: e, rotulo: NOME_ESTADO[e] }))} />
         </div>
         <div className="tbl">
@@ -61,8 +61,8 @@ export function PainelResultado({ projeto, cenario, catalogo, estado, setEstado 
             <thead><tr><th>Hz</th>{BANDAS.map((b) => <th key={b} className="num">{b}</th>)}</tr></thead>
             <tbody>
               <tr><td>T (s)</td>{r.tempo[est].map((v, i) => <td key={i} className={`num ${CLASSE[av.bandas[est][i]]}`}>{fmt(v)}</td>)}</tr>
-              <tr><td className="muted">mín.</td>{av.meta.inferior.map((v, i) => <td key={i} className="num muted">{fmt(v)}</td>)}</tr>
-              <tr><td className="muted">máx.</td>{av.meta.superior.map((v, i) => <td key={i} className="num muted">{fmt(v)}</td>)}</tr>
+              <tr><td className="suave">mín.</td>{av.meta.inferior.map((v, i) => <td key={i} className="num suave">{fmt(v)}</td>)}</tr>
+              <tr><td className="suave">máx.</td>{av.meta.superior.map((v, i) => <td key={i} className="num suave">{fmt(v)}</td>)}</tr>
             </tbody>
           </table>
         </div>
@@ -85,19 +85,19 @@ export function PainelResultado({ projeto, cenario, catalogo, estado, setEstado 
 
   return (
     <>
-      <section className="card">
+      <section className="cartao">
         <div className="status">
           <span className={`big ${av.aprovado ? 'ok' : 'bad'}`}>{av.aprovado ? 'Atende' : 'Não atende'}</span>
           {av.tipo === 'tempo' && <span className={`pill ${r.formula === 'eyring' ? 'warn' : 'ok'}`}>{r.formula === 'eyring' ? 'Eyring' : 'Sabine'}</span>}
         </div>
-        <div className="note">{cenario.nome} · {av.meta.nome}</div>
-        {falhas.length > 0 && <p className="note">{falhas.join(' · ')}</p>}
+        <div className="nota">{cenario.nome} · {av.meta.nome}</div>
+        {falhas.length > 0 && <p className="nota">{falhas.join(' · ')}</p>}
         {corpo}
       </section>
-      <section className="card">
+      <section className="cartao">
         <div className="status">
-          <b style={{ fontFamily: 'var(--f-display)' }}>Memorial de especificação</b>
-          <button type="button" className="btn ghost sm" onClick={copiar}>{copiado ?? 'Copiar memorial'}</button>
+          <b>Memorial de especificação</b>
+          <button type="button" className="btn secundario pequeno" onClick={copiar}>{copiado ?? 'Copiar memorial'}</button>
         </div>
         <pre className="memorial">{texto}</pre>
       </section>
