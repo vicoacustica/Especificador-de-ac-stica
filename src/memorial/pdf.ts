@@ -134,7 +134,7 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
   }
 
   type Celula = string | { t: string; cor?: Cor; negrito?: boolean; fundo?: Cor }
-  interface Coluna { titulo: string; largura: number; direita?: boolean }
+  interface Coluna { titulo: string; largura: number; direita?: boolean; centro?: boolean }
   /** Tabela com quebra de texto e cabeçalho repetido a cada página. */
   function tabela(cols: Coluna[], linhas: Celula[][], tam = 7.5, alturaMin = 0, desenhar?: (linha: number, x: number, y: number, h: number) => void) {
     const total = cols.reduce((s, c) => s + c.largura, 0)
@@ -146,7 +146,7 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
       doc.rect(MARGEM, y, LARG_RETRATO, lh + 3, 'F')
       fonte(tam, true)
       let x = MARGEM
-      cols.forEach((c, i) => { doc.text(c.titulo, c.direita ? x + ws[i] - 1.5 : x + 1.5, y + lh + 0.8, { align: c.direita ? 'right' : 'left' }); x += ws[i] })
+      cols.forEach((c, i) => { doc.text(c.titulo, c.centro ? x + ws[i] / 2 : c.direita ? x + ws[i] - 1.5 : x + 1.5, y + lh + 0.8, { align: c.centro ? 'center' : c.direita ? 'right' : 'left' }); x += ws[i] })
       y += lh + 3
     }
     garantir(lh * 3 + 6)
@@ -510,7 +510,7 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
   paragrafo('Só entram os materiais acústicos do cenário especificado. Materiais comuns, assentos e público ficam de fora. As quantidades de superfícies são as áreas efetivas, já descontados os itens aplicados sobre elas.', 8.5, SUAVE)
   if (!espec.length) paragrafo('O cenário não tem materiais acústicos especificados.')
   else tabela(
-    [{ titulo: 'Código', largura: 15 }, { titulo: 'Imagem', largura: 26 }, { titulo: 'Descrição do material', largura: 100 }, { titulo: 'Quantitativo', largura: 33, direita: true }],
+    [{ titulo: 'Código', largura: 15 }, { titulo: 'Imagem', largura: 26, centro: true }, { titulo: 'Descrição do material', largura: 100 }, { titulo: 'Quantitativo', largura: 33, direita: true }],
     espec.map((e) => {
       const mat = e.material
       const linhas = [
@@ -529,12 +529,19 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
       etiqueta(x + 7, yy + 4.5, e)
       const img = d.imagens[e.material.id]
       const k = LARG_RETRATO / 174
+      // A imagem cabe em um quadrado de lado `lado`, mantém a proporção e fica centralizada na coluna.
+      const lado = 26 * k - 3, cx = x + 15 * k + 13 * k
       if (img) {
-        try { doc.addImage(img, 'JPEG', x + 15 * k + 1.5, yy + 1.5, 26 * k - 3, 26 * k - 3) } catch { /* imagem inválida: a célula fica vazia */ }
+        try {
+          const { width, height } = doc.getImageProperties(img)
+          const f = lado / Math.max(width, height, 1)
+          const w = width * f, h = height * f
+          doc.addImage(img, 'JPEG', cx - w / 2, yy + 1.5, w, h)
+        } catch { /* imagem inválida: a célula fica vazia */ }
       } else {
         doc.setFillColor(...clarear(hex(cores.get(e.material.id) ?? '#999999'), 0.6))
-        doc.rect(x + 15 * k + 1.5, yy + 1.5, 26 * k - 3, 26 * k - 3, 'F')
-        fonte(6, false, SUAVE); doc.text('sem imagem', x + 15 * k + 13 * k, yy + 13 * k, { align: 'center' })
+        doc.rect(cx - lado / 2, yy + 1.5, lado, lado, 'F')
+        fonte(6, false, SUAVE); doc.text('sem imagem', cx, yy + 1.5 + lado / 2, { align: 'center' })
       }
     },
   )

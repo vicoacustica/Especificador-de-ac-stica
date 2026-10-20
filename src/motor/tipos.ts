@@ -126,6 +126,28 @@ export interface Cenario {
   itens: ItemOcupacao[]
   /** Superfície de cada grupo do modelo 3D (id da superfície por grupo). */
   grupos?: Record<string, string>
+  /** Fonte, receptor e elementos desenhados no traçado de raios. */
+  raios?: TracadoRaios
+}
+
+export type VistaRaios = 'planta' | 'longitudinal' | 'transversal'
+
+/** Elemento refletor desenhado em uma vista do traçado de raios, em coordenadas da vista (m). */
+export interface ElementoRaio {
+  id: string
+  vista: VistaRaios
+  a: [number, number]
+  b: [number, number]
+  material: string
+}
+
+export interface TracadoRaios {
+  /** Posições x, y, z em metros. */
+  fonte: [number, number, number]
+  receptor: [number, number, number]
+  elementos: ElementoRaio[]
+  /** Sem modelo 3D: medidas em planta da sala retangular de referência (m). */
+  caixa?: { comprimento: number; largura: number }
 }
 
 export interface Projeto {

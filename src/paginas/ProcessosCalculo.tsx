@@ -246,6 +246,28 @@ export function ProcessosCalculo() {
           />
           <p className="nota">Com pé-direito até 2,5 m, os mínimos são fixos: {Object.entries(GRUPOS_B).map(([g, d]) => `${g} ${fmt(d.minimoAte2_5m)}`).join(', ')} m²/m³.</p>
         </Topico>
+
+        <Topico n={13} titulo="Traçado de raios e tempo de atraso das reflexões">
+          <p>Na etapa 6 a planta baixa e os cortes viram desenhos em 2D com as superfícies cortadas pelo plano. O leque de raios parte da fonte em todas as direções; a cada superfície o raio reflete como em um espelho (ângulo de incidência igual ao de reflexão) e perde a parcela de energia absorvida, (1 − α). Isso mostra como o som se espalha pela sala.</p>
+          <p>As reflexões que chegam ao receptor são calculadas pelo método das fontes-imagem: a fonte é espelhada na reta de cada superfície, e a imagem é espelhada de novo para as reflexões de 2ª e 3ª ordem. Quando o caminho da imagem até o receptor cruza as superfícies na ordem certa e sem obstáculos, a reflexão existe, e o comprimento do percurso é a distância da imagem ao receptor.</p>
+          <Equacao
+            formula={<>Δt = (r − r₀) / c</>}
+            legenda={[
+              [<>Atraso da reflexão em relação ao som direto (Δt)</>, 's (mostrado em ms)'],
+              [<>Percurso da reflexão (r)</>, 'm'],
+              [<>Percurso do som direto (r₀)</>, 'm'],
+              [<>Velocidade do som (c)</>, '343 m/s'],
+            ]}
+          />
+          <Equacao
+            formula={<>L = 20·lg(r₀ / r) + 10·lg[Π(1 − α)]</>}
+            legenda={[
+              [<>Nível da reflexão em relação ao som direto (L)</>, 'dB'],
+              [<>Coeficiente de absorção sonora (α)</>, 'de cada superfície em que a reflexão bate, na banda escolhida'],
+            ]}
+          />
+          <p className="nota">As linhas de 50 ms e 80 ms do reflectograma são as referências usuais de integração do ouvido: reflexões que chegam antes de 50 ms reforçam a fala, e até 80 ms reforçam a música. Reflexões fortes bem depois disso podem ser percebidas como eco.</p>
+        </Topico>
       </div>
     </div>
   )

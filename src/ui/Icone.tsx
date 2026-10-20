@@ -29,6 +29,7 @@ const CAMINHOS = {
   onda: 'M2 12c2-5 4-5 6 0s4 5 6 0 4-5 6 0',
   copiarTexto: 'M8 4h10a2 2 0 0 1 2 2v12M4 8h10a2 2 0 0 1 2 2v10H6a2 2 0 0 1-2-2z',
   nuvem: 'M3 9h18M5 9v-3M19 9V6M7 13h10l-1.5 5h-7z',
+  raios: 'M4 20h.01M4 20 20 8M4 20l9-15M4 20l16 0M13 5l7 3',
   regua: 'M3 17 17 3l4 4L7 21zM7 13l2 2M10 10l2 2M13 7l2 2',
 } as const
 
