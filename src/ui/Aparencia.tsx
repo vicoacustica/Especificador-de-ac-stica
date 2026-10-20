@@ -2,7 +2,7 @@ import { NOME_ESTILO, PALETA, type Aparencia, type Estilo } from '../dados/apare
 import { Segmentado } from './campos'
 import { Icone } from './Icone'
 
-/** Escolha do estilo visual; no estilo Grade, também a cor de destaque e o modo claro ou escuro. */
+/** Escolha do estilo visual; no estilo Brutalista, também a cor de destaque e o modo claro ou escuro. */
 export function EscolhaAparencia({ aparencia, mudar }: { aparencia: Aparencia; mudar: (a: Aparencia) => void }) {
   const grade = aparencia.estilo === 'grade'
   return (
@@ -23,7 +23,7 @@ export function EscolhaAparencia({ aparencia, mudar }: { aparencia: Aparencia; m
             { valor: 'claro', rotulo: <><Icone nome="sol" tamanho={15} />Claro</> },
             { valor: 'escuro', rotulo: <><Icone nome="lua" tamanho={15} />Escuro</> },
           ]} />
-        ) : <span className="nota">O modo escuro e a cor de destaque são do estilo Grade.</span>}
+        ) : <span className="nota">O modo escuro e a cor de destaque são do estilo Brutalista.</span>}
       </div>
       {grade && (
         <div className="aparencia-linha">

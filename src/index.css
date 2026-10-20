@@ -671,8 +671,8 @@ details p { margin: 8px 0 0; color: var(--ink-2); max-width: 75ch; }
 .aparencia-estilo.classico .aparencia-amostra { background: #f4f1eb; border-radius: 10px; }
 .aparencia-estilo.classico .aparencia-amostra i { background: #fff; border: 1px solid #d8d0c3; border-radius: 8px; }
 .aparencia-estilo.classico .aparencia-amostra i:first-child { background: #e0523e; border-color: #e0523e; }
-.aparencia-estilo.grade .aparencia-amostra { background-color: #f3f4f6; background-image: linear-gradient(color-mix(in srgb, var(--accent) 22%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--accent) 22%, transparent) 1px, transparent 1px); background-size: 8px 8px; border: 1px solid #b7bdc8; }
-.aparencia-estilo.grade .aparencia-amostra i { background: #fff; border: 1px solid #b7bdc8; border-top: 3px solid var(--accent); }
+.aparencia-estilo.grade .aparencia-amostra { background-color: #f4eee2; background-image: linear-gradient(color-mix(in srgb, var(--accent) 22%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--accent) 22%, transparent) 1px, transparent 1px); background-size: 8px 8px; border: 1.5px solid #141414; gap: 6px; }
+.aparencia-estilo.grade .aparencia-amostra i { background: #fffaf1; border: 1.5px solid #141414; box-shadow: 2px 2px 0 #141414; }
 .aparencia-estilo.grade .aparencia-amostra i:first-child { background: var(--accent); }
 .aparencia-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
 .aparencia-linha > .suave { min-width: 110px; font-size: 13px; }

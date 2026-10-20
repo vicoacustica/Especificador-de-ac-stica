@@ -10,7 +10,7 @@ export interface Aparencia {
   destaque: string
 }
 
-/** Cores de destaque do estilo Grade; `tinta` é a cor do texto sobre o destaque. */
+/** Cores de destaque do estilo Brutalista (o id interno continua 'grade'); `tinta` é a cor do texto sobre o destaque. */
 export const PALETA: { id: string; nome: string; cor: string; tinta: string }[] = [
   { id: 'laranja', nome: 'Laranja Viço', cor: '#e0523e', tinta: '#ffffff' },
   { id: 'azul', nome: 'Azul', cor: '#2f6fed', tinta: '#ffffff' },
@@ -24,7 +24,7 @@ export const PALETA: { id: string; nome: string; cor: string; tinta: string }[] 
 
 export const NOME_ESTILO: Record<Estilo, { nome: string; descricao: string }> = {
   classico: { nome: 'Clássico', descricao: 'Off-white, cantos arredondados e destaque laranja.' },
-  grade: { nome: 'Grade', descricao: 'Flat, linhas retas e grades coloridas, com cor de destaque e modo escuro.' },
+  grade: { nome: 'Brutalista', descricao: 'Neobrutalismo minimalista: bordas pretas, sombras sólidas e uma cor de destaque, com modo escuro.' },
 }
 
 const CHAVE = 'especificador:aparencia:v1'
