@@ -7,6 +7,7 @@ import { Icone } from '../ui/Icone'
 import { Numero, Segmentado, SeletorMaterial, Texto } from '../ui/campos'
 import { fmt } from '../ui/formato'
 import { EditorMaterial, type SalvarMaterial } from '../ui/EditorMaterial'
+import { ImportarModelo } from '../importacao/ImportarModelo'
 
 interface Props {
   cenario: Cenario
@@ -19,6 +20,7 @@ export function EtapaSuperficies({ cenario, catalogo, mudar, salvarMaterial }: P
   const [erro, setErro] = useState<{ id: string; texto: string } | null>(null)
   const [dims, setDims] = useState<Record<string, Dimensionamento>>({})
   const [criando, setCriando] = useState(false)
+  const [importando, setImportando] = useState(false)
   const materiais = catalogo.todos.filter(paraSuperficie)
   const bases = cenario.superficies.filter(ehBase)
 
@@ -160,9 +162,23 @@ export function EtapaSuperficies({ cenario, catalogo, mudar, salvarMaterial }: P
       <div className="linha" style={{ marginTop: 12 }}>
         <button type="button" className="btn primario" onClick={adicionarBase}><Icone nome="mais" />Nova superfície base</button>
         <button type="button" className="btn secundario" onClick={() => setCriando(true)}><Icone nome="mais" />Criar material</button>
+        <button type="button" className="btn secundario" onClick={() => setImportando(true)}><Icone nome="enviar" />Importar modelo DXF ou OBJ</button>
       </div>
+      {importando && (
+        <ImportarModelo
+          cenario={cenario}
+          catalogo={catalogo}
+          aoFechar={() => setImportando(false)}
+          aoImportar={(superficies, volume) => {
+            setDims({})
+            setErro(null)
+            mudar((c) => { c.superficies = superficies; if (volume) c.volume = volume })
+            setImportando(false)
+          }}
+        />
+      )}
       {criando && <EditorMaterial catalogo={catalogo} aoSalvar={(m) => { salvarMaterial(m); setCriando(false) }} aoFechar={() => setCriando(false)} />}
-      <p className="nota">Aqui não entram público, assentos, nuvens, baffles nem materiais com absorção por unidade. Eles ficam na etapa de ocupação.</p>
+      <p className="nota">Aqui não entram público, assentos, nuvens, baffles nem materiais com absorção por unidade. Eles ficam nas etapas Nuvens/Baffles e Ocupação.</p>
     </>
   )
 }

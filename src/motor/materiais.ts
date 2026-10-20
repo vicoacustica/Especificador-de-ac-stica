@@ -40,11 +40,8 @@ export const MATERIAIS_BASE: Material[] = (() => {
 /** NRC pela definição usual: média de α em 250, 500, 1000 e 2000 Hz, arredondada a 0,05. */
 export const nrcCalculado = (alfa: PorBanda) => Math.round((alfa[1] + alfa[2] + alfa[3] + alfa[4]) / 4 / 0.05) * 0.05
 
-/** NRC informado pelo usuário ou, sem ele, o calculado. Materiais por peça não têm NRC. */
-export function nrcDe(m: Material): { valor: number; informado: boolean } | null {
-  if (m.unidade) return null
-  return m.nrc !== undefined ? { valor: m.nrc, informado: true } : { valor: nrcCalculado(m.alfa), informado: false }
-}
+/** Materiais com coeficiente (α) sem NRC informado recebem o NRC calculado. Materiais por peça não têm NRC. */
+const comNrc = (m: Material): Material => (m.unidade || m.nrc !== undefined ? m : { ...m, nrc: nrcCalculado(m.alfa), nrcEstimado: true })
 
 export class Catalogo {
   private porId: Map<string, Material>
@@ -57,7 +54,7 @@ export class Catalogo {
     const vistos = new Set<string>()
     const lista = [...MATERIAIS_BASE, ...proprios]
       .filter((m) => (vistos.has(m.id) ? false : (vistos.add(m.id), true)))
-      .map((m) => (imagens[m.id] ? { ...m, imagem: imagens[m.id] } : m))
+      .map((m) => comNrc(imagens[m.id] ? { ...m, imagem: imagens[m.id] } : m))
     const fora = new Set(ocultos)
     this.todos = lista.filter((m) => m.proprio || !fora.has(m.id))
     this.ocultos = lista.filter((m) => !m.proprio && fora.has(m.id))

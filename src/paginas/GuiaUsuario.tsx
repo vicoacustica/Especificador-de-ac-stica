@@ -50,6 +50,10 @@ const PASSOS: Passo[] = [
         imagem: '03-superficies-itens', legenda: 'Itens sobre as bases',
         marcas: [<>O tipo do item: revestimento (o forro acústico de 53 m²), esquadria (janelas de 8 × 1,2 m e porta de 0,9 × 2,1 m) ou elemento.</>, <>A base sobre a qual ele está. As janelas e a porta estão sobre as paredes.</>, <>A área livre da base. A laje tem 63 m², o forro ocupa 53 m² e restam 10 m² de gesso aparente. O sistema não deixa a soma passar da área da base.</>, <><b>Dimensionar área</b> mostra a faixa de área deste material que faz a sala atender, mantendo o resto do cenário.</>],
       },
+      {
+        imagem: '03-importar', legenda: 'Importar um modelo DXF ou OBJ',
+        marcas: [<>O botão “Importar modelo DXF ou OBJ” lê o arquivo e mostra o quadro de áreas antes de importar: cada layer (ou etiqueta) com a área de piso, paredes, forro/teto e faces inclinadas. Confira a unidade pela caixa envolvente.</>, <>Escolha o que cada layer vira no projeto. O sistema sugere pelo nome da layer e pela orientação das faces; layers que não são superfícies ficam como “Não importar”.</>, <>Diga se as paredes do modelo já têm os vãos recortados, se as superfícies atuais serão substituídas e se o volume vem do modelo.</>, <>Importe. Cada layer entra com um material padrão; depois escolha o material de cada superfície.</>],
+      },
     ],
   },
   {
@@ -100,7 +104,7 @@ const PASSOS: Passo[] = [
       },
       {
         imagem: '08-novo-material', legenda: 'Criação de material',
-        marcas: [<>Envie a foto do acabamento; ela aparece na escolha de materiais.</>, <>O nome do material.</>, <>A categoria, existente ou nova.</>, <>A descrição: fabricante, espessura, montagem, laudo.</>, <>Os seis coeficientes de absorção sonora (α), de 125 a 4000 Hz, do laudo do fabricante. Para nuvens e baffles vendidos por peça, marque a absorção por unidade.</>, <>O Coeficiente de redução de ruído (NRC) do laudo. Em branco, o sistema mostra a média de α em 250, 500, 1000 e 2000 Hz.</>, <>Salve. Nos materiais da base você pode trocar a imagem ou criar uma cópia editável.</>],
+        marcas: [<>Envie a foto do acabamento; ela aparece na escolha de materiais.</>, <>O nome do material.</>, <>A categoria, existente ou nova.</>, <>A descrição: fabricante, espessura, montagem, laudo.</>, <>Os seis coeficientes de absorção sonora (α), de 125 a 4000 Hz, do laudo do fabricante. Para nuvens e baffles vendidos por peça, marque a absorção por unidade.</>, <>O Coeficiente de redução de ruído (NRC) do laudo. Em branco, o sistema calcula o NRC pela média de α em 250, 500, 1000 e 2000 Hz.</>, <>Salve. Nos materiais da base você pode trocar a imagem ou criar uma cópia editável.</>],
       },
     ],
   },

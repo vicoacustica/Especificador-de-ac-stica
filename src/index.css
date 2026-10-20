@@ -492,3 +492,25 @@ details p { margin: 8px 0 0; color: var(--ink-2); max-width: 75ch; }
 .topico-titulo .passo-numero { width: 30px; height: 30px; font-size: 14px; }
 @media (max-width: 900px) { .calculo-pagina { grid-template-columns: minmax(0, 1fr); } .indice { position: static; } }
 .campo textarea { resize: vertical; line-height: 1.45; }
+
+/* Importação de modelos */
+.importar-inicio { display: grid; gap: 16px; }
+.importar-soltar { display: grid; justify-items: center; gap: 8px; padding: 32px 20px; border: 2px dashed var(--line-2); border-radius: var(--r-lg); background: var(--surface-2); color: var(--ink); text-align: center; cursor: pointer; }
+.importar-soltar:hover { border-color: var(--accent); }
+.importar-exemplo { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13.5px; }
+.importar-dicas { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 13.5px; color: var(--ink-2); }
+.importar { display: grid; gap: 12px; }
+.importar-resumo { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); font-size: 13.5px; }
+.importar-resumo > span:first-child svg { vertical-align: -3px; margin-right: 6px; }
+.importar-opcoes { align-items: flex-end; }
+.importar-opcoes-finais { display: grid; gap: 8px; }
+.importar-opcoes-finais .campo { max-width: 460px; }
+.tabela-rolagem { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); }
+.quadro-areas { width: 100%; border-collapse: collapse; font-size: 13px; }
+.quadro-areas th, .quadro-areas td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+.quadro-areas th { background: var(--surface-2); font-weight: 600; color: var(--ink-2); }
+.quadro-areas .num { text-align: right; font-variant-numeric: tabular-nums; }
+.quadro-areas tfoot td { font-weight: 600; background: var(--surface-2); border-bottom: 0; }
+.quadro-areas tr.ignorada td { color: var(--ink-3); }
+.quadro-areas select { border: 1px solid var(--line-2); border-radius: var(--r-sm); padding: 5px 8px; background: var(--surface); font-size: 13px; }
+.alerta { margin: 0; padding: 10px 14px; border-radius: var(--r); background: #fdf1dc; border: 1px solid #ecd3a4; font-size: 13px; }

@@ -37,7 +37,7 @@ export function EditorMaterial(props: {
   const [alfa, setAlfa] = useState<string[]>((fonte?.alfa ?? [0.1, 0.3, 0.6, 0.8, 0.8, 0.7]).map((a) => String(a)))
   const [unidade, setUnidade] = useState(fonte?.unidade ?? false)
   const [descricao, setDescricao] = useState(fonte?.descricao ?? '')
-  const [nrc, setNrc] = useState(fonte?.nrc !== undefined ? String(fonte.nrc) : '')
+  const [nrc, setNrc] = useState(fonte?.nrc !== undefined && !fonte.nrcEstimado ? String(fonte.nrc) : '')
   // Na cópia a imagem vem junto, a menos que o usuário troque ou remova.
   const [imagem, setImagem] = useState<string | null | undefined>(props.copiaDe?.imagem)
   const [erro, setErro] = useState<string | null>(null)
@@ -141,7 +141,7 @@ export function EditorMaterial(props: {
           {!unidade && (
             <label className="campo campo-nrc">Coeficiente de redução de ruído (NRC)
               <input type="number" step={0.05} min={0} value={nrc} disabled={daBase} placeholder={nrcSugerido.toFixed(2).replace('.', ',')} onChange={(e) => setNrc(e.target.value)} />
-              <small className="nota">Informe o NRC do laudo. Em branco, o sistema mostra a média de α em 250, 500, 1000 e 2000 Hz ({nrcSugerido.toFixed(2).replace('.', ',')}). O NRC é só informativo: o cálculo usa os seis coeficientes.</small>
+              <small className="nota">Informe o NRC do laudo. Em branco, o sistema calcula pela média de α em 250, 500, 1000 e 2000 Hz ({nrcSugerido.toFixed(2).replace('.', ',')}). O NRC é só informativo: o cálculo usa os seis coeficientes.</small>
             </label>
           )}
           {daBase && <p className="nota">Os coeficientes deste material vêm do ensaio do fabricante, registrado na planilha. Você pode trocar a imagem ou criar uma cópia para ajustar os valores.</p>}

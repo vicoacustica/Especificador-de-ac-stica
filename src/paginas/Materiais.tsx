@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { nomeCategoria, nrcDe, type Catalogo } from '../motor/materiais'
+import { nomeCategoria, type Catalogo } from '../motor/materiais'
 import type { Material, Projeto } from '../motor/tipos'
 import { EditorMaterial, type SalvarMaterial } from '../ui/EditorMaterial'
-import { fmt } from '../ui/formato'
+import { resumoAbsorcao } from '../ui/formato'
 import { Icone } from '../ui/Icone'
 import { BarrasAlfa, MiniaturaMaterial } from '../ui/MaterialVisual'
 
@@ -20,13 +20,6 @@ interface Props {
   salvarMaterial: (s: SalvarMaterial) => void
   excluirMaterial: (id: string) => void
   restaurarMateriais: () => void
-}
-
-/** NRC no cartão; materiais por peça mostram a absorção média por peça. */
-function Desempenho({ material: m }: { material: Material }) {
-  const nrc = nrcDe(m)
-  if (!nrc) return <span className="mono">A média: {fmt((m.alfa[1] + m.alfa[2] + m.alfa[3] + m.alfa[4]) / 4)} m²/peça</span>
-  return <span className="mono" title={nrc.informado ? 'NRC informado' : 'NRC calculado: média de α em 250, 500, 1000 e 2000 Hz'}>NRC {fmt(nrc.valor)}{nrc.informado ? '' : '*'}</span>
 }
 
 /** Projetos que usam o material em alguma superfície ou item. */
@@ -99,7 +92,7 @@ export function Materiais({ catalogo, projetos, salvarMaterial, excluirMaterial,
                 {m.descricao && <span className="descricao">{m.descricao}</span>}
                 <div className="cartao-biblioteca-alfa">
                   <BarrasAlfa alfa={m.alfa} unidade={m.unidade} />
-                  <Desempenho material={m} />
+                  <span className="mono" title={m.nrcEstimado ? 'NRC calculado: média de α em 250, 500, 1000 e 2000 Hz' : undefined}>{resumoAbsorcao(m)}</span>
                 </div>
                 {excluindo === m.id ? (
                   usos.length ? (
@@ -143,7 +136,7 @@ export function Materiais({ catalogo, projetos, salvarMaterial, excluirMaterial,
           <button type="button" className="btn fantasma pequeno" onClick={restaurarMateriais}>Restaurar</button>
         </p>
       )}
-      <p className="nota">* NRC calculado pela média do coeficiente de absorção sonora (α) em 250, 500, 1000 e 2000 Hz, quando o material não tem o NRC informado.</p>
+      <p className="nota">Materiais sem NRC informado mostram o NRC calculado pela média do coeficiente de absorção sonora (α) em 250, 500, 1000 e 2000 Hz, arredondada a 0,05.</p>
 
       {copiando && (
         <EditorMaterial

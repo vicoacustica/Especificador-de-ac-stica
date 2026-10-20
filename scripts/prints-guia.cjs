@@ -66,6 +66,12 @@ const SAIDA = path.join(__dirname, '..', 'public', 'guia')
   await foto('03-superficies-base', '.sups', 12)
   await marcar([['.sup.filha .sup-l1 > select', '1', 0], ['.sup.filha .sup-l1 .em select', '2', 0], ['.livre', '3', 0], ['.sup.filha .btn.secundario.pequeno', '4', 0]])
   await foto('03-superficies-itens', '.sups', 12)
+  await p.locator('.btn', { hasText: 'Importar modelo' }).click()
+  await p.locator('.btn', { hasText: 'Abrir exemplo DXF' }).click()
+  await p.waitForTimeout(600)
+  await marcar([['.tabela-rolagem', '1'], ['.quadro-areas select', '2', 0], ['.importar-opcoes-finais', '3'], ['.modal .acoes .btn.primario', '4']])
+  await foto('03-importar', '.modal', 4)
+  await p.keyboard.press('Escape')
 
   // 4. Nuvens/Baffles: cenário com nuvens
   await p.locator('.cenarios .pilula', { hasText: 'Nuvens' }).click()

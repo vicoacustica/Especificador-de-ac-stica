@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { nomeCategoria } from '../motor/materiais'
 import { Icone } from './Icone'
+import { resumoAbsorcao } from './formato'
 import { BarrasAlfa, MiniaturaMaterial } from './MaterialVisual'
 import { Modal } from './Modal'
 import type { Material } from '../motor/tipos'
@@ -68,7 +69,7 @@ export function SeletorMaterial(props: { materiais: Material[]; valor: string; a
         {atual ? <MiniaturaMaterial material={atual} tamanho={36} /> : <span className="miniatura" style={{ width: 36, height: 36 }} />}
         <span className="campo-material-texto">
           <b>{atual?.nome ?? 'Escolher material'}</b>
-          <small>{atual ? `${nomeCategoria(atual.tipo)} · α500 ${atual.alfa[2].toLocaleString('pt-BR')}` : ''}</small>
+          <small>{atual ? `${nomeCategoria(atual.tipo)} · ${resumoAbsorcao(atual)}` : ''}</small>
         </span>
         {atual && <BarrasAlfa alfa={atual.alfa} unidade={atual.unidade} />}
         <Icone nome="editar" tamanho={16} />
@@ -122,7 +123,7 @@ export function EscolhaMaterial(props: { titulo: string; materiais: Material[]; 
             </span>
             <span className="cartao-material-alfa">
               <BarrasAlfa alfa={m.alfa} unidade={m.unidade} />
-              <small>α500 {m.alfa[2].toLocaleString('pt-BR')}</small>
+              <small>{resumoAbsorcao(m)}</small>
             </span>
           </button>
         ))}

@@ -18,3 +18,9 @@ export function quando(iso: string): string {
   if (dias < 7) return `há ${dias} dias`
   return d.toLocaleDateString('pt-BR')
 }
+
+/** NRC do material ou, nos materiais por peça, a absorção média de 250 a 2000 Hz por peça. */
+export function resumoAbsorcao(m: { alfa: number[]; unidade: boolean; nrc?: number }): string {
+  if (m.nrc !== undefined) return `NRC ${fmt(m.nrc)}`
+  return `A média ${fmt((m.alfa[1] + m.alfa[2] + m.alfa[3] + m.alfa[4]) / 4)} m²/peça`
+}

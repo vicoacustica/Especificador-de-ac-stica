@@ -21,6 +21,8 @@ export interface Material {
   descricao?: string
   /** Coeficiente de redução de ruído (NRC) informado pelo usuário. Só informativo, não entra no cálculo. */
   nrc?: number
+  /** O NRC foi calculado pelo catálogo (média de α em 250 a 2000 Hz), não informado. Não é gravado. */
+  nrcEstimado?: boolean
 }
 
 export type CategoriaSuperficie = 'piso' | 'parede' | 'teto' | 'revestimento' | 'esquadria' | 'elemento'
