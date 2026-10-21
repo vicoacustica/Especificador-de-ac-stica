@@ -99,7 +99,7 @@ export function EtapaAmbiente({ cenario, catalogo, mudar, irParaSuperficies, def
         <span className="importar-chamada-icone"><Icone nome="enviar" tamanho={20} /></span>
         <span>
           <b>Tem o modelo 3D do ambiente?</b>
-          <span className="suave">Importe um DXF ou OBJ: o sistema mostra a prévia e as áreas de cada layer, cria as superfícies e pode trazer o volume e o pé-direito.</span>
+          <span className="suave">Importe um DXF, OBJ ou IFC: o sistema mostra a prévia e as áreas de cada layer ou elemento, cria as superfícies e pode trazer o volume e o pé-direito.</span>
         </span>
         <button type="button" className="btn secundario" onClick={() => setImportando(true)}>Importar modelo</button>
       </div>

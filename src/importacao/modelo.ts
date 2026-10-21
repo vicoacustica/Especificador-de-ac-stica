@@ -1,5 +1,7 @@
-// Leitura de modelos DXF e OBJ: faces agrupadas por layer (ou grupo/material no OBJ),
+// Leitura de modelos DXF e OBJ (o IFC fica em ifc.ts): faces agrupadas por layer (ou grupo/material no OBJ),
 // com área e orientação de cada face. O resultado vira o quadro de áreas da importação.
+
+import type { CategoriaSuperficie } from '../motor/tipos'
 
 export type Ponto = [number, number, number]
 
@@ -9,12 +11,14 @@ export interface Face {
 }
 
 export interface Modelo {
-  formato: 'DXF' | 'OBJ'
+  formato: 'DXF' | 'OBJ' | 'IFC'
   faces: Face[]
   /** Unidade declarada no arquivo, quando houver. */
   unidade?: Unidade
   /** Entidades que existem no arquivo mas não viram faces (sólidos ACIS, malhas MESH etc.). */
   ignoradas: Record<string, number>
+  /** Tipo de superfície já conhecido de cada layer (no IFC vem do elemento atingido). */
+  tipos?: Record<string, CategoriaSuperficie>
 }
 
 /** Cores das layers na prévia 3D e no quadro de áreas, na ordem do quadro. */
@@ -258,6 +262,8 @@ export interface LinhaQuadro {
   total: number
   /** Parte da área de paredes que corre ao longo do eixo maior da caixa (par x da fórmula de Fitzroy). */
   paredeX: number
+  /** Tipo de superfície já conhecido da layer. */
+  tipo?: CategoriaSuperficie
 }
 
 export interface Quadro {
@@ -295,7 +301,7 @@ export function quadroDeAreas(m: Modelo, unidade: Unidade, separar = false): Qua
     const chave = separar ? `${f.layer} · ${NOME_ORIENTACAO[o]}` : f.layer
     faces.push({ chave, pontos: p })
     let l = linhas.get(chave)
-    if (!l) { l = { chave, layer: f.layer, orientacao: separar ? o : undefined, faces: 0, areas: zero(), total: 0, paredeX: 0 }; linhas.set(chave, l) }
+    if (!l) { l = { chave, layer: f.layer, orientacao: separar ? o : undefined, faces: 0, areas: zero(), total: 0, paredeX: 0, tipo: m.tipos?.[f.layer] }; linhas.set(chave, l) }
     l.faces++
     l.areas[o] += a
     if (o === 'parede') {

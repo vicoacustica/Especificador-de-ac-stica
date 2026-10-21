@@ -48,6 +48,7 @@ const TITULOS = [
   'Traçado de raios e tempo de atraso das reflexões',
   'Critérios complementares',
   'Aurilização',
+  'Importação de modelos IFC',
 ]
 
 export function ProcessosCalculo() {
@@ -328,6 +329,13 @@ export function ProcessosCalculo() {
               <li key={a.id}><b>{a.nome}</b>: {a.fonte ? <a href={a.fonte} target="_blank" rel="noreferrer">{a.credito}</a> : a.credito}. Licença {a.licenca}.</li>
             ))}
           </ul>
+        </Topico>
+
+        <Topico n={17} titulo="Importação de modelos IFC">
+          <p>Modelos IFC exportados do Revit, do ArchiCAD e de outros programas BIM são feitos para projeto: as paredes, lajes, forros, janelas e portas são sólidos com espessura, e não superfícies prontas para o cálculo acústico. O programa usa o <b>ambiente</b> do modelo (IfcSpace, que o Revit chama de ambiente e o ArchiCAD de zona) para chegar às superfícies.</p>
+          <p>O Volume (V) é o volume interno do ambiente, e o Pé-direito (h) é a altura dele. Cada plano do contorno do ambiente (piso, cada parede, forro) é dividido em uma grade cujas linhas passam pelos vértices dos elementos vizinhos, como as bordas de janelas, portas e forros, e ficam a no máximo 25 cm umas das outras. Do centro de cada célula sai um raio para fora do ambiente: o primeiro elemento que ele encontra, até 1 m de distância, é o que delimita aquela parte do contorno, e o material desse elemento no IFC dá o nome da superfície. Células vizinhas com o mesmo elemento são unidas em retângulos.</p>
+          <p>Assim a área de cada superfície sai exata quando as bordas dos elementos são retas e alinhadas ao plano, como na maioria dos projetos. Portas e janelas entram como esquadrias na parede, com a área já descontada. Trechos sem elemento até 1 m (um vão aberto para outro ambiente, por exemplo) aparecem como “Sem elemento”, e trechos com menos de 0,1 m² (quinas e frestas) entram na maior superfície da mesma orientação.</p>
+          <p>O nome do material no IFC é o do projeto (por exemplo, “Basic Wall: Exterior - Brick on Block”). Ele serve para identificar a superfície, e o material acústico é escolhido da biblioteca na etapa de superfícies.</p>
         </Topico>
       </div>
     </div>

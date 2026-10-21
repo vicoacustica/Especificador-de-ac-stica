@@ -12,6 +12,7 @@ export type Destino = CategoriaSuperficie | 'ignorar'
  * e, sem pista no nome, pela orientação com mais área.
  */
 export function sugerirDestino(l: LinhaQuadro): CategoriaSuperficie {
+  if (l.tipo) return l.tipo
   const n = l.layer.toLowerCase()
   if (/porta|janela|vidr|esquadr|caixilh|door|window|glass|glaz/.test(n)) return 'esquadria'
   if (/acúst|acust|acoust|painel|panel|revest/.test(n)) return 'revestimento'

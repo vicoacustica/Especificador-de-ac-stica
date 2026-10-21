@@ -40,6 +40,9 @@ const PASSOS: Passo[] = [
     }, {
       imagem: '02-importar', legenda: 'Importar um modelo DXF ou OBJ',
       marcas: [<>A prévia 3D do modelo aberto pelo botão “Importar modelo”, no início da etapa 1, com uma cor por layer. Arraste para girar e role para aproximar.</>, <>O quadro de áreas: cada layer (ou etiqueta) com a área de piso, paredes, forro/teto e faces inclinadas. Passe o mouse em uma layer para destacá-la na prévia e confira a unidade pela caixa envolvente.</>, <>Escolha de onde vem o volume e o pé-direito, e se as paredes do modelo já têm os vãos recortados.</>, <>Importe. Cada layer vira uma superfície; ajuste o tipo e o material na etapa 2.</>],
+    }, {
+      imagem: '02-importar-ifc', legenda: 'Importar um modelo IFC (Revit, ArchiCAD)',
+      marcas: [<>Escolha o ambiente do modelo (IfcSpace). O exemplo tem só a sala de aula; num projeto inteiro, a lista traz todos os ambientes com o volume de cada um.</>, <>O contorno do ambiente separado pelo elemento que o delimita: forro acústico, forro de gesso, janela, paredes, piso e porta, cada um com o material do IFC e a área exata.</>, <>O Volume (V) vem do próprio ambiente: 189 m³.</>, <>Importe. Portas e janelas entram como esquadrias nas paredes; escolha o material da biblioteca de cada superfície na etapa 2.</>],
     }],
     dica: <>No grupo B o sistema também pede o Pé-direito (h), porque o mínimo de absorção depende dele.</>,
   },
