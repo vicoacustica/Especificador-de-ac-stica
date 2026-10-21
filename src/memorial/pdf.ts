@@ -1,10 +1,10 @@
 // Memorial de especificação acústica em PDF: identificação, plantas e vistas do modelo 3D com cotas e
 // especificações, quadro de especificações, resultados dos cenários e memória de cálculo.
 import { jsPDF } from 'jspdf'
-import { avaliar, areaEfetiva, type Avaliacao } from '../motor/acustica'
+import { avaliarCriterios, areaEfetiva, motivoDaFormula, NOME_PAR, PARES, type Avaliacao } from '../motor/acustica'
 import { CURVAS_NBR, GRUPOS_B } from '../motor/criterios'
 import { ABSORCAO_AR, type Catalogo } from '../motor/materiais'
-import { BANDAS, CATEGORIAS, FRACAO_OCUPADA, NOME_ESTADO, type Cenario, type Projeto } from '../motor/tipos'
+import { BANDAS, CATEGORIAS, FRACAO_OCUPADA, NOME_ESTADO, NOME_FORMULA, type Cenario, type Criterio, type Projeto } from '../motor/tipos'
 import { contornos } from '../importacao/contornos'
 import { coresDosMateriais, type Ponto } from '../importacao/modelo'
 import { fmt } from '../ui/formato'
@@ -479,7 +479,8 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
   const tituloCapa = doc.splitTextToSize(projeto.nome, LARG_RETRATO) as string[]
   doc.text(tituloCapa, MARGEM, y)
   y += tituloCapa.length * 10 + 6
-  const avEspec = avaliar(cenario, catalogo)
+  const avsEspec = avaliarCriterios(cenario, catalogo)
+  const avEspec = avsEspec[0]
   const identificacao: [string, string][] = [
     ['Projeto', projeto.nome],
     ['Cenário especificado', cenario.nome],
@@ -488,6 +489,7 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
     ...(d.projetista.empresa ? [['Empresa', d.projetista.empresa] as [string, string]] : []),
     ['Data de emissão', dataTexto],
     ['Critério', avEspec.meta.nome],
+    ...avsEspec.slice(1).map((a, k) => [k ? '' : 'Critérios complementares', a.meta.nome] as [string, string]),
   ]
   for (const [r, v] of identificacao) {
     fonte(8, false, SUAVE); doc.text(r.toUpperCase(), MARGEM, y)
@@ -549,10 +551,11 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
   // ————— Resultados —————
   secao('Resultados dos cenários')
   for (const c of projeto.cenarios) {
-    const av = avaliar(c, catalogo)
     subtitulo(`${c.nome}${c.id === cenario.id ? ' (especificado)' : ''}`)
-    paragrafo(`${av.meta.nome} · Volume (V) ${m(c.volume)} m³${av.tipo === 'tempo' ? ` · ${av.resultado.formula === 'eyring' ? 'Eyring' : 'Sabine'}, Coeficiente de absorção médio (ᾱ) ${fmt(av.resultado.alfaMedioSala)}` : ''}`, 8.5, SUAVE)
-    tabelaResultado(av)
+    avaliarCriterios(c, catalogo).forEach((av, k) => {
+      paragrafo(`${k ? 'Critério complementar: ' : ''}${av.meta.nome} · Volume (V) ${m(c.volume)} m³${av.tipo === 'tempo' ? ` · ${NOME_FORMULA[av.resultado.formula]}, Coeficiente de absorção médio (ᾱ) ${fmt(av.resultado.alfaMedioSala)}` : ''}`, 8.5, SUAVE)
+      tabelaResultado(av)
+    })
   }
 
   function tabelaResultado(av: Avaliacao) {
@@ -586,46 +589,50 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
     ['Ocupações avaliadas', r.estados.map((e) => NOME_ESTADO[e]).join(', ')],
   ])
 
-  subtitulo('2. Critério de projeto')
-  const crit = cenario.criterio
-  if (crit.norma === 'A' && avEspec.tipo === 'tempo') {
-    const fat: Record<string, [number, number]> = { A1: [0.45, 0.07], A2: [0.37, -0.14], A3: [0.32, -0.17], A4: [0.26, -0.14], A5: [0.75, -1] }
-    const [a1, b1] = fat[crit.grupo]
-    equacao(`Talvo = ${fmt(a1)} · lg V ${b1 < 0 ? '−' : '+'} ${fmt(Math.abs(b1))}${crit.grupo === 'A5' ? ' (no máximo 2,00 s)' : ''}`, [
-      'Tempo de reverberação alvo (Talvo), em s, da DIN 18041:2016 para o grupo ' + crit.grupo + '.',
-      'Volume (V) do ambiente, em m³; lg é o logaritmo na base 10.',
-    ], `Talvo = ${fmt(a1)} · lg ${m(cenario.volume)} ${b1 < 0 ? '−' : '+'} ${fmt(Math.abs(b1))} = ${fmt(avEspec.meta.t)} s`)
-  } else if (crit.norma === 'NBR' && avEspec.tipo === 'tempo') {
-    const [a1, b1, c1] = CURVAS_NBR[crit.curva].coef
-    equacao('Tót = a + b · lg V + c · (lg V)²', [
-      `Tempo de reverberação ótimo (Tót), em s, a 500 Hz, pela curva "${CURVAS_NBR[crit.curva].usos}" da NBR 12179:1992.`,
-      `a, b e c: coeficientes da curva (a = ${fmt(a1, 4)}, b = ${fmt(b1, 4)}, c = ${fmt(c1, 4)}).`,
-      'Volume (V) do ambiente, em m³; lg é o logaritmo na base 10.',
-    ], `Tót = ${fmt(avEspec.meta.t)} s, com as margens por banda da DIN 18041:2016`)
-  } else if (crit.norma === 'personalizado' && avEspec.tipo === 'tempo') {
-    paragrafo(`Critério personalizado: o projetista definiu o Tempo de reverberação ótimo (Tót) em ${fmt(crit.t)} s, aplicado a todas as bandas, e as margens superior e inferior de cada banda em porcentagem.`)
-    equacao('Tmáx = Tót · (1 + ms/100)      Tmín = Tót · (1 − mi/100)', [
-      'Tempo de reverberação máximo (Tmáx) e mínimo (Tmín) da banda, em s.',
-      'Tempo de reverberação ótimo (Tót), em s, definido pelo projetista.',
-      'Margem superior (ms) e margem inferior (mi) da banda, em %.',
-    ])
-  } else if (crit.norma === 'B' && avEspec.tipo === 'absorcao') {
-    const g = GRUPOS_B[crit.grupo]
-    if (cenario.peDireito <= 2.5) paragrafo(`Com Pé-direito (h) até 2,50 m, a DIN 18041:2016 fixa a Área de absorção por volume mínima (A/V) do grupo ${crit.grupo} em ${fmt(g.minimoAte2_5m)} m²/m³.`)
-    else equacao('A/V mín = 1 / (c + 4,69 · lg h)', [
-      'Área de absorção por volume mínima (A/V mín), em m²/m³, da DIN 18041:2016 para o grupo ' + crit.grupo + '.',
-      `c: constante do grupo (${fmt(g.constante)}).`,
-      'Pé-direito (h) do ambiente, em m; lg é o logaritmo na base 10.',
-    ], `A/V mín = 1 / (${fmt(g.constante)} + 4,69 · lg ${m(cenario.peDireito)}) = ${fmt(avEspec.meta.avMinimo, 3)} m²/m³`)
-    paragrafo('O grupo B avalia as bandas de 250 a 2000 Hz com 100% de ocupação.', 8.5, SUAVE)
-  }
-  if (avEspec.tipo === 'tempo') {
-    tabela([{ titulo: 'Margens por banda', largura: 46 }, ...BANDAS.map((b) => ({ titulo: `${b} Hz`, largura: 21, direita: true }))], [
-      ['Margem superior (%)', ...avEspec.meta.superior.map((v) => `+${fmt((v / avEspec.meta.t - 1) * 100, 0)}`)],
-      ['Margem inferior (%)', ...avEspec.meta.inferior.map((v) => `−${fmt((1 - v / avEspec.meta.t) * 100, 0)}`)],
-      ['Máximo (s)', ...avEspec.meta.superior.map((v) => fmt(v))],
-      ['Mínimo (s)', ...avEspec.meta.inferior.map((v) => fmt(v))],
-    ])
+  subtitulo(avsEspec.length > 1 ? '2. Critérios de projeto' : '2. Critério de projeto')
+  avsEspec.forEach((av, k) => criterioDeProjeto(k ? cenario.criteriosExtras![k - 1] : cenario.criterio, av, k))
+
+  function criterioDeProjeto(crit: Criterio, av: Avaliacao, k: number) {
+    if (avsEspec.length > 1) { garantir(20); fonte(9, true); doc.text(k ? `Critério complementar: ${av.meta.nome}` : `Critério principal: ${av.meta.nome}`, MARGEM, y); y += 5 }
+    if (crit.norma === 'A' && av.tipo === 'tempo') {
+      const fat: Record<string, [number, number]> = { A1: [0.45, 0.07], A2: [0.37, -0.14], A3: [0.32, -0.17], A4: [0.26, -0.14], A5: [0.75, -1] }
+      const [a1, b1] = fat[crit.grupo]
+      equacao(`Talvo = ${fmt(a1)} · lg V ${b1 < 0 ? '−' : '+'} ${fmt(Math.abs(b1))}${crit.grupo === 'A5' ? ' (no máximo 2,00 s)' : ''}`, [
+        'Tempo de reverberação alvo (Talvo), em s, da DIN 18041:2016 para o grupo ' + crit.grupo + '.',
+        'Volume (V) do ambiente, em m³; lg é o logaritmo na base 10.',
+      ], `Talvo = ${fmt(a1)} · lg ${m(cenario.volume)} ${b1 < 0 ? '−' : '+'} ${fmt(Math.abs(b1))} = ${fmt(av.meta.t)} s`)
+    } else if (crit.norma === 'NBR' && av.tipo === 'tempo') {
+      const [a1, b1, c1] = CURVAS_NBR[crit.curva].coef
+      equacao('Tót = a + b · lg V + c · (lg V)²', [
+        `Tempo de reverberação ótimo (Tót), em s, a 500 Hz, pela curva "${CURVAS_NBR[crit.curva].usos}" da NBR 12179:1992.`,
+        `a, b e c: coeficientes da curva (a = ${fmt(a1, 4)}, b = ${fmt(b1, 4)}, c = ${fmt(c1, 4)}).`,
+        'Volume (V) do ambiente, em m³; lg é o logaritmo na base 10.',
+      ], `Tót = ${fmt(av.meta.t)} s, com as margens por banda da DIN 18041:2016`)
+    } else if (crit.norma === 'personalizado' && av.tipo === 'tempo') {
+      paragrafo(`Critério personalizado: o projetista definiu o Tempo de reverberação ótimo (Tót) em ${fmt(crit.t)} s, aplicado a todas as bandas, e as margens superior e inferior de cada banda em porcentagem.`)
+      equacao('Tmáx = Tót · (1 + ms/100)      Tmín = Tót · (1 − mi/100)', [
+        'Tempo de reverberação máximo (Tmáx) e mínimo (Tmín) da banda, em s.',
+        'Tempo de reverberação ótimo (Tót), em s, definido pelo projetista.',
+        'Margem superior (ms) e margem inferior (mi) da banda, em %.',
+      ])
+    } else if (crit.norma === 'B' && av.tipo === 'absorcao') {
+      const g = GRUPOS_B[crit.grupo]
+      if (cenario.peDireito <= 2.5) paragrafo(`Com Pé-direito (h) até 2,50 m, a DIN 18041:2016 fixa a Área de absorção por volume mínima (A/V) do grupo ${crit.grupo} em ${fmt(g.minimoAte2_5m)} m²/m³.`)
+      else equacao('A/V mín = 1 / (c + 4,69 · lg h)', [
+        'Área de absorção por volume mínima (A/V mín), em m²/m³, da DIN 18041:2016 para o grupo ' + crit.grupo + '.',
+        `c: constante do grupo (${fmt(g.constante)}).`,
+        'Pé-direito (h) do ambiente, em m; lg é o logaritmo na base 10.',
+      ], `A/V mín = 1 / (${fmt(g.constante)} + 4,69 · lg ${m(cenario.peDireito)}) = ${fmt(av.meta.avMinimo, 3)} m²/m³`)
+      paragrafo('O grupo B avalia as bandas de 250 a 2000 Hz com 100% de ocupação.', 8.5, SUAVE)
+    }
+    if (av.tipo === 'tempo') {
+      tabela([{ titulo: 'Margens por banda', largura: 46 }, ...BANDAS.map((b) => ({ titulo: `${b} Hz`, largura: 21, direita: true }))], [
+        ['Margem superior (%)', ...av.meta.superior.map((v) => `+${fmt((v / av.meta.t - 1) * 100, 0)}`)],
+        ['Margem inferior (%)', ...av.meta.inferior.map((v) => `−${fmt((1 - v / av.meta.t) * 100, 0)}`)],
+        ['Máximo (s)', ...av.meta.superior.map((v) => fmt(v))],
+        ['Mínimo (s)', ...av.meta.inferior.map((v) => fmt(v))],
+      ])
+    }
   }
 
   subtitulo('3. Absorção das superfícies e dos elementos')
@@ -672,7 +679,13 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
     'Coeficiente de absorção médio (ᾱ) da banda: ᾱ = A / S.',
     'Os demais termos são os mesmos da fórmula de Sabine.',
   ])
-  paragrafo(`Fórmula usada: ${r.formula === 'eyring' ? 'Eyring' : 'Sabine'}. O Coeficiente de absorção médio (ᾱ) da sala, na média das bandas, é ${fmt(r.alfaMedioSala)} na ocupação de ${NOME_ESTADO[r.estadoAlfaMedio]}, ${r.alfaMedioSala > 0.3 ? 'acima' : 'abaixo'} de 0,30. Acima de 0,30 a sala é absorvente e o cálculo usa Eyring; até 0,30 usa Sabine.`, 8.5)
+  const comFitzroy = r.porEstado[r.estadoAlfaMedio].pares !== null
+  if (comFitzroy) equacao('T = Σ (Sk / S) · 0,161 · V / (−S · ln(1 − ᾱk) + 4mV),  k = x, y, z      (Fitzroy)', [
+    'Área (Sk) de cada par de superfícies opostas, em m²: paredes ao longo do comprimento (x), paredes ao longo da largura (y) e piso e teto (z). Ocupação, nuvens e baffles entram no par z.',
+    'Coeficiente de absorção médio (ᾱk) do par: ᾱk = Ak / Sk, com a Área de absorção sonora equivalente (Ak) do par.',
+    'Os demais termos são os mesmos da fórmula de Eyring.',
+  ])
+  paragrafo(`Fórmula usada: ${NOME_FORMULA[r.formula]}. ${motivoDaFormula(r)}`, 8.5)
   for (const e of r.estados) {
     const pe = r.porEstado[e]
     garantir(40)
@@ -683,12 +696,19 @@ export function gerarMemorial(d: DadosMemorial): jsPDF {
       ['Coef. de absorção médio (ᾱ)', ...pe.alfa.map((v) => fmt(v, 3))],
       [{ t: `T Sabine (s)${r.formula === 'sabine' ? ' · usado' : ''}`, negrito: r.formula === 'sabine' }, ...pe.sabine.map((v) => ({ t: fmt(v), negrito: r.formula === 'sabine' }))],
       [{ t: `T Eyring (s)${r.formula === 'eyring' ? ' · usado' : ''}`, negrito: r.formula === 'eyring' }, ...pe.eyring.map((v) => ({ t: fmt(v), negrito: r.formula === 'eyring' }))],
+      ...(pe.pares ? PARES.map((k) => [`ᾱ${k} · ${NOME_PAR[k].toLowerCase()} (${m(pe.pares![k].area)} m²)`, ...pe.pares![k].absorcao.map((a) => fmt(a / pe.pares![k].area, 3))]) : []),
+      ...(pe.fitzroy ? [[{ t: `T Fitzroy (s)${r.formula === 'fitzroy' ? ' · usado' : ''}`, negrito: r.formula === 'fitzroy' }, ...pe.fitzroy.map((v) => ({ t: fmt(v), negrito: r.formula === 'fitzroy' }))]] : []),
     ], 7)
   }
   const e500 = r.estados[r.estados.length - 1]
   const A500 = r.porEstado[e500].absorcao[2]
   if (r.formula === 'sabine') paragrafo(`Exemplo, 500 Hz com ${NOME_ESTADO[e500]} de ocupação: T = 0,161 · ${m(cenario.volume)} / (${m(A500)} + ${m(ar[2])}) = ${fmt(r.porEstado[e500].sabine[2])} s.`, 8.5, SUAVE)
-  else paragrafo(`Exemplo, 500 Hz com ${NOME_ESTADO[e500]} de ocupação: ᾱ = ${m(A500)} / ${m(r.areaTotal)} = ${fmt(r.porEstado[e500].alfa[2], 3)}; T = 0,161 · ${m(cenario.volume)} / (−${m(r.areaTotal)} · ln(1 − ${fmt(r.porEstado[e500].alfa[2], 3)}) + ${m(ar[2])}) = ${fmt(r.porEstado[e500].eyring[2])} s.`, 8.5, SUAVE)
+  else if (r.formula === 'eyring') paragrafo(`Exemplo, 500 Hz com ${NOME_ESTADO[e500]} de ocupação: ᾱ = ${m(A500)} / ${m(r.areaTotal)} = ${fmt(r.porEstado[e500].alfa[2], 3)}; T = 0,161 · ${m(cenario.volume)} / (−${m(r.areaTotal)} · ln(1 − ${fmt(r.porEstado[e500].alfa[2], 3)}) + ${m(ar[2])}) = ${fmt(r.porEstado[e500].eyring[2])} s.`, 8.5, SUAVE)
+  else if (r.porEstado[e500].pares) {
+    const pe = r.porEstado[e500], pr = pe.pares!
+    const termos = PARES.map((k) => `(${m(pr[k].area)} / ${m(r.areaTotal)}) · 0,161 · ${m(cenario.volume)} / (−${m(r.areaTotal)} · ln(1 − ${fmt(pr[k].absorcao[2] / pr[k].area, 3)}) + ${m(ar[2])})`)
+    paragrafo(`Exemplo, 500 Hz com ${NOME_ESTADO[e500]} de ocupação: T = ${termos.join(' + ')} = ${fmt(pe.fitzroy?.[2] ?? null)} s.`, 8.5, SUAVE)
+  }
   if (avEspec.tipo === 'absorcao') paragrafo(`No grupo B, a verificação é a Área de absorção por volume (A/V) com 100% de ocupação: A/V = A / V, comparada ao mínimo de ${fmt(avEspec.meta.avMinimo, 3)} m²/m³ nas bandas de 250 a 2000 Hz. O tempo de reverberação acima é só informativo.`, 8.5)
 
   // ————— Sumário na capa e numeração —————

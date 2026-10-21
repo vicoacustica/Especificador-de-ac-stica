@@ -313,6 +313,9 @@ h3 { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacin
 .criterio .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #f0a08f; font-weight: 600; }
 .criterio b { color: #fff; }
 .criterio .nota { color: #d1c7bf; }
+.criterios-extras { display: grid; gap: 4px; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15); }
+.extras-grupo { display: grid; gap: 6px; margin: 10px 0; }
+.extras-grupo .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3); font-weight: 600; }
 
 /* Etapas: superfícies e ocupação */
 .sups { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
@@ -705,3 +708,13 @@ details p { margin: 8px 0 0; color: var(--ink-2); max-width: 75ch; }
 }
 .lista-biblioteca .cartao-biblioteca-imagem { height: 76px; align-self: start; }
 @media (max-width: 720px) { .lista-biblioteca .cartao-biblioteca-imagem { height: 64px; } }
+.k-extra { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent-text); font-weight: 600; }
+
+/* Aurilização */
+.aurilizacao { margin-top: 22px; padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); display: grid; gap: 12px; }
+.aurilizacao-titulo { display: flex; gap: 12px; align-items: flex-start; }
+.aurilizacao-titulo > span:last-child { display: grid; gap: 2px; }
+.aurilizacao-icone { display: grid; place-items: center; width: 38px; height: 38px; flex: none; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); }
+.aurilizacao-grade { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: end; }
+.aurilizacao-grade .campo { min-width: 0; }
+.aurilizacao .nota { margin: 0; }

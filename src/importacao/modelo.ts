@@ -256,6 +256,8 @@ export interface LinhaQuadro {
   faces: number
   areas: Record<Orientacao, number>
   total: number
+  /** Parte da área de paredes que corre ao longo do eixo maior da caixa (par x da fórmula de Fitzroy). */
+  paredeX: number
 }
 
 export interface Quadro {
@@ -283,6 +285,7 @@ export function quadroDeAreas(m: Modelo, unidade: Unidade, separar = false): Qua
   const centro: Ponto = [(cx.min[0] + cx.max[0]) / 2, (cx.min[1] + cx.max[1]) / 2, zMeio]
   const linhas = new Map<string, LinhaQuadro>()
   const faces: FaceEmMetros[] = []
+  const eixoMaiorX = cx.max[0] - cx.min[0] >= cx.max[1] - cx.min[1]
   let volume = 0, areaTotal = 0
   for (const f of m.faces) {
     const p = f.pontos.map(([x, y, z]) => [x * e, y * e, z * e] as Ponto)
@@ -292,9 +295,15 @@ export function quadroDeAreas(m: Modelo, unidade: Unidade, separar = false): Qua
     const chave = separar ? `${f.layer} · ${NOME_ORIENTACAO[o]}` : f.layer
     faces.push({ chave, pontos: p })
     let l = linhas.get(chave)
-    if (!l) { l = { chave, layer: f.layer, orientacao: separar ? o : undefined, faces: 0, areas: zero(), total: 0 }; linhas.set(chave, l) }
+    if (!l) { l = { chave, layer: f.layer, orientacao: separar ? o : undefined, faces: 0, areas: zero(), total: 0, paredeX: 0 }; linhas.set(chave, l) }
     l.faces++
     l.areas[o] += a
+    if (o === 'parede') {
+      // A parede corre na direção perpendicular à normal: com o eixo maior em x, a parte "ao longo do comprimento" é ny².
+      const [nx, ny] = newell(p)
+      const h = nx * nx + ny * ny
+      if (h > 0) l.paredeX += (a * (eixoMaiorX ? ny * ny : nx * nx)) / h
+    }
     l.total += a
     areaTotal += a
     // Tetraedros entre o centro da caixa e cada triângulo, em módulo: não depende do sentido das faces,

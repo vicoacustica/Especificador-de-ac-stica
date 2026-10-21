@@ -1,7 +1,8 @@
 import { CURVAS_NBR, DIN, GRUPOS_A, MARGENS_DIN_PCT, NBR, GRUPOS_B, metaDoCriterio } from '../motor/criterios'
 import { useState } from 'react'
 import type { Catalogo } from '../motor/materiais'
-import { BANDAS, type Cenario, type Criterio, type ModeloProjeto, type PorBanda, type Umidade } from '../motor/tipos'
+import { BANDAS, type Cenario, type Criterio, type EscolhaFormula, type ModeloProjeto, type PorBanda, type Umidade } from '../motor/tipos'
+import { RAZAO_FITZROY } from '../motor/acustica'
 import { ImportarModelo, type ResultadoImportacao } from '../importacao/ImportarModelo'
 import { Icone } from '../ui/Icone'
 import { Numero } from '../ui/campos'
@@ -25,6 +26,13 @@ const GRUPOS: { titulo: string; opcoes: Opcao[] }[] = [
 ]
 
 const igual = (a: Criterio, b: Criterio) => JSON.stringify(a) === JSON.stringify(b)
+
+const FORMULAS: { valor: EscolhaFormula; titulo: string; texto: string }[] = [
+  { valor: 'auto', titulo: 'Automática', texto: `Fitzroy quando a absorção está concentrada em um par de superfícies (ᾱ ${RAZAO_FITZROY} vezes maior que o de outro par); senão Eyring acima de ᾱ = 0,30 e Sabine até 0,30.` },
+  { valor: 'sabine', titulo: 'Sabine', texto: 'Salas pouco absorventes, com absorção bem distribuída.' },
+  { valor: 'eyring', titulo: 'Eyring', texto: 'Salas absorventes (ᾱ acima de 0,30), com absorção bem distribuída.' },
+  { valor: 'fitzroy', titulo: 'Fitzroy', texto: 'Absorção concentrada em um par de superfícies, como um forro acústico em sala de paredes lisas. Pede o par de cada parede na etapa Superfícies.' },
+]
 
 /** Tempo ótimo e margens por banda definidos pelo projetista. */
 function CriterioPersonalizado({ criterio, mudar }: { criterio: Extract<Criterio, { norma: 'personalizado' }>; mudar: (f: (c: Extract<Criterio, { norma: 'personalizado' }>) => void) => void }) {
@@ -61,6 +69,13 @@ interface Props {
 
 export function EtapaAmbiente({ cenario, catalogo, mudar, irParaSuperficies, definirModelo }: Props) {
   const meta = metaDoCriterio(cenario.criterio, cenario.volume, cenario.peDireito)
+  const extras = cenario.criteriosExtras ?? []
+  const metasExtras = extras.map((k) => metaDoCriterio(k, cenario.volume, cenario.peDireito))
+  const usaGrupoB = [cenario.criterio, ...extras].some((k) => k.norma === 'B')
+  const alternarExtra = (k: Criterio) => mudar((c) => {
+    const atuais = c.criteriosExtras ?? []
+    c.criteriosExtras = atuais.some((x) => igual(x, k)) ? atuais.filter((x) => !igual(x, k)) : [...atuais, k]
+  })
   const [importando, setImportando] = useState(false)
   const [importado, setImportado] = useState<ResultadoImportacao | null>(null)
 
@@ -79,7 +94,7 @@ export function EtapaAmbiente({ cenario, catalogo, mudar, irParaSuperficies, def
   return (
     <>
       <h2>Ambiente</h2>
-      <p className="lead">Escolha a classificação do ambiente pela norma ou defina um critério personalizado, e informe o volume e a umidade relativa do ar.</p>
+      <p className="lead">Escolha o critério principal pela norma ou defina um critério personalizado. Se quiser, marque critérios complementares para avaliar o mesmo ambiente por outras normas. Depois informe o volume e a umidade relativa do ar.</p>
       <div className="importar-chamada">
         <span className="importar-chamada-icone"><Icone nome="enviar" tamanho={20} /></span>
         <span>
@@ -96,12 +111,14 @@ export function EtapaAmbiente({ cenario, catalogo, mudar, irParaSuperficies, def
         </p>
       )}
       {importando && <ImportarModelo cenario={cenario} catalogo={catalogo} aoImportar={aplicar} aoFechar={() => setImportando(false)} />}
+      <h3 className="titulo-secao-criterio">Critério principal</h3>
+      <p className="nota">É o critério usado no dimensionamento dos materiais, no cartão do projeto e no início do memorial.</p>
       {GRUPOS.map((g) => (
         <div key={g.titulo}>
           <h3>{g.titulo}</h3>
           <div className="usos">
             {g.opcoes.map((o) => (
-              <button key={o.titulo} type="button" className="uso" aria-pressed={igual(o.criterio, cenario.criterio)} onClick={() => mudar((c) => { c.criterio = o.criterio })}>
+              <button key={o.titulo} type="button" className="uso" aria-pressed={igual(o.criterio, cenario.criterio)} onClick={() => mudar((c) => { c.criterio = o.criterio; c.criteriosExtras = (c.criteriosExtras ?? []).filter((x) => !igual(x, o.criterio)) })}>
                 <b>{o.titulo}</b>
                 <small>{o.exemplos}</small>
               </button>
@@ -124,12 +141,37 @@ export function EtapaAmbiente({ cenario, catalogo, mudar, irParaSuperficies, def
           <CriterioPersonalizado criterio={cenario.criterio} mudar={(f) => mudar((c) => { if (c.criterio.norma === 'personalizado') f(c.criterio) })} />
         )}
       </div>
+      <div className="ambiente-avancado">
+      <div className="criterios-complementares">
+        <h3>Critérios complementares</h3>
+        <p className="nota">Marque quantos quiser. Os resultados mostram o ambiente avaliado por cada um, lado a lado. Exemplo: um restaurante pelo grupo B5 da {DIN} e pela curva de sala de conferência da {NBR}.</p>
+        {GRUPOS.map((g) => (
+          <div key={g.titulo} className="extras-grupo">
+            <span className="k">{g.titulo.split(':')[0]}</span>
+            <div className="chips">
+              {g.opcoes.filter((o) => !igual(o.criterio, cenario.criterio)).map((o) => (
+                <button key={o.titulo} type="button" className="chip" aria-pressed={extras.some((x) => igual(x, o.criterio))} onClick={() => alternarExtra(o.criterio)}>{o.titulo}</button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <h3>Fórmula do tempo de reverberação</h3>
+      <div className="usos formulas">
+        {FORMULAS.map((f) => (
+          <button key={f.valor} type="button" className="uso" aria-pressed={(cenario.formula ?? 'auto') === f.valor} onClick={() => mudar((c) => { c.formula = f.valor })}>
+            <b>{f.titulo}</b>
+            <small>{f.texto}</small>
+          </button>
+        ))}
+      </div>
+      </div>
       <h3>Volume e ar</h3>
       <div className="linha">
         <label className="campo">Volume (V) em m³
           <Numero valor={cenario.volume} minimo={1} passo={1} aoMudar={(v) => mudar((c) => { c.volume = v })} />
         </label>
-        {meta.tipo === 'absorcao' && (
+        {usaGrupoB && (
           <label className="campo">Pé-direito (h) em m
             <Numero valor={cenario.peDireito} minimo={1} passo={0.1} aoMudar={(v) => mudar((c) => { c.peDireito = v })} />
           </label>
@@ -142,7 +184,7 @@ export function EtapaAmbiente({ cenario, catalogo, mudar, irParaSuperficies, def
         </label>
       </div>
       <div className="criterio">
-        <span className="k">Critério deste cenário</span>
+        <span className="k">Critério principal deste cenário</span>
         <b>{meta.nome}</b>
         {meta.tipo === 'tempo' && !meta.otimo && (
           <span>Tempo de reverberação alvo (T<sub>alvo</sub>) = <b>{fmt(meta.t)} s</b>. Faixa aceita: 65% a 145% em 125 Hz, 80% a 120% de 250 a 2000 Hz e 65% a 120% em 4000 Hz.</span>
@@ -157,7 +199,15 @@ export function EtapaAmbiente({ cenario, catalogo, mudar, irParaSuperficies, def
           <span>Relação mínima entre área de absorção equivalente e volume (A/V) = <b>{fmt(meta.avMinimo, 3)} m²/m³</b> para o pé-direito (h) informado, com 100% de ocupação, de 250 a 2000 Hz.</span>
         )}
         {meta.tipo === 'tempo' && meta.foraDaFaixa && <span className="pill warn">O volume está fora da faixa da norma para este uso ({meta.faixaVolume})</span>}
-        {meta.tipo === 'absorcao' && <span className="nota">No grupo B a DIN usa o pé-direito (h) para definir o A/V mínimo, por isso ele é pedido aqui.</span>}
+        {metasExtras.length > 0 && (
+          <span className="criterios-extras">
+            <span className="k">Critérios complementares</span>
+            {metasExtras.map((m) => (
+              <span key={m.nome}>{m.nome}: {m.tipo === 'tempo' ? <b>{fmt(m.t)} s</b> : <b>A/V ≥ {fmt(m.avMinimo, 3)} m²/m³</b>}{m.tipo === 'tempo' && m.foraDaFaixa ? ` (volume fora da faixa da norma, ${m.faixaVolume})` : ''}</span>
+            ))}
+          </span>
+        )}
+        {usaGrupoB && <span className="nota">No grupo B a DIN usa o pé-direito (h) para definir o A/V mínimo, por isso ele é pedido aqui.</span>}
       </div>
     </>
   )

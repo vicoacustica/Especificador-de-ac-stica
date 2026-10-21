@@ -101,7 +101,7 @@
 [data-estilo="grade"] .aparencia-estilo, [data-estilo="grade"] .equacao, [data-estilo="grade"] .obs, [data-estilo="grade"] .dimres,
 [data-estilo="grade"] .resultado-forma, [data-estilo="grade"] .forma, [data-estilo="grade"] .alerta, [data-estilo="grade"] .adicionar-item,
 [data-estilo="grade"] .cartao-projeto-base, [data-estilo="grade"] .vazio, [data-estilo="grade"] .raios-atencao, [data-estilo="grade"] .raios-caixa,
-[data-estilo="grade"] .raios-ponto { border-radius: 0; }
+[data-estilo="grade"] .raios-ponto, [data-estilo="grade"] .aurilizacao-icone { border-radius: 0; }
 
 /* Navegação em faixas segmentadas, com o item ativo na cor de destaque. */
 [data-estilo="grade"] .menu, [data-estilo="grade"] .seg, [data-estilo="grade"] .cenarios, [data-estilo="grade"] .abas {
@@ -136,7 +136,7 @@
 
 /* Cartões: borda preta e sombra sólida. */
 [data-estilo="grade"] .bloco, [data-estilo="grade"] .cartao, [data-estilo="grade"] .painel, [data-estilo="grade"] .passo,
-[data-estilo="grade"] .cartao-projeto, [data-estilo="grade"] .cartao-biblioteca, [data-estilo="grade"] .modal, [data-estilo="grade"] .vazio {
+[data-estilo="grade"] .cartao-projeto, [data-estilo="grade"] .cartao-biblioteca, [data-estilo="grade"] .modal, [data-estilo="grade"] .vazio, [data-estilo="grade"] .aurilizacao {
   border: var(--b) solid var(--borda); box-shadow: var(--sombra); border-radius: 0;
 }
 [data-estilo="grade"] .cartao-projeto:hover, [data-estilo="grade"] .cartao-biblioteca:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--sombra-cor); }

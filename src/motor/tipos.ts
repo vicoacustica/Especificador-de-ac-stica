@@ -48,7 +48,14 @@ export interface Superficie {
   largura?: number
   altura?: number
   material: string
+  /** Só paredes base: par de paredes paralelas a que pertence, usado na fórmula de Fitzroy. */
+  eixo?: EixoParede
+  /** Com eixo 'xy': fração da área no par x (0 a 1); o resto vai para o par y. */
+  fracaoX?: number
 }
+
+/** Paredes ao longo do comprimento (x), da largura (y) ou dos dois pares (xy), como "Paredes" em uma só superfície. */
+export type EixoParede = 'x' | 'y' | 'xy'
 
 export type TipoItem = 'assento' | 'publico' | 'suspenso'
 
@@ -114,7 +121,12 @@ export type Umidade = 0 | 40 | 50 | 60
 export interface Cenario {
   id: string
   nome: string
+  /** Critério principal: usado no dimensionamento, no memorial e no cartão do projeto. */
   criterio: Criterio
+  /** Critérios complementares, avaliados com os mesmos resultados (ex.: grupo B5 e NBR conferência em um restaurante). */
+  criteriosExtras?: Criterio[]
+  /** Fórmula do tempo de reverberação; 'auto' (padrão) escolhe pela distribuição e pela quantidade de absorção. */
+  formula?: EscolhaFormula
   /** Volume (V) em m³. */
   volume: number
   /** Pé-direito (h) em m, usado no grupo B. */
@@ -168,4 +180,6 @@ export interface ModeloProjeto {
   faces: { g: string; p: number[] }[]
 }
 
-export type Formula = 'sabine' | 'eyring'
+export type Formula = 'sabine' | 'eyring' | 'fitzroy'
+export type EscolhaFormula = 'auto' | Formula
+export const NOME_FORMULA: Record<Formula, string> = { sabine: 'Sabine', eyring: 'Eyring', fitzroy: 'Fitzroy' }

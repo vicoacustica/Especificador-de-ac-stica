@@ -23,17 +23,20 @@ const PASSOS: Passo[] = [
       },
       {
         imagem: '01-editor', legenda: 'Editor do projeto',
-        marcas: [<>A imagem do projeto. Clique nela para trocar a imagem ou o nome.</>, <>Os cenários. No exemplo há dois: “Forro acústico” e “Nuvens no teto”. Use <b>Duplicar cenário</b> para testar uma variação sem perder a original.</>, <>As cinco etapas do cálculo. Você pode ir e voltar entre elas a qualquer momento.</>, <>O painel de resultado, que recalcula a cada mudança.</>],
+        marcas: [<>A imagem do projeto. Clique nela para trocar a imagem ou o nome.</>, <>Os cenários. No exemplo há dois: “Forro acústico” e “Nuvens no teto”. Use <b>Duplicar cenário</b> para testar uma variação sem perder a original.</>, <>As seis etapas do cálculo. Você pode ir e voltar entre elas a qualquer momento.</>, <>O painel de resultado, que recalcula a cada mudança.</>],
       },
     ],
   },
   {
     titulo: 'Ambiente',
-    resumo: 'Classificação, volume e ar',
-    intro: <>Na etapa 1 você define o critério de avaliação. A sala de aula se enquadra no <b>grupo A3 da DIN 18041:2016</b> (ensino e comunicação), e o Volume (V) é 9 × 7 × 3 = 189 m³.</>,
+    resumo: 'Critérios, fórmula, volume e ar',
+    intro: <>Na etapa 1 você define o critério principal de avaliação e, se quiser, critérios complementares e a fórmula do cálculo. A sala de aula se enquadra no <b>grupo A3 da DIN 18041:2016</b> (ensino e comunicação), e o Volume (V) é 9 × 7 × 3 = 189 m³.</>,
     figuras: [{
       imagem: '02-ambiente', legenda: 'Etapa 1 · Ambiente',
-      marcas: [<>Escolha a classificação. Os grupos A e as curvas da NBR 12179:1992 definem um Tempo de reverberação alvo (T<sub>alvo</sub>); os grupos B definem uma absorção mínima por volume.</>, <>Digite o Volume (V) em m³: 189.</>, <>Escolha a Umidade relativa do ar (UR). Ela define quanto o ar absorve nas bandas agudas; no exemplo, 50%.</>, <>O quadro mostra o critério resultante: T<sub>alvo</sub> = 0,32·lg 189 − 0,17 = 0,56 s, e a faixa aceita em cada banda.</>],
+      marcas: [<>Escolha o critério principal. Os grupos A e as curvas da NBR 12179:1992 definem um Tempo de reverberação alvo (T<sub>alvo</sub>); os grupos B definem uma absorção mínima por volume.</>, <>Digite o Volume (V) em m³: 189.</>, <>Escolha a Umidade relativa do ar (UR). Ela define quanto o ar absorve nas bandas agudas; no exemplo, 50%.</>, <>O quadro mostra o critério resultante: T<sub>alvo</sub> = 0,32·lg 189 − 0,17 = 0,56 s, e a faixa aceita em cada banda.</>],
+    }, {
+      imagem: '02-criterios', legenda: 'Critérios complementares e fórmula',
+      marcas: [<>Marque critérios complementares para avaliar o mesmo ambiente por outras normas. Num restaurante, por exemplo, o grupo B5 da DIN 18041:2016 e a curva de sala de conferência da NBR 12179:1992. O principal continua sendo o do dimensionamento e do início do memorial; os complementares aparecem em cartões próprios no painel, na comparação e no memorial.</>, <>A fórmula do Tempo de reverberação (T). Na escolha automática, o programa usa Fitzroy quando a absorção está concentrada em um par de superfícies, Eyring quando a sala é absorvente (ᾱ acima de 0,30) e Sabine nos demais casos. Você também pode fixar uma das três.</>],
     }, {
       imagem: '02-importar', legenda: 'Importar um modelo DXF ou OBJ',
       marcas: [<>A prévia 3D do modelo aberto pelo botão “Importar modelo”, no início da etapa 1, com uma cor por layer. Arraste para girar e role para aproximar.</>, <>O quadro de áreas: cada layer (ou etiqueta) com a área de piso, paredes, forro/teto e faces inclinadas. Passe o mouse em uma layer para destacá-la na prévia e confira a unidade pela caixa envolvente.</>, <>Escolha de onde vem o volume e o pé-direito, e se as paredes do modelo já têm os vãos recortados.</>, <>Importe. Cada layer vira uma superfície; ajuste o tipo e o material na etapa 2.</>],
@@ -54,6 +57,7 @@ const PASSOS: Passo[] = [
         marcas: [<>O tipo do item: revestimento (o forro acústico de 53 m²), esquadria (janelas de 8 × 1,2 m e porta de 0,9 × 2,1 m) ou elemento.</>, <>A base sobre a qual ele está. As janelas e a porta estão sobre as paredes.</>, <>A área livre da base. A laje tem 63 m², o forro ocupa 53 m² e restam 10 m² de gesso aparente. O sistema não deixa a soma passar da área da base.</>, <><b>Dimensionar área</b> mostra a faixa de área deste material que faz a sala atender, mantendo o resto do cenário.</>],
       },
     ],
+    dica: <>Para a fórmula de Fitzroy, indique em cada parede o par a que ela pertence: x (paredes ao longo do comprimento), y (ao longo da largura) ou os dois, com a porcentagem da área em cada um, quando todas as paredes estão em uma só superfície, como no exemplo (54 m² no par x e 42 m² no par y, ou 56%). Piso e teto formam o par z. Na importação de modelos 3D o par já vem da direção das faces.</>,
   },
   {
     titulo: 'Nuvens e baffles',
@@ -84,18 +88,38 @@ const PASSOS: Passo[] = [
     }],
   },
   {
+    titulo: 'Traçado de raios',
+    resumo: 'Reflexões, atrasos e ecos',
+    intro: <>Na etapa 6 o programa mostra como o som se espalha a partir da fonte (F) e quais reflexões chegam ao receptor (R), em planta baixa e em corte longitudinal. Sem modelo 3D, ele usa uma sala retangular de referência com o volume e o pé-direito do cenário; com modelo, as superfícies e os materiais do próprio modelo.</>,
+    figuras: [{
+      imagem: '09-raios', legenda: 'Etapa 6 · Traçado de raios',
+      marcas: [<>Escolha a vista (planta baixa ou corte longitudinal), a banda de frequência e até que ordem as reflexões são procuradas. O leque de raios mostra como a energia se espalha; cada raio perde a parcela absorvida, (1 − α), a cada reflexão.</>, <>As ferramentas: mover a fonte e o receptor, desenhar elementos novos com um material (para testar um refletor ou um painel) e apagar elementos com a borracha.</>, <>O desenho. As reflexões que chegam ao receptor aparecem com os pontos de reflexão numerados e na cor da ordem.</>, <>O reflectograma: cada reflexão é uma barra no tempo de atraso em relação ao som direto (Δt) e com o nível em relação a ele, em dB. As linhas de 50 e 80 ms marcam o limite usual de integração do ouvido para a fala e para a música.</>, <>Os casos de atenção: eco potencial, eco palpitante entre superfícies paralelas e coloração, pelos critérios da literatura citados no quadro.</>],
+    }],
+    dica: <>A posição da fonte e do receptor fica salva no cenário e também é usada na aurilização.</>,
+  },
+  {
+    titulo: 'Aurilização',
+    resumo: 'Ouvir o ambiente',
+    intro: <>Nas etapas Resultados e Traçado de raios, o quadro Aurilização deixa ouvir o ambiente. Uma gravação anecoica (feita sem sala) passa pela resposta ao impulso do cenário: o som direto, as reflexões calculadas no traçado de raios e a cauda reverberante com o Tempo de reverberação (T) de cada banda. Assim você ouve a diferença entre os cenários com a mesma gravação. Use fones de ouvido.</>,
+    figuras: [{
+      imagem: '10-aurilizacao', legenda: 'Quadro de aurilização',
+      marcas: [<>A gravação: fala, canto, instrumentos ou um estalo, que deixa ouvir só a resposta da sala.</>, <>A situação de ocupação: o T muda com o público, e o som também.</>, <>O cenário. Troque de cenário enquanto ouve para comparar.</>, <>Ouvir e parar.</>, <>Marque “Som anecoico” para ouvir a gravação original, sem a sala.</>],
+    }],
+    dica: <>A aurilização é uma aproximação para comparar cenários: ela não substitui uma simulação acústica completa, com difusão e reflexões em três dimensões.</>,
+  },
+  {
     titulo: 'Painel e memorial',
     resumo: 'Resultado ao vivo e especificação',
     intro: <>O painel à direita acompanha todas as etapas e mostra o resultado do cenário aberto, recalculado a cada mudança.</>,
     figuras: [{
       imagem: '07-resultado', legenda: 'Painel de resultado',
-      marcas: [<>O cenário, o critério e a fórmula usada, Sabine ou Eyring.</>, <>O Tempo de reverberação (T) por banda em cada situação de ocupação, dentro da faixa aceita.</>, <>Os valores de T comparados aos limites mínimo e máximo.</>, <>A observação sobre o Coeficiente de absorção médio (ᾱ) da sala: acima de 0,30 o cálculo passa a usar Eyring. No exemplo, ᾱ = 0,23 e vale Sabine.</>, <>O botão “Gerar memorial” cria o PDF com plantas e vistas do modelo 3D, quadro de especificações, resultados e memória de cálculo.</>],
+      marcas: [<>O cenário, o critério e a fórmula usada: Sabine, Eyring ou Fitzroy. Os critérios complementares aparecem em cartões logo abaixo.</>, <>O Tempo de reverberação (T) por banda em cada situação de ocupação, dentro da faixa aceita.</>, <>Os valores de T comparados aos limites mínimo e máximo.</>, <>A observação diz por que a fórmula foi escolhida. No exemplo, o Coeficiente de absorção médio (ᾱ) da sala é 0,23, abaixo de 0,30, e vale Sabine.</>, <>O botão “Gerar memorial” cria o PDF com plantas e vistas do modelo 3D, quadro de especificações, resultados e memória de cálculo.</>],
     }],
   },
   {
     titulo: 'Biblioteca de materiais',
     resumo: 'Buscar, criar e enviar imagens',
-    intro: <>Na aba Materiais ficam a base da PLANILHA_TR e os materiais que você criar. Eles valem para todos os seus projetos.</>,
+    intro: <>Na aba Materiais ficam a base da PLANILHA_TR e os materiais que você criar. Eles valem para todos os seus projetos. O botão no alto alterna entre a grade de cartões e a lista com miniaturas.</>,
     figuras: [
       {
         imagem: '08-biblioteca', legenda: 'Biblioteca de materiais',
@@ -110,6 +134,14 @@ const PASSOS: Passo[] = [
 ]
 
 const DUVIDAS: { pergunta: string; resposta: ReactNode }[] = [
+  {
+    pergunta: 'Quando a fórmula de Fitzroy é mais indicada?',
+    resposta: <>Quando a absorção está concentrada em um par de superfícies opostas e as demais são refletoras. O caso típico é uma sala de aula ou de reunião com forro acústico e paredes de alvenaria pintada: o som que viaja entre as paredes quase não encontra absorção e demora mais para se extinguir, e Sabine e Eyring dão tempos curtos demais. Fitzroy calcula cada par separadamente (paredes ao longo do comprimento, paredes ao longo da largura, piso e teto) e soma as contribuições pesadas pela área. Com a absorção bem distribuída, o resultado é o mesmo de Eyring. A explicação completa está em Processos de cálculo.</>,
+  },
+  {
+    pergunta: 'Como mudar a aparência do programa?',
+    resposta: <>Pelo botão de paleta no alto da tela ou em Minha conta. Há dois estilos, Clássico e Brutalista, cada um com modo claro e escuro e com oito cores de destaque. A escolha fica salva neste navegador.</>,
+  },
   {
     pergunta: 'Qual a diferença entre os resultados para Sabine e Eyring?',
     resposta: <>As duas fórmulas estimam o Tempo de reverberação (T) a partir do Volume (V) e da absorção da sala. Sabine supõe que o som decai de forma contínua e funciona bem em salas pouco absorventes. Em salas muito absorventes cada reflexão perde muita energia, e Sabine passa a superestimar o T; Eyring considera essa perda reflexão a reflexão e dá valores menores. Por isso o sistema calcula o Coeficiente de absorção médio (ᾱ) da sala e usa Eyring quando ele passa de 0,30. Abaixo disso as duas dão resultados próximos.</>,

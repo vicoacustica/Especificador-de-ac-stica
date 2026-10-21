@@ -58,7 +58,11 @@ const SAIDA = path.join(__dirname, '..', 'public', 'guia')
   // 2. Ambiente
   await etapa('Ambiente')
   await marcar([['.uso[aria-pressed="true"]', '1'], ['.painel .linha .campo', '2', 0], ['.painel .linha .campo select', '3'], ['.criterio', '4']])
-  await foto('02-ambiente', '.painel')
+  await foto('02-ambiente', '.painel', 16, 1500)
+  await p.locator('.criterios-complementares .chip', { hasText: 'B5' }).click()
+  await marcar([['.criterios-complementares', '1'], ['.usos.formulas', '2']])
+  await foto('02-criterios', '.ambiente-avancado', 12)
+  await p.locator('.criterios-complementares .chip', { hasText: 'B5' }).click()
   await p.locator('.importar-chamada .btn').click()
   await p.locator('.btn', { hasText: 'Abrir exemplo DXF' }).click()
   await p.waitForTimeout(700)
@@ -89,6 +93,14 @@ const SAIDA = path.join(__dirname, '..', 'public', 'guia')
   await etapa('Resultados')
   await marcar([['.painel .chips', '1'], ['.painel .seg', '2'], ['.painel svg', '3'], ['.painel table.cmp', '4']])
   await foto('06-resultados', '.painel')
+
+  // 9. Traçado de raios e 10. Aurilização
+  await etapa('Traçado')
+  await p.waitForTimeout(400)
+  await marcar([['.raios-controles', '1'], ['.raios-ferramentas', '2'], ['.raios-visor', '3'], ['.raios-reflectograma', '4'], ['.raios-atencao', '5']])
+  await foto('09-raios', '.painel', 16, 2000)
+  await marcar([['.aurilizacao select', '1'], ['.aurilizacao .seg', '2'], ['.aurilizacao .chips', '3'], ['.aurilizacao .btn.primario', '4'], ['.aurilizacao .marcar', '5']])
+  await foto('10-aurilizacao', '.aurilizacao', 14)
 
   // 7. Painel de resultado e memorial
   await p.locator('.cenarios .pilula', { hasText: 'Forro' }).click()

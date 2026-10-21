@@ -37,6 +37,9 @@ const CAMINHOS = {
   grade: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
   lista: 'M4 5h4v4H4zM4 15h4v4H4zM11 7h9M11 17h9',
   regua: 'M3 17 17 3l4 4L7 21zM7 13l2 2M10 10l2 2M13 7l2 2',
+  som: 'M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14',
+  tocar: 'M7 4v16l13-8z',
+  parar: 'M6 6h12v12H6z',
 } as const
 
 export type NomeIcone = keyof typeof CAMINHOS

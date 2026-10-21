@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import casos from './casos-planilha.json'
-import { areaEfetiva, avaliar, calcular, dimensionar, LIMITE_EYRING, situacaoDasBandas, validarSuperficies } from './acustica'
+import { areaEfetiva, avaliar, avaliarCriterios, calcular, dimensionar, fitzroyPossivel, LIMITE_EYRING, situacaoDasBandas, validarSuperficies } from './acustica'
 import { avMinimo, MARGENS_DIN_PCT, metaDoCriterio, tempoAlvo, tempoOtimoNBR } from './criterios'
 import { Catalogo, MATERIAIS_BASE, paraSuperficie } from './materiais'
 import { areaDaForma, ESTADOS, type Cenario, type Umidade } from './tipos'
@@ -187,5 +187,57 @@ describe('formas de nuvens e baffles', () => {
     expect(m.inferior.map((v) => +v.toFixed(3))).toEqual([0.56, 0.64, 0.64, 0.64, 0.64, 0.48])
     // Ponto de partida igual às margens da DIN 18041.
     expect(MARGENS_DIN_PCT).toEqual({ superior: [45, 20, 20, 20, 20, 20], inferior: [35, 20, 20, 20, 20, 35] })
+  })
+})
+
+describe('Fitzroy', () => {
+  function caixa(alfaTeto: string): Cenario {
+    const c = salaDeAula()
+    c.itens = []
+    c.superficies = [
+      { id: 'piso', nome: 'Piso', categoria: 'piso', modo: 'area', area: 63, material: id(alfaTeto) },
+      { id: 'teto', nome: 'Teto', categoria: 'teto', modo: 'area', area: 63, material: id(alfaTeto) },
+      { id: 'px', nome: 'Paredes x', categoria: 'parede', modo: 'area', area: 54, material: id(alfaTeto), eixo: 'x' },
+      { id: 'py', nome: 'Paredes y', categoria: 'parede', modo: 'area', area: 42, material: id(alfaTeto), eixo: 'y' },
+    ]
+    return c
+  }
+  it('fica indisponível sem o par das paredes', () => {
+    const c = salaDeAula()
+    expect(fitzroyPossivel(c)).toBe(false)
+    expect(calcular(c, cat).porEstado.cheio.fitzroy).toBeNull()
+  })
+  it('com a absorção distribuída por igual, coincide com Eyring', () => {
+    const r = calcular(caixa('ALVENARIA LISA OU PINTADA'), cat)
+    r.porEstado.cheio.fitzroy!.forEach((t, i) => expect(t).toBeCloseTo(r.porEstado.cheio.eyring[i]!, 9))
+    expect(r.formula).toBe('sabine')
+  })
+  it('com forro acústico em sala de paredes lisas, dá tempos maiores e é escolhida automaticamente', () => {
+    const c = caixa('ALVENARIA LISA OU PINTADA')
+    c.superficies[1].material = id('AMBI CFQ 18X18 FORRO')
+    const r = calcular(c, cat)
+    expect(r.formula).toBe('fitzroy')
+    expect(r.razaoPares!).toBeGreaterThan(3)
+    r.porEstado.cheio.fitzroy!.forEach((t, i) => expect(t!).toBeGreaterThan(r.porEstado.cheio.eyring[i]!))
+    c.formula = 'sabine'
+    expect(calcular(c, cat).formula).toBe('sabine')
+  })
+  it('pedida sem os pares, volta à escolha automática', () => {
+    const c = salaDeAula()
+    c.formula = 'fitzroy'
+    const r = calcular(c, cat)
+    expect(r.fitzroyIndisponivel).toBe(true)
+    expect(r.formula).not.toBe('fitzroy')
+  })
+})
+
+describe('critérios complementares', () => {
+  it('avalia o principal e os extras com os mesmos resultados', () => {
+    const c = salaDeAula()
+    c.criteriosExtras = [{ norma: 'B', grupo: 'B5' }, { norma: 'NBR', curva: 'conferencia' }]
+    const avs = avaliarCriterios(c, cat)
+    expect(avs.map((a) => a.tipo)).toEqual(['tempo', 'absorcao', 'tempo'])
+    expect(avs[0].meta.nome).toContain('A3')
+    expect(avs[2].resultado.tempo.cheio).toEqual(avs[0].resultado.tempo.cheio)
   })
 })

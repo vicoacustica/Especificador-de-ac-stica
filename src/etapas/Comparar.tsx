@@ -1,7 +1,7 @@
-import { avaliar } from '../motor/acustica'
+import { avaliar, avaliarCriterios } from '../motor/acustica'
 import { ModeloResultado } from '../resultado/ModeloResultado'
 import type { Catalogo } from '../motor/materiais'
-import { BANDAS, ESTADOS, NOME_ESTADO, type EstadoOcupacao, type Projeto } from '../motor/tipos'
+import { BANDAS, ESTADOS, NOME_ESTADO, NOME_FORMULA, type EstadoOcupacao, type Projeto } from '../motor/tipos'
 import { GraficoTempo } from '../resultado/Graficos'
 import { Segmentado } from '../ui/campos'
 import { fmt } from '../ui/formato'
@@ -74,23 +74,23 @@ export function EtapaComparar({ projeto, catalogo, selecionados, setSelecionados
           <table className="cmp">
             <thead><tr><th>Cenário</th><th>Critério</th>{BANDAS.map((b) => <th key={b} className="num">{b}</th>)}</tr></thead>
             <tbody>
-              {linhas.map(({ c, av, cor }) => {
+              {linhas.map(({ c, cor }) => avaliarCriterios(c, catalogo).map((av, k) => {
                 const valores = av.tipo === 'absorcao' ? av.av : av.resultado.tempo[estado]
                 const bandas = av.tipo === 'absorcao' ? av.bandas : av.bandas[estado]
                 return [
-                  <tr key={c.id}>
-                    <td><i className="sw" style={{ background: cor }} />{c.nome}</td>
-                    <td className="nota">{av.tipo === 'absorcao' ? `A/V ≥ ${fmt(av.meta.avMinimo, 3)}` : `${av.meta.otimo ? 'T ót.' : 'T alvo'} ${fmt(av.meta.t)} s · ${av.resultado.formula === 'eyring' ? 'Eyring' : 'Sabine'}`}</td>
+                  <tr key={c.id + k} className={k ? 'extra' : undefined}>
+                    <td>{k === 0 ? <><i className="sw" style={{ background: cor }} />{c.nome}</> : <span className="nota">complementar</span>}</td>
+                    <td className="nota">{av.tipo === 'absorcao' ? `${av.meta.nome.replace(/^.*grupo /, 'Grupo ')} · A/V ≥ ${fmt(av.meta.avMinimo, 3)}` : `${k ? `${av.meta.nome.split(',')[0].split(' (')[0]} · ` : ''}${av.meta.otimo ? 'T ót.' : 'T alvo'} ${fmt(av.meta.t)} s · ${NOME_FORMULA[av.resultado.formula]}`}</td>
                     {valores.map((v, i) => <td key={i} className={`num ${CLASSE[bandas[i]]}`}>{fmt(v)}</td>)}
                   </tr>,
                   av.tipo === 'tempo' && (['superior', 'inferior'] as const).map((lado) => (
-                    <tr key={c.id + lado} className="marg">
+                    <tr key={c.id + k + lado} className="marg">
                       <td /><td className="nota">margem {lado === 'superior' ? 'máx.' : 'mín.'}</td>
                       {av.meta[lado].map((v, i) => <td key={i} className="num suave">{fmt(v)}</td>)}
                     </tr>
                   )),
                 ]
-              })}
+              }))}
             </tbody>
           </table>
         </div>

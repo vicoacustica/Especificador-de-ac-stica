@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { areaInformada, areaLivre, dimensionar, ehBase, itensSobre, validarSuperficies, type Dimensionamento } from '../motor/acustica'
+import { areaInformada, areaLivre, dimensionar, ehBase, fitzroyPossivel, itensSobre, validarSuperficies, type Dimensionamento } from '../motor/acustica'
 import { paraSuperficie, type Catalogo } from '../motor/materiais'
-import { CATEGORIAS, type Cenario, type CategoriaSuperficie, type ModeloProjeto, type Superficie } from '../motor/tipos'
+import { CATEGORIAS, type Cenario, type CategoriaSuperficie, type EixoParede, type ModeloProjeto, type Superficie } from '../motor/tipos'
 import { SuperficiesNoModelo } from './SuperficiesModelo'
 import { novoId } from '../dados/exemplo'
 import { Icone } from '../ui/Icone'
@@ -85,6 +85,14 @@ export function EtapaSuperficies({ cenario, catalogo, mudar, salvarMaterial, mod
           <select aria-label="Tipo" value={s.categoria} onChange={(e) => alterar(s.id, (x, c) => mudarCategoria(x, c, e.target.value as CategoriaSuperficie))}>
             {Object.entries(CATEGORIAS).map(([k, v]) => <option key={k} value={k}>{v.nome}</option>)}
           </select>
+          {s.categoria === 'parede' && (
+            <select aria-label="Par de paredes (Fitzroy)" title="Par de paredes paralelas, usado na fórmula de Fitzroy" value={s.eixo ?? ''} onChange={(e) => alterar(s.id, (x) => { if (e.target.value) x.eixo = e.target.value as EixoParede; else delete x.eixo })}>
+              <option value="">Par: não definido</option>
+              <option value="x">Par x: ao longo do comprimento</option>
+              <option value="y">Par y: ao longo da largura</option>
+              <option value="xy">Pares x e y (várias paredes)</option>
+            </select>
+          )}
           {!base && (
             <label className="em">sobre
               <select value={s.base} onChange={(e) => alterar(s.id, (x) => { x.base = e.target.value })}>
@@ -116,6 +124,11 @@ export function EtapaSuperficies({ cenario, catalogo, mudar, salvarMaterial, mod
               <Numero rotulo="Largura em m" minimo={0} valor={s.largura} aoMudar={(v) => alterar(s.id, (x) => { x.largura = v })} /> ×
               <Numero rotulo="Altura em m" minimo={0} valor={s.altura} aoMudar={(v) => alterar(s.id, (x) => { x.altura = v })} /> m = <b className="mono">{fmt(areaInformada(s))} m²</b>
             </>
+          )}
+          {s.categoria === 'parede' && s.eixo === 'xy' && (
+            <label className="em">no par x
+              <Numero rotulo="Porcentagem da área no par x" minimo={0} valor={Math.round((s.fracaoX ?? 0.5) * 100)} passo={5} aoMudar={(v) => alterar(s.id, (x) => { x.fracaoX = Math.min(100, Math.max(0, v)) / 100 })} />%
+            </label>
           )}
           {base && itensSobre(cenario, s.id).length > 0 && <span className="livre">livre: <b className="mono">{fmt(areaLivre(cenario, s.id))} m²</b></span>}
         </div>
@@ -173,6 +186,9 @@ export function EtapaSuperficies({ cenario, catalogo, mudar, salvarMaterial, mod
         />
       )}
       {(!comModelo || vista === 'lista') && <>
+      {!fitzroyPossivel(cenario) && (
+        <p className="nota">Para usar a fórmula de Fitzroy, indique em cada parede o par a que ela pertence: x (paredes ao longo do comprimento) ou y (ao longo da largura). Piso e teto formam o par z.</p>
+      )}
       <div className="sups">
         {bases.map((b) => [
           linha(b),

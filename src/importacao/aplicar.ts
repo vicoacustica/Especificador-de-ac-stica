@@ -58,7 +58,15 @@ export function aplicarImportacao(cenario: Cenario, escolhas: Escolha[], opcoes:
     const c = e.destino as CategoriaSuperficie
     const id = novoId()
     grupos[e.linha.chave] = id
-    return { id, nome: e.linha.chave, categoria: c, modo: 'area', area: m2(e.linha.total), material: material(c, e.linha.layer) }
+    const s: Superficie = { id, nome: e.linha.chave, categoria: c, modo: 'area', area: m2(e.linha.total), material: material(c, e.linha.layer) }
+    if (c === 'parede' && e.linha.areas.parede > 0) {
+      // Par de Fitzroy pela direção das faces verticais da layer.
+      const f = e.linha.paredeX / e.linha.areas.parede
+      if (f >= 0.9) s.eixo = 'x'
+      else if (f <= 0.1) s.eixo = 'y'
+      else { s.eixo = 'xy'; s.fracaoX = Math.round(f * 100) / 100 }
+    }
+    return s
   }
   const bases = usadas.filter((e) => CATEGORIAS[e.destino as CategoriaSuperficie].base).map(nova)
   const todasBases = [...existentes.filter(ehBase), ...bases]

@@ -20,6 +20,7 @@ for (const c of projeto.cenarios) {
   const forro = c.superficies.find((s) => s.nome === 'FORRO ACUSTICO')!
   forro.material = cat.porNome('AMBI CFQ 18X18 FORRO').id
 }
+projeto.cenarios[0].criteriosExtras = [{ norma: 'B', grupo: 'B5' }, { norma: 'NBR', curva: 'conferencia' }]
 const c = projeto.cenarios[1]
 c.superficies.find((s) => s.nome === 'PAREDES')!.material = cat.porNome('AMBI 16.1 PAREDE').id
 c.itens.push({ id: novoId(), tipo: 'suspenso', nome: 'Baffles', quantidade: 6, elemento: 'baffle', material: cat.todos.find((m) => m.tipo === 'ACÚSTICO - BAFFLE' && !m.unidade)!.id, forma: { tipo: 'baffle', medidas: [1.2, 0.05, 0.3], quantidade: 6 } })

@@ -8,6 +8,7 @@ import { EtapaComparar } from '../etapas/Comparar'
 import { EtapaNuvens } from '../etapas/NuvensBaffles'
 import { EtapaOcupacao } from '../etapas/Ocupacao'
 import { EtapaRaios } from '../etapas/Raios'
+import { Aurilizacao } from '../aurilizacao/Aurilizacao'
 import { EtapaSuperficies } from '../etapas/Superficies'
 import { PainelResultado } from '../resultado/Painel'
 import { Texto } from '../ui/campos'
@@ -120,6 +121,7 @@ export function Editor({ projeto, catalogo, mudarProjeto, salvarMaterial, perfil
             {etapa === 3 && <EtapaOcupacao cenario={cenario} catalogo={catalogo} mudar={mudarCenario} />}
             {etapa === 4 && <EtapaComparar projeto={projeto} catalogo={catalogo} selecionados={comparar} setSelecionados={setComparar} estado={estado} setEstado={setEstado} />}
             {etapa === 5 && <EtapaRaios cenario={cenario} catalogo={catalogo} modelo={projeto.modelo} mudar={mudarCenario} />}
+            {(etapa === 4 || etapa === 5) && <Aurilizacao projeto={projeto} catalogo={catalogo} cenarioId={cenario.id} />}
             <div className="navegacao">
               {etapa > 0 ? <button type="button" className="btn secundario" onClick={() => irPara(etapa - 1)}><Icone nome="voltar" />Voltar</button> : <span />}
               {etapa < ETAPAS.length - 1 && <button type="button" className="btn primario" onClick={() => irPara(etapa + 1)}>Avançar para {ETAPAS[etapa + 1].titulo.toLowerCase()}</button>}

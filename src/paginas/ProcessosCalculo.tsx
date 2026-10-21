@@ -3,6 +3,7 @@ import { CURVAS_NBR, DIN, GRUPOS_A, GRUPOS_B, NBR, TOLERANCIA_INFERIOR, TOLERANC
 import { ABSORCAO_AR } from '../motor/materiais'
 import { BANDAS, FORMAS } from '../motor/tipos'
 import { fmt } from '../ui/formato'
+import { LIMITE_EYRING, RAZAO_FITZROY } from '../motor/acustica'
 
 /** Equação com a legenda de cada termo logo abaixo. */
 function Equacao({ formula, legenda }: { formula: ReactNode; legenda: [ReactNode, string][] }) {
@@ -39,9 +40,13 @@ const TITULOS = [
   'Fórmula de Sabine',
   'Coeficiente de absorção médio (ᾱ) e a regra para Eyring',
   'Fórmula de Eyring',
+  'Fórmula de Fitzroy e a escolha da fórmula',
   'Tempo ótimo de reverberação ou tempo alvo (Talvo)',
   `Avaliação pela ${NBR}`,
   `Avaliação pela ${DIN}`,
+  'Traçado de raios e tempo de atraso das reflexões',
+  'Critérios complementares',
+  'Aurilização',
 ]
 
 export function ProcessosCalculo() {
@@ -157,7 +162,7 @@ export function ProcessosCalculo() {
         </Topico>
 
         <Topico n={8} titulo="Coeficiente de absorção médio (ᾱ) e a regra para Eyring">
-          <p>O Coeficiente de absorção médio (ᾱ) é a absorção da sala dividida pela área total. Ele diz quão absorvente a sala é como um todo. O sistema calcula o ᾱ de cada banda, tira a média das seis bandas na situação de ocupação mais absorvente que você marcou e aplica a regra: <b>até 0,30 os resultados usam Sabine; acima de 0,30, Eyring</b>. O painel de resultado avisa qual fórmula foi usada.</p>
+          <p>O Coeficiente de absorção médio (ᾱ) é a absorção da sala dividida pela área total. Ele diz quão absorvente a sala é como um todo. O sistema calcula o ᾱ de cada banda, tira a média das seis bandas na situação de ocupação mais absorvente que você marcou e aplica a regra: <b>até 0,30 os resultados usam Sabine; acima de 0,30, Eyring</b>, a não ser que a absorção esteja concentrada em um par de superfícies (tópico 10). O painel de resultado avisa qual fórmula foi usada e por quê.</p>
           <Equacao
             formula={<>ᾱ = A / S</>}
             legenda={[
@@ -182,11 +187,30 @@ export function ProcessosCalculo() {
           />
         </Topico>
 
-        <Topico n={10} titulo={<>Tempo ótimo de reverberação ou tempo alvo (T<sub>alvo</sub>)</>}>
+        <Topico n={10} titulo="Fórmula de Fitzroy e a escolha da fórmula">
+          <p>Sabine e Eyring supõem que a absorção está espalhada pela sala. Em muitas salas reais ela fica concentrada: uma sala de aula com forro acústico e paredes de alvenaria pintada, por exemplo, tem quase toda a absorção no teto. O som que viaja na horizontal, entre as paredes, quase não encontra absorção e demora mais para se extinguir, e Sabine e Eyring passam a dar tempos curtos demais. Dariel Fitzroy (Journal of the Acoustical Society of America, 1959) propôs tratar separadamente os três pares de superfícies opostas e somar as contribuições de cada par, pesadas pela área.</p>
+          <Equacao
+            formula={<>T = Σ (S<sub>k</sub>/S) · 0,161·V / (4mV − S·ln(1 − ᾱ<sub>k</sub>)),  k = x, y, z</>}
+            legenda={[
+              [<>Tempo de reverberação (T)</>, 's'],
+              [<>Área de cada par de superfícies opostas (S<sub>k</sub>)</>, 'm²: x são as paredes ao longo do comprimento, y as paredes ao longo da largura e z o piso e o teto'],
+              [<>Coeficiente de absorção médio do par (ᾱ<sub>k</sub>)</>, 'A_k / S_k, por banda'],
+              [<>Área total (S)</>, 'm²'],
+              [<>Volume (V)</>, 'm³'],
+              [<>Coeficiente de atenuação do ar (m)</>, 'm⁻¹'],
+            ]}
+          />
+          <p>Com a absorção igual nos três pares, Fitzroy dá exatamente o resultado de Eyring. Quanto mais desigual a distribuição, maior a diferença, e o par menos absorvente pesa mais no resultado. Por isso a fórmula costuma superestimar um pouco o T quando um dos pares é muito refletor.</p>
+          <h3>Como o programa escolhe a fórmula</h3>
+          <p>Na escolha automática (etapa Ambiente), o programa calcula o ᾱ médio de cada par na ocupação mais absorvente. Se o par mais absorvente tem pelo menos {RAZAO_FITZROY} vezes o ᾱ do menos absorvente, a absorção é considerada concentrada e o resultado usa <b>Fitzroy</b>. Se não, vale a regra do tópico 8: <b>Eyring</b> com ᾱ acima de {fmt(LIMITE_EYRING)} e <b>Sabine</b> até {fmt(LIMITE_EYRING)}. O projetista também pode fixar uma das três fórmulas no cenário.</p>
+          <p className="nota">Para Fitzroy, cada parede precisa do seu par na etapa Superfícies: x, y ou os dois, com a porcentagem da área em cada um (útil quando todas as paredes estão em uma só superfície). Na importação de modelos 3D o par vem da direção das faces. Ocupação, nuvens e baffles entram no par z. Sem o par de todas as paredes, o cálculo volta à regra de Sabine e Eyring.</p>
+        </Topico>
+
+        <Topico n={11} titulo={<>Tempo ótimo de reverberação ou tempo alvo (T<sub>alvo</sub>)</>}>
           <p>Não existe um Tempo de reverberação (T) bom para todas as salas. A fala pede T curto, para que as sílabas não se sobreponham; a música pede T mais longo, para dar continuidade e envolvimento; e salas maiores toleram T maior. As normas definem, para cada uso e volume, um Tempo de reverberação alvo (T<sub>alvo</sub>), também chamado de tempo ótimo, e uma faixa de tolerância em torno dele em cada banda. O projeto atende quando o T de todas as bandas fica dentro dessa faixa.</p>
         </Topico>
 
-        <Topico n={11} titulo={`Avaliação pela ${NBR}`}>
+        <Topico n={12} titulo={`Avaliação pela ${NBR}`}>
           <p>A {NBR} (Tratamento acústico em recintos fechados) traz, na Figura 1, um ábaco com o Tempo ótimo de reverberação (T<sub>ót</sub>) a 500 Hz em função do volume, para salas de performance: igrejas, salas de concerto, estúdios, rádios, cinemas e salas de conferência. As curvas foram digitalizadas e ajustadas pela equação abaixo. O T<sub>ót</sub> é aplicado a todas as bandas, com a faixa de tolerância da {DIN}.</p>
           <Equacao
             formula={<>T<sub>ót</sub> = a + b·lg V + c·(lg V)²</>}
@@ -208,7 +232,7 @@ export function ProcessosCalculo() {
           </div>
         </Topico>
 
-        <Topico n={12} titulo={`Avaliação pela ${DIN}`}>
+        <Topico n={13} titulo={`Avaliação pela ${DIN}`}>
           <p>A {DIN} (Hörsamkeit in Räumen, ou audibilidade em salas) divide os ambientes em dois grupos. No <b>grupo A</b>, salas em que se precisa ouvir a distância, como salas de aula, auditórios e salas de música, o critério é um Tempo de reverberação alvo (T<sub>alvo</sub>) com a sala ocupada.</p>
           <Equacao
             formula={
@@ -247,7 +271,7 @@ export function ProcessosCalculo() {
           <p className="nota">Com pé-direito até 2,5 m, os mínimos são fixos: {Object.entries(GRUPOS_B).map(([g, d]) => `${g} ${fmt(d.minimoAte2_5m)}`).join(', ')} m²/m³.</p>
         </Topico>
 
-        <Topico n={13} titulo="Traçado de raios e tempo de atraso das reflexões">
+        <Topico n={14} titulo="Traçado de raios e tempo de atraso das reflexões">
           <p>Na etapa 6 a planta baixa e o corte longitudinal viram desenhos em 2D com as superfícies cortadas pelo plano. O leque de raios parte da fonte em todas as direções; a cada superfície o raio reflete como em um espelho (ângulo de incidência igual ao de reflexão) e perde a parcela de energia absorvida, (1 − α). Isso mostra como o som se espalha pela sala.</p>
           <p>As reflexões que chegam ao receptor são calculadas pelo método das fontes-imagem: a fonte é espelhada na reta de cada superfície, e a imagem é espelhada de novo para as reflexões de 2ª e 3ª ordem. Quando o caminho da imagem até o receptor cruza as superfícies na ordem certa e sem obstáculos, a reflexão existe, e o comprimento do percurso é a distância da imagem ao receptor.</p>
           <Equacao
@@ -277,6 +301,26 @@ export function ProcessosCalculo() {
               [<>Velocidade do som (c)</>, '343 m/s'],
             ]}
           />
+        </Topico>
+        <Topico n={15} titulo="Critérios complementares">
+          <p>Alguns ambientes pedem mais de uma referência. Um restaurante, por exemplo, precisa de absorção suficiente para controlar o ruído (grupo B5 da {DIN}) e, ao mesmo tempo, de um tempo de reverberação adequado à conversa (curva de sala de conferência da {NBR}). Na etapa Ambiente o projetista escolhe um <b>critério principal</b> e marca quantos <b>critérios complementares</b> quiser.</p>
+          <p>Todos usam os mesmos resultados de cálculo: muda só a referência de comparação. O critério principal é o usado no dimensionamento das áreas de material, no cartão do projeto e no início do memorial; os complementares aparecem no painel de resultado, na comparação de cenários e no memorial, logo abaixo do principal.</p>
+        </Topico>
+
+        <Topico n={16} titulo="Aurilização">
+          <p>Aurilizar é tornar audível o resultado de um cálculo acústico: um som gravado sem sala (anecoico) é combinado com a resposta ao impulso do ambiente, e o resultado soa como se fosse tocado na sala, na posição de fonte e receptor escolhida.</p>
+          <p>O programa monta uma resposta ao impulso simplificada em três partes: o som direto, as reflexões especulares calculadas no traçado de raios (planta e corte, até a 3ª ordem), com os atrasos e níveis de cada uma, e uma cauda reverberante, ruído filtrado em cada banda de oitava que decai 60 dB no Tempo de reverberação (T) da banda calculado no cenário. A energia da cauda em relação ao som direto segue a teoria da sala difusa.</p>
+          <Equacao
+            formula={<>E<sub>rev</sub> / E<sub>dir</sub> = 16·π·r² / R,   R = A / (1 − ᾱ)</>}
+            legenda={[
+              [<>Energia reverberante (E<sub>rev</sub>) e direta (E<sub>dir</sub>)</>, 'no receptor, por banda'],
+              [<>Distância entre fonte e receptor (r)</>, 'm'],
+              [<>Constante da sala (R)</>, 'm²'],
+              [<>Área de absorção sonora equivalente (A)</>, 'm²'],
+              [<>Coeficiente de absorção médio (ᾱ)</>, 'adimensional'],
+            ]}
+          />
+          <p>O resultado é feito para comparar cenários entre si, ouvindo a mesma gravação: ele mostra bem a diferença de reverberação e de clareza, mas não substitui uma simulação acústica completa com difusão e reflexões em 3D. Use fones de ouvido.</p>
         </Topico>
       </div>
     </div>
