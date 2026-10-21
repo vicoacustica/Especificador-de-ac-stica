@@ -28,7 +28,7 @@ const GRUPOS: { titulo: string; opcoes: Opcao[] }[] = [
 const igual = (a: Criterio, b: Criterio) => JSON.stringify(a) === JSON.stringify(b)
 
 const FORMULAS: { valor: EscolhaFormula; titulo: string; texto: string }[] = [
-  { valor: 'auto', titulo: 'Automática', texto: `Fitzroy quando a absorção está concentrada em um par de superfícies (ᾱ ${RAZAO_FITZROY} vezes maior que o de outro par); senão Eyring acima de ᾱ = 0,30 e Sabine até 0,30.` },
+  { valor: 'auto', titulo: 'Automática', texto: `Eyring acima de ᾱ = 0,30 e Sabine até 0,30. Se a absorção estiver concentrada em um par de superfícies (ᾱ ${RAZAO_FITZROY} vezes maior que o de outro par), o painel recomenda Fitzroy.` },
   { valor: 'sabine', titulo: 'Sabine', texto: 'Salas pouco absorventes, com absorção bem distribuída.' },
   { valor: 'eyring', titulo: 'Eyring', texto: 'Salas absorventes (ᾱ acima de 0,30), com absorção bem distribuída.' },
   { valor: 'fitzroy', titulo: 'Fitzroy', texto: 'Absorção concentrada em um par de superfícies, como um forro acústico em sala de paredes lisas. Pede o par de cada parede na etapa Superfícies.' },

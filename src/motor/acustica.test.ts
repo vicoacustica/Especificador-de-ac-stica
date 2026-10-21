@@ -212,11 +212,14 @@ describe('Fitzroy', () => {
     r.porEstado.cheio.fitzroy!.forEach((t, i) => expect(t).toBeCloseTo(r.porEstado.cheio.eyring[i]!, 9))
     expect(r.formula).toBe('sabine')
   })
-  it('com forro acústico em sala de paredes lisas, dá tempos maiores e é escolhida automaticamente', () => {
+  it('com forro acústico em sala de paredes lisas, dá tempos maiores e é recomendada', () => {
     const c = caixa('ALVENARIA LISA OU PINTADA')
     c.superficies[1].material = id('AMBI CFQ 18X18 FORRO')
     const r = calcular(c, cat)
-    expect(r.formula).toBe('fitzroy')
+    expect(r.formula).not.toBe('fitzroy')
+    expect(r.concentrada).toBe(true)
+    c.formula = 'fitzroy'
+    expect(calcular(c, cat).formula).toBe('fitzroy')
     expect(r.razaoPares!).toBeGreaterThan(3)
     r.porEstado.cheio.fitzroy!.forEach((t, i) => expect(t!).toBeGreaterThan(r.porEstado.cheio.eyring[i]!))
     c.formula = 'sabine'

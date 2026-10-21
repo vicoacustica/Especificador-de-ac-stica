@@ -11,8 +11,8 @@ import {
 /** Limite do coeficiente de absorção médio (ᾱ) acima do qual os resultados usam Eyring. */
 export const LIMITE_EYRING = 0.3
 /**
- * Na escolha automática, a fórmula de Fitzroy entra quando o par de superfícies mais absorvente tem ᾱ
- * pelo menos 3 vezes o do par menos absorvente (absorção concentrada, como um forro acústico em sala de paredes lisas).
+ * Absorção concentrada: o par de superfícies mais absorvente tem ᾱ pelo menos 3 vezes o do par menos absorvente,
+ * como um forro acústico em sala de paredes lisas. A escolha automática não troca a fórmula: o painel recomenda Fitzroy.
  */
 export const RAZAO_FITZROY = 3
 
@@ -95,6 +95,8 @@ export interface Resultado {
   fitzroyIndisponivel: boolean
   /** Razão entre o ᾱ do par mais absorvente e o do menos absorvente (média das bandas), quando há pares. */
   razaoPares: number | null
+  /** A absorção está concentrada em um par (razão a partir de RAZAO_FITZROY): Fitzroy é recomendada. */
+  concentrada: boolean
   /** Tempo de reverberação (T) pela fórmula escolhida. */
   tempo: Record<EstadoOcupacao, (number | null)[]>
 }
@@ -216,20 +218,28 @@ export function calcular(c: Cenario, cat: Catalogo): Resultado {
   const escolha = c.formula ?? 'auto'
   const fitzroyIndisponivel = escolha === 'fitzroy' && !comPares
   const automatica = escolha === 'auto' || fitzroyIndisponivel
-  const formula: Formula = !automatica ? escolha as Formula
-    : razaoPares !== null && razaoPares >= RAZAO_FITZROY ? 'fitzroy'
-      : alfaMedioSala > LIMITE_EYRING ? 'eyring' : 'sabine'
+  const concentrada = razaoPares !== null && razaoPares >= RAZAO_FITZROY
+  const formula: Formula = !automatica ? escolha as Formula : alfaMedioSala > LIMITE_EYRING ? 'eyring' : 'sabine'
   const tempo = Object.fromEntries(ESTADOS.map((e) => [e, porEstado[e][formula] ?? porEstado[e].eyring])) as Resultado['tempo']
-  return { areaTotal: S, porEstado, estados, alfaMedioSala, estadoAlfaMedio, formula, automatica, fitzroyIndisponivel, razaoPares, tempo }
+  return { areaTotal: S, porEstado, estados, alfaMedioSala, estadoAlfaMedio, formula, automatica, fitzroyIndisponivel, razaoPares, concentrada, tempo }
 }
 
 /** Texto curto de por que a fórmula foi usada. */
 export function motivoDaFormula(r: Resultado): string {
+  return [motivoBase(r), recomendacaoFitzroy(r)].filter(Boolean).join(' ')
+}
+function motivoBase(r: Resultado): string {
   if (!r.automatica) return 'Fórmula fixada no cenário (etapa Ambiente).'
   const pre = r.fitzroyIndisponivel ? 'Fitzroy precisa do par de todas as paredes (etapa Superfícies); por isso o programa escolheu a fórmula. ' : ''
-  if (r.formula === 'fitzroy') return `${pre}A absorção está concentrada: o par de superfícies mais absorvente tem ᾱ ${fmtNum(r.razaoPares ?? 0)} vezes o do menos absorvente (a partir de ${RAZAO_FITZROY} vezes, o programa usa Fitzroy).`
   if (r.formula === 'eyring') return `${pre}O coeficiente de absorção médio da sala (ᾱ) é ${fmtNum(r.alfaMedioSala)}; como passa de 0,30, os resultados usam a fórmula de Eyring, mais precisa em salas absorventes.`
   return `${pre}O coeficiente de absorção médio da sala (ᾱ) é ${fmtNum(r.alfaMedioSala)}; como não passa de 0,30, os resultados usam a fórmula de Sabine.`
+}
+/** Com a absorção concentrada e outra fórmula em uso, sugere Fitzroy e mostra o T a 500 Hz por ela. */
+export function recomendacaoFitzroy(r: Resultado): string {
+  if (!r.concentrada || r.formula === 'fitzroy') return ''
+  const e = r.estados[r.estados.length - 1]
+  const t = r.porEstado[e].fitzroy?.[2]
+  return `A absorção está concentrada: o par de superfícies mais absorvente tem ᾱ ${fmtNum(r.razaoPares ?? 0)} vezes o do menos absorvente. Nesses casos a fórmula de Fitzroy é mais indicada${t ? `; por ela, o T a 500 Hz seria ${fmtNum(t)} s` : ''}. Para adotá-la, fixe Fitzroy na etapa Ambiente.`
 }
 const fmtNum = (v: number) => v.toFixed(2).replace('.', ',')
 
