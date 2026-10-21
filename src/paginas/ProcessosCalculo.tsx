@@ -4,6 +4,7 @@ import { ABSORCAO_AR } from '../motor/materiais'
 import { BANDAS, FORMAS } from '../motor/tipos'
 import { fmt } from '../ui/formato'
 import { LIMITE_EYRING, RAZAO_FITZROY } from '../motor/acustica'
+import { AUDIOS } from '../aurilizacao/audios'
 
 /** Equação com a legenda de cada termo logo abaixo. */
 function Equacao({ formula, legenda }: { formula: ReactNode; legenda: [ReactNode, string][] }) {
@@ -321,6 +322,12 @@ export function ProcessosCalculo() {
             ]}
           />
           <p>O resultado é feito para comparar cenários entre si, ouvindo a mesma gravação: ele mostra bem a diferença de reverberação e de clareza, mas não substitui uma simulação acústica completa com difusão e reflexões em 3D. Use fones de ouvido.</p>
+          <h3>Gravações anecoicas</h3>
+          <ul className="creditos">
+            {AUDIOS.filter((a) => a.arquivo).map((a) => (
+              <li key={a.id}><b>{a.nome}</b>: {a.fonte ? <a href={a.fonte} target="_blank" rel="noreferrer">{a.credito}</a> : a.credito}. Licença {a.licenca}.</li>
+            ))}
+          </ul>
         </Topico>
       </div>
     </div>

@@ -718,3 +718,4 @@ details p { margin: 8px 0 0; color: var(--ink-2); max-width: 75ch; }
 .aurilizacao-grade { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: end; }
 .aurilizacao-grade .campo { min-width: 0; }
 .aurilizacao .nota { margin: 0; }
+.enviar-audio { cursor: pointer; }

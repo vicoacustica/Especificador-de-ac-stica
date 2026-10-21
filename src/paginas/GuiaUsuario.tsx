@@ -103,7 +103,7 @@ const PASSOS: Passo[] = [
     intro: <>Nas etapas Resultados e Traçado de raios, o quadro Aurilização deixa ouvir o ambiente. Uma gravação anecoica (feita sem sala) passa pela resposta ao impulso do cenário: o som direto, as reflexões calculadas no traçado de raios e a cauda reverberante com o Tempo de reverberação (T) de cada banda. Assim você ouve a diferença entre os cenários com a mesma gravação. Use fones de ouvido.</>,
     figuras: [{
       imagem: '10-aurilizacao', legenda: 'Quadro de aurilização',
-      marcas: [<>A gravação: fala, canto, instrumentos ou um estalo, que deixa ouvir só a resposta da sala.</>, <>A situação de ocupação: o T muda com o público, e o som também.</>, <>O cenário. Troque de cenário enquanto ouve para comparar.</>, <>Ouvir e parar.</>, <>Marque “Som anecoico” para ouvir a gravação original, sem a sala.</>],
+      marcas: [<>A gravação: violão, canto, castanholas ou um estalo, que deixa ouvir só a resposta da sala. Com “Usar sua gravação” você testa um áudio seu, por exemplo uma fala gravada perto do microfone em ambiente seco; ele fica só no seu navegador.</>, <>A situação de ocupação: o T muda com o público, e o som também.</>, <>O cenário. Troque de cenário enquanto ouve para comparar.</>, <>Ouvir e parar.</>, <>Marque “Som anecoico” para ouvir a gravação original, sem a sala.</>],
     }],
     dica: <>A aurilização é uma aproximação para comparar cenários: ela não substitui uma simulação acústica completa, com difusão e reflexões em três dimensões.</>,
   },

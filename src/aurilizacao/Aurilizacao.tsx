@@ -54,9 +54,22 @@ export function Aurilizacao({ projeto, catalogo, cenarioId }: Props) {
   const [seco, setSeco] = useState(false)
   const [tocando, setTocando] = useState(false)
   const [erro, setErro] = useState('')
+  const [propria, setPropria] = useState<{ nome: string; buffer: AudioBuffer } | null>(null)
   const fonte = useRef<AudioBufferSourceNode | null>(null)
   const c = projeto.cenarios.find((x) => x.id === cenario) ?? projeto.cenarios[0]
-  const escolhido = AUDIOS.find((a) => a.id === audio) ?? AUDIOS[0]
+  const escolhido: AudioAnecoico = audio === 'propria' && propria
+    ? { id: 'propria', nome: propria.nome, descricao: 'Gravação enviada por você, usada só neste navegador.', credito: 'Para um resultado fiel, grave perto da fonte em um ambiente seco, sem eco.', licenca: 'Livre' }
+    : AUDIOS.find((a) => a.id === audio) ?? AUDIOS[0]
+
+  async function enviar(arquivo: File) {
+    try {
+      const buffer = await ctx().decodeAudioData(await arquivo.arrayBuffer())
+      parar()
+      setPropria({ nome: arquivo.name, buffer })
+      setAudio('propria')
+      setErro('')
+    } catch { setErro('Não foi possível ler este arquivo de áudio. Use WAV, MP3 ou OGG.') }
+  }
 
   useEffect(() => { setCenario(cenarioId) }, [cenarioId])
   useEffect(() => () => { fonte.current?.stop() }, [])
@@ -76,7 +89,7 @@ export function Aurilizacao({ projeto, catalogo, cenarioId }: Props) {
     const ac = ctx()
     if (ac.state === 'suspended') await ac.resume()
     let buffer: AudioBuffer
-    try { buffer = await carregar(escolhido) } catch {
+    try { buffer = escolhido.id === 'propria' && propria ? propria.buffer : await carregar(escolhido) } catch {
       setErro('Não foi possível carregar a gravação. Verifique a conexão e tente de novo.')
       return
     }
@@ -120,7 +133,11 @@ export function Aurilizacao({ projeto, catalogo, cenarioId }: Props) {
         <label className="campo">Gravação
           <select value={audio} onChange={(e) => { setAudio(e.target.value); parar() }}>
             {AUDIOS.map((a) => <option key={a.id} value={a.id}>{a.nome}</option>)}
+            {propria && <option value="propria">Sua gravação: {propria.nome}</option>}
           </select>
+        </label>
+        <label className="btn secundario enviar-audio"><Icone nome="enviar" />Usar sua gravação
+          <input type="file" accept="audio/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) void enviar(f); e.target.value = '' }} />
         </label>
         <div className="campo"><span>Ocupação</span>
           <Segmentado rotulo="Ocupação na aurilização" valor={estado} aoMudar={(e) => { setEstado(e); parar() }} opcoes={ESTADOS.map((e) => ({ valor: e, rotulo: NOME_ESTADO[e] }))} />
@@ -133,7 +150,7 @@ export function Aurilizacao({ projeto, catalogo, cenarioId }: Props) {
           ))}
         </div>
       )}
-      <p className="nota">{escolhido.descricao} {escolhido.credito}{escolhido.licenca !== 'Livre' ? `, ${escolhido.licenca}` : ''}.</p>
+      <p className="nota">{escolhido.descricao} {escolhido.fonte ? <a href={escolhido.fonte} target="_blank" rel="noreferrer">{escolhido.credito}</a> : escolhido.credito}{escolhido.licenca !== 'Livre' ? `, ${escolhido.licenca}` : ''}.</p>
       <div className="linha">
         {tocando
           ? <button type="button" className="btn primario" onClick={parar}><Icone nome="parar" />Parar</button>
