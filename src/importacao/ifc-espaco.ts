@@ -101,36 +101,6 @@ export function modeloDoEspaco(arq: ArquivoIFC, espaco: EspacoIFC): ResultadoEsp
   const ao = (min: Ponto, max: Ponto, f: number) => (e: ElementoIFC) => [0, 1, 2].every((k) => e.max[k] >= min[k] - f && e.min[k] <= max[k] + f)
   const perto = arq.elementos.filter(ao(espaco.min, espaco.max, folga))
 
-  /** O primeiro elemento da lista atingido pelo raio que sai de p na direção n, ou null. */
-  function atingido(lista: ElementoIFC[], p: V3, n: V3): ElementoIFC | null {
-    const o: V3 = [p[0] - n[0] * RECUO, p[1] - n[1] * RECUO, p[2] - n[2] * RECUO]
-    const fim = RECUO + ALCANCE
-    let melhor = fim, qual: ElementoIFC | null = null
-    const lo = [0, 1, 2].map((k) => Math.min(o[k], o[k] + n[k] * fim))
-    const hi = [0, 1, 2].map((k) => Math.max(o[k], o[k] + n[k] * fim))
-    for (const el of lista) {
-      if (el.max[0] < lo[0] || el.min[0] > hi[0] || el.max[1] < lo[1] || el.min[1] > hi[1] || el.max[2] < lo[2] || el.min[2] > hi[2]) continue
-      const tr = el.triangulos
-      for (let i = 0; i < tr.length; i += 9) {
-        // Möller–Trumbore, dos dois lados do triângulo.
-        const e1: V3 = [tr[i + 3] - tr[i], tr[i + 4] - tr[i + 1], tr[i + 5] - tr[i + 2]]
-        const e2: V3 = [tr[i + 6] - tr[i], tr[i + 7] - tr[i + 1], tr[i + 8] - tr[i + 2]]
-        const pv = cruz(n, e2)
-        const det = esc(e1, pv)
-        if (Math.abs(det) < 1e-12) continue
-        const tv: V3 = [o[0] - tr[i], o[1] - tr[i + 1], o[2] - tr[i + 2]]
-        const u = esc(tv, pv) / det
-        if (u < 0 || u > 1) continue
-        const qv = cruz(tv, e1)
-        const v = esc(n, qv) / det
-        if (v < 0 || u + v > 1) continue
-        const d = esc(e2, qv) / det
-        if (d >= 0 && d < melhor) { melhor = d; qual = el }
-      }
-    }
-    return qual
-  }
-
   // Triângulos da envoltória agrupados por plano, com a normal para fora.
   interface Plano { n: V3; d: number; tris: V3[][] }
   const planos: Plano[] = []
@@ -175,6 +145,49 @@ export function modeloDoEspaco(arq: ArquivoIFC, espaco: EspacoIFC): ResultadoEsp
         if (v > v0 && v < v1) vs.push(v)
       }
     }
+    // Triângulos dos elementos projetados no plano, em baldes de 0,5 m: o raio sai na direção da normal,
+    // então só pode atingir triângulos cuja projeção contém o ponto de partida.
+    const B = 0.5
+    const nu = Math.max(1, Math.ceil((u1 - u0) / B)), nv = Math.max(1, Math.ceil((v1 - v0) / B))
+    const baldes: number[][] = Array.from({ length: nu * nv }, () => [])
+    const proj: number[] = [] // por triângulo: u, v e distância ao plano dos três vértices
+    const donos: ElementoIFC[] = []
+    for (const el of lista) {
+      const tr = el.triangulos
+      for (let i = 0; i < tr.length; i += 9) {
+        const q: number[] = []
+        for (let k = 0; k < 3; k++) {
+          const p: V3 = [tr[i + 3 * k], tr[i + 3 * k + 1], tr[i + 3 * k + 2]]
+          const [u, v] = para2(p)
+          q.push(u, v, esc(p, n) - d)
+        }
+        if (Math.max(q[2], q[5], q[8]) < -RECUO || Math.min(q[2], q[5], q[8]) > ALCANCE) continue
+        if (Math.abs((q[3] - q[0]) * (q[7] - q[1]) - (q[4] - q[1]) * (q[6] - q[0])) < 1e-10) continue
+        const bu0 = Math.floor((Math.min(q[0], q[3], q[6]) - u0) / B), bu1 = Math.floor((Math.max(q[0], q[3], q[6]) - u0) / B)
+        const bv0 = Math.floor((Math.min(q[1], q[4], q[7]) - v0) / B), bv1 = Math.floor((Math.max(q[1], q[4], q[7]) - v0) / B)
+        if (bu1 < 0 || bv1 < 0 || bu0 >= nu || bv0 >= nv) continue
+        const t = donos.length
+        donos.push(el)
+        proj.push(...q)
+        for (let a = Math.max(0, bu0); a <= Math.min(nu - 1, bu1); a++) for (let b = Math.max(0, bv0); b <= Math.min(nv - 1, bv1); b++) baldes[b * nu + a].push(t)
+      }
+    }
+    /** Elemento mais próximo à frente do ponto (u, v) do plano, de 5 cm para dentro até 1 m para fora. */
+    const atingido = (u: number, v: number): ElementoIFC | null => {
+      const balde = baldes[Math.min(nv - 1, Math.max(0, Math.floor((v - v0) / B))) * nu + Math.min(nu - 1, Math.max(0, Math.floor((u - u0) / B)))]
+      let melhor = Infinity, qual: ElementoIFC | null = null
+      for (const t of balde) {
+        const k = t * 9
+        const [au, av, as, bu, bv, bs, cu, cv, cs] = proj.slice(k, k + 9)
+        const det = (bu - au) * (cv - av) - (bv - av) * (cu - au)
+        const l1 = ((u - au) * (cv - av) - (v - av) * (cu - au)) / det
+        const l2 = ((bu - au) * (v - av) - (bv - av) * (u - au)) / det
+        if (l1 < -1e-9 || l2 < -1e-9 || l1 + l2 > 1 + 1e-9) continue
+        const s = as + l1 * (bs - as) + l2 * (cs - as)
+        if (s >= -RECUO && s <= ALCANCE && s < melhor) { melhor = s; qual = donos[t] }
+      }
+      return qual
+    }
     for (let u = u0 + PASSO; u < u1; u += PASSO) us.push(u)
     for (let v = v0 + PASSO; v < v1; v += PASSO) vs.push(v)
     const lu = linhas(us), lv = linhas(vs)
@@ -187,7 +200,7 @@ export function modeloDoEspaco(arq: ArquivoIFC, espaco: EspacoIFC): ResultadoEsp
       const linha: number[] = []
       for (let i = 0; i + 1 < lu.length; i++) {
         const c: [number, number] = [(lu[i] + lu[i + 1]) / 2, (lv[j] + lv[j + 1]) / 2]
-        linha.push(tris2.some((tr) => dentro(c, tr)) ? idDe(atingido(lista, para3(c), n)) : -2)
+        linha.push(tris2.some((tr) => dentro(c, tr)) ? idDe(atingido(c[0], c[1])) : -2)
       }
       celulas.push(linha)
     }
