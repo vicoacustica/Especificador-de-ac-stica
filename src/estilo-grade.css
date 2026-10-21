@@ -1,0 +1,213 @@
+/*
+ * Estilo Brutalista: neobrutalismo minimalista. Fundo creme com grade fina, bordas pretas retas,
+ * sombras sólidas deslocadas, a fonte monoespaçada Space Mono em todos os textos e uma única cor de destaque (--accent),
+ * escolhida pelo usuário. Tudo fica sob [data-estilo="grade"]; o estilo Clássico continua em index.css.
+ */
+:root[data-estilo="grade"] {
+  --bg: #f4eee2;
+  --container: #ebe3d4;
+  --surface: #fffaf1;
+  --surface-2: #f8f2e6;
+  --ink: #141414;
+  --ink-2: #4a463f;
+  --ink-3: #6b665c;
+  --line: #d6ccb9;
+  --line-2: #141414;
+  --borda: #141414;
+  --sombra-cor: #141414;
+  --escuro: #141414;
+  --escuro-2: #2a2824;
+  --ok: #1f7a4a;
+  --ok-soft: #dcefe2;
+  --bad: #b8321f;
+  --bad-soft: #f8ddd6;
+  --warn: #7f5a00;
+  --warn-soft: #f4e7c6;
+  --band: color-mix(in srgb, var(--ok) 13%, transparent);
+  --accent-hover: color-mix(in srgb, var(--accent) 86%, #000);
+  --accent-soft: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  --accent-text: color-mix(in srgb, var(--accent) 70%, var(--ink));
+  --grade: color-mix(in srgb, var(--accent) 13%, transparent);
+  /* Séries dos gráficos: tons de uma cor só e o preto, para manter um único destaque. */
+  --s-vazio: color-mix(in srgb, var(--ink) 30%, var(--surface));
+  --s-meio: color-mix(in srgb, var(--accent) 55%, var(--surface));
+  --s-cheio: var(--accent);
+  --c0: var(--accent); --c1: var(--ink); --c2: color-mix(in srgb, var(--accent) 50%, var(--surface)); --c3: color-mix(in srgb, var(--ink) 45%, var(--surface)); --c4: color-mix(in srgb, var(--accent) 60%, var(--ink));
+  --r-sm: 0;
+  --r: 0;
+  --r-lg: 0;
+  --b: 1.5px;
+  --sombra: 4px 4px 0 var(--sombra-cor);
+  --sombra-alta: 8px 8px 0 var(--sombra-cor);
+  /* Uma fonte só em todos os textos, como nas referências. */
+  --f-body: "Space Mono", ui-monospace, Menlo, Consolas, monospace;
+  --f-mono: "Space Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+:root[data-estilo="grade"][data-tema="escuro"] {
+  --bg: #121211;
+  --container: #1d1c1a;
+  --surface: #191816;
+  --surface-2: #201f1c;
+  --ink: #f2ece0;
+  --ink-2: #bdb6a8;
+  --ink-3: #958e80;
+  --line: #34322d;
+  --line-2: #f2ece0;
+  --borda: #f2ece0;
+  --sombra-cor: var(--accent);
+  --escuro: #f2ece0;
+  --escuro-2: #d8d1c3;
+  --ok: #55c487;
+  --ok-soft: #17301f;
+  --bad: #f08068;
+  --bad-soft: #3a1c16;
+  --warn: #e6b94e;
+  --warn-soft: #33280f;
+  --accent-soft: color-mix(in srgb, var(--accent) 18%, var(--surface));
+  --accent-text: color-mix(in srgb, var(--accent) 65%, #fff);
+  --grade: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+/* Fundo creme com grade fina na cor de destaque. */
+[data-estilo="grade"] body {
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--grade) 1px, transparent 1px), linear-gradient(90deg, var(--grade) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-attachment: fixed;
+}
+[data-estilo="grade"] h1, [data-estilo="grade"] h2 { letter-spacing: -0.03em; font-weight: 700; }
+[data-estilo="grade"] body { font-size: 13.5px; }
+[data-estilo="grade"] h3, [data-estilo="grade"] th, [data-estilo="grade"] .etapas .pilula.etapa small,
+[data-estilo="grade"] .criterio .k, [data-estilo="grade"] .tag, [data-estilo="grade"] .campo,
+[data-estilo="grade"] .cartao-projeto-dados small, [data-estilo="grade"] .kv small, [data-estilo="grade"] .numeros small,
+[data-estilo="grade"] .mono, [data-estilo="grade"] .btn, [data-estilo="grade"] .seg button, [data-estilo="grade"] .chip { font-family: var(--f-mono); }
+[data-estilo="grade"] h3 { color: var(--ink); letter-spacing: 0.06em; }
+[data-estilo="grade"] .btn, [data-estilo="grade"] .seg button, [data-estilo="grade"] .chip { font-size: 12.5px; letter-spacing: 0.02em; }
+
+/* Barra: faixa reta com borda inferior preta. */
+[data-estilo="grade"] .barra { background: var(--surface); border-bottom: var(--b) solid var(--borda); max-width: none; }
+[data-estilo="grade"] .marca-simbolo { border-radius: 0; background: var(--accent); color: var(--accent-ink); border: var(--b) solid var(--borda); }
+
+/* Tudo reto: cantos sem arredondamento. */
+[data-estilo="grade"] .btn, [data-estilo="grade"] .pilula, [data-estilo="grade"] .chip, [data-estilo="grade"] .busca,
+[data-estilo="grade"] .confirmar, [data-estilo="grade"] .tag, [data-estilo="grade"] .pill, [data-estilo="grade"] .etiqueta,
+[data-estilo="grade"] .contagem, [data-estilo="grade"] .selo, [data-estilo="grade"] .fonte, [data-estilo="grade"] .icone-btn,
+[data-estilo="grade"] .seta-canto, [data-estilo="grade"] .avatar, [data-estilo="grade"] .pilula-icone, [data-estilo="grade"] .passo-numero,
+[data-estilo="grade"] .marca-numero, [data-estilo="grade"] .cartao-novo-icone, [data-estilo="grade"] .raios-bola, [data-estilo="grade"] .raios-pato,
+[data-estilo="grade"] .campo-material, [data-estilo="grade"] .cartao-material, [data-estilo="grade"] .uso, [data-estilo="grade"] .sup,
+[data-estilo="grade"] .miniatura, [data-estilo="grade"] .modelo-sup-linha, [data-estilo="grade"] .raios-elemento, [data-estilo="grade"] .aviso,
+[data-estilo="grade"] .campo input, [data-estilo="grade"] .campo select, [data-estilo="grade"] .campo textarea, [data-estilo="grade"] td input,
+[data-estilo="grade"] td select, [data-estilo="grade"] .sup input, [data-estilo="grade"] .sup select, [data-estilo="grade"] .paleta-cor,
+[data-estilo="grade"] .aparencia-estilo, [data-estilo="grade"] .equacao, [data-estilo="grade"] .obs, [data-estilo="grade"] .dimres,
+[data-estilo="grade"] .resultado-forma, [data-estilo="grade"] .forma, [data-estilo="grade"] .alerta, [data-estilo="grade"] .adicionar-item,
+[data-estilo="grade"] .cartao-projeto-base, [data-estilo="grade"] .vazio, [data-estilo="grade"] .raios-atencao, [data-estilo="grade"] .raios-caixa,
+[data-estilo="grade"] .raios-ponto, [data-estilo="grade"] .aurilizacao-icone { border-radius: 0; }
+
+/* Navegação em faixas segmentadas, com o item ativo na cor de destaque. */
+[data-estilo="grade"] .menu, [data-estilo="grade"] .seg, [data-estilo="grade"] .cenarios, [data-estilo="grade"] .abas {
+  border-radius: 0; padding: 0; gap: 0; background: var(--surface); border: var(--b) solid var(--borda);
+}
+[data-estilo="grade"] .menu .pilula, [data-estilo="grade"] .cenarios .pilula, [data-estilo="grade"] .abas .pilula, [data-estilo="grade"] .seg button {
+  border-radius: 0; border: 0; border-right: var(--b) solid var(--borda);
+}
+[data-estilo="grade"] .menu .pilula:last-child, [data-estilo="grade"] .cenarios .pilula:last-child,
+[data-estilo="grade"] .abas .pilula:last-child, [data-estilo="grade"] .seg button:last-child { border-right: 0; }
+[data-estilo="grade"] .menu .pilula[aria-current="page"], [data-estilo="grade"] .cenarios .pilula[aria-selected="true"],
+[data-estilo="grade"] .abas .pilula[aria-selected="true"], [data-estilo="grade"] .seg button[aria-pressed="true"] {
+  background: var(--accent); color: var(--accent-ink); box-shadow: none;
+}
+
+/* Botões com borda preta e sombra sólida que “afunda” ao passar o mouse. */
+[data-estilo="grade"] .btn.primario, [data-estilo="grade"] .btn.secundario, [data-estilo="grade"] .btn.perigo {
+  border: var(--b) solid var(--borda); box-shadow: 3px 3px 0 var(--sombra-cor); transition: transform .1s, box-shadow .1s, background .15s;
+}
+[data-estilo="grade"] .btn.primario:hover, [data-estilo="grade"] .btn.secundario:hover, [data-estilo="grade"] .btn.perigo:hover {
+  transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--sombra-cor);
+}
+[data-estilo="grade"] .btn.secundario { background: var(--surface); }
+[data-estilo="grade"] .btn.secundario:hover { border-color: var(--borda); }
+[data-estilo="grade"] .icone-btn.redondo, [data-estilo="grade"] .seta-canto { border: var(--b) solid var(--borda); }
+[data-estilo="grade"] .avatar { background: var(--surface); color: var(--ink); border: var(--b) solid var(--borda); }
+[data-estilo="grade"] .avatar[aria-current="page"] { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
+[data-estilo="grade"] .pilula, [data-estilo="grade"] .chip { border: var(--b) solid var(--borda); }
+[data-estilo="grade"] .pilula[aria-selected="true"], [data-estilo="grade"] .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--borda); color: var(--accent-ink); }
+[data-estilo="grade"] .chip[aria-pressed="true"] .contagem { background: color-mix(in srgb, var(--accent-ink) 20%, transparent); color: var(--accent-ink); }
+[data-estilo="grade"] .busca { border: var(--b) solid var(--borda); }
+
+/* Cartões: borda preta e sombra sólida. */
+[data-estilo="grade"] .bloco, [data-estilo="grade"] .cartao, [data-estilo="grade"] .painel, [data-estilo="grade"] .passo,
+[data-estilo="grade"] .cartao-projeto, [data-estilo="grade"] .cartao-biblioteca, [data-estilo="grade"] .modal, [data-estilo="grade"] .vazio, [data-estilo="grade"] .aurilizacao {
+  border: var(--b) solid var(--borda); box-shadow: var(--sombra); border-radius: 0;
+}
+[data-estilo="grade"] .cartao-projeto:hover, [data-estilo="grade"] .cartao-biblioteca:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--sombra-cor); }
+[data-estilo="grade"] .cartao-projeto, [data-estilo="grade"] .cartao-biblioteca { transition: transform .1s, box-shadow .1s; }
+[data-estilo="grade"] .cartao-projeto-imagem, [data-estilo="grade"] .cartao-biblioteca-imagem { border-bottom: var(--b) solid var(--borda); }
+[data-estilo="grade"] .cartao-novo { border: var(--b) dashed var(--borda); border-radius: 0; }
+[data-estilo="grade"] .cartao-novo-icone { border: var(--b) solid var(--borda); }
+
+/* Blocos de destaque: preenchimento sólido na cor de destaque (o único destaque da tela). */
+[data-estilo="grade"] .bloco.escuro, [data-estilo="grade"] .criterio {
+  background: var(--accent); color: var(--accent-ink); border: var(--b) solid var(--borda);
+}
+[data-estilo="grade"] .bloco.escuro .suave, [data-estilo="grade"] .bloco.escuro p, [data-estilo="grade"] .criterio .nota,
+[data-estilo="grade"] .criterio .k { color: color-mix(in srgb, var(--accent-ink) 85%, transparent); }
+[data-estilo="grade"] .criterio b, [data-estilo="grade"] .bloco.escuro .formula-destaque { color: var(--accent-ink); }
+[data-estilo="grade"] .formula-destaque::first-letter { color: var(--accent-ink); }
+[data-estilo="grade"] .bloco.escuro .seta-canto { background: var(--surface); border-color: var(--borda); color: var(--ink); }
+[data-estilo="grade"] .equacao { border: var(--b) solid var(--borda); }
+[data-estilo="grade"] .equacao-formula { background: var(--surface); color: var(--ink); border-bottom: var(--b) solid var(--borda); font-family: var(--f-mono); }
+
+/* Grades de números e etapas: células separadas por linhas pretas, como uma tabela. */
+[data-estilo="grade"] .numeros, [data-estilo="grade"] .kv, [data-estilo="grade"] .etapas {
+  padding: 0; gap: var(--b); background: var(--borda); border: var(--b) solid var(--borda); border-radius: 0; overflow: hidden;
+}
+[data-estilo="grade"] .numeros > div, [data-estilo="grade"] .kv div { border: 0; border-radius: 0; background: var(--surface); }
+[data-estilo="grade"] .numeros > div:first-child { background: var(--accent); color: var(--accent-ink); }
+[data-estilo="grade"] .numeros > div:first-child small { color: color-mix(in srgb, var(--accent-ink) 85%, transparent); }
+[data-estilo="grade"] .numeros.compacto > div:first-child { background: var(--surface); color: var(--ink); }
+[data-estilo="grade"] .etapas .pilula.etapa { border-radius: 0; background: var(--surface); border: 0; }
+[data-estilo="grade"] .etapas .pilula.etapa[aria-selected="true"] { background: var(--accent-soft); box-shadow: inset 0 -4px 0 var(--accent); }
+[data-estilo="grade"] .pilula-icone { border: var(--b) solid var(--borda); }
+[data-estilo="grade"] .etapas .pilula.etapa[aria-selected="true"] .pilula-icone, [data-estilo="grade"] .passo-numero,
+[data-estilo="grade"] .marca-numero, [data-estilo="grade"] .cartao-novo-icone, [data-estilo="grade"] .guia-item[aria-current="step"] .passo-numero {
+  color: var(--accent-ink); border-color: var(--borda);
+}
+
+/* Campos e listas. */
+[data-estilo="grade"] .campo input, [data-estilo="grade"] .campo select, [data-estilo="grade"] .campo textarea,
+[data-estilo="grade"] td input, [data-estilo="grade"] td select, [data-estilo="grade"] .sup input, [data-estilo="grade"] .sup select,
+[data-estilo="grade"] .campo-material, [data-estilo="grade"] .cartao-material, [data-estilo="grade"] .uso, [data-estilo="grade"] .sup {
+  border: var(--b) solid var(--borda); font-family: var(--f-body);
+}
+[data-estilo="grade"] .campo input:focus, [data-estilo="grade"] .campo select:focus, [data-estilo="grade"] .campo textarea:focus { box-shadow: 3px 3px 0 var(--accent); }
+[data-estilo="grade"] .uso[aria-pressed="true"], [data-estilo="grade"] .cartao-material[aria-pressed="true"] {
+  background: var(--accent-soft); border-color: var(--borda); box-shadow: 3px 3px 0 var(--sombra-cor);
+}
+[data-estilo="grade"] .uso:hover, [data-estilo="grade"] .campo-material:hover, [data-estilo="grade"] .cartao-material:hover { border-color: var(--borda); box-shadow: 3px 3px 0 var(--sombra-cor); }
+[data-estilo="grade"] .sup.filha { border-left-width: 4px; }
+[data-estilo="grade"] th { background: var(--surface-2); border-bottom: var(--b) solid var(--borda); color: var(--ink); }
+[data-estilo="grade"] .modal-topo { background: var(--accent); color: var(--accent-ink); border-bottom: var(--b) solid var(--borda); margin-bottom: 0; }
+[data-estilo="grade"] .modal-topo .icone-btn { color: var(--accent-ink); }
+[data-estilo="grade"] .modal { background: var(--surface); }
+[data-estilo="grade"] .modal-corpo { padding-top: 16px; }
+[data-estilo="grade"] .modal-fundo { background: color-mix(in srgb, var(--bg) 70%, transparent); }
+[data-estilo="grade"] .aviso { background: var(--ink); color: var(--surface); border: var(--b) solid var(--borda); box-shadow: var(--sombra); }
+[data-estilo="grade"] .aviso .icone-btn { color: var(--surface); }
+[data-estilo="grade"] .selo { background: var(--surface); border: 1px solid var(--borda); }
+[data-estilo="grade"] .alerta { background: var(--warn-soft); border: var(--b) solid var(--borda); color: var(--ink); }
+[data-estilo="grade"] .imagem-vazia { background: var(--surface-2); background-image: linear-gradient(var(--grade) 1px, transparent 1px), linear-gradient(90deg, var(--grade) 1px, transparent 1px); background-size: 12px 12px; }
+[data-estilo="grade"] .raios-visor, [data-estilo="grade"] .raios-reflectograma, [data-estilo="grade"] .raios-atencao,
+[data-estilo="grade"] .raios-caixa, [data-estilo="grade"] .raios-ponto { border: var(--b) solid var(--borda); }
+[data-estilo="grade"] .raios-visor { box-shadow: var(--sombra); }
+[data-estilo="grade"][data-tema="escuro"] .raios-paralela { stroke-opacity: 0.3; }
+[data-estilo="grade"] .marcar input { accent-color: var(--accent); }
+@media (max-width: 760px) {
+  [data-estilo="grade"] .menu { box-shadow: var(--sombra); }
+  [data-estilo="grade"] .menu .pilula[aria-current="page"] { background: var(--accent); color: var(--accent-ink); }
+}
+[data-estilo="grade"] .etapas .etapa-texto { overflow-wrap: normal; hyphens: manual; font-size: 13px; }
+[data-estilo="grade"] .capa-projeto, [data-estilo="grade"] .capa-projeto-editar, [data-estilo="grade"] .importar-chamada, [data-estilo="grade"] .importar-chamada-icone,
+[data-estilo="grade"] .cartao-projeto-imagem, [data-estilo="grade"] .imagem-ambiente { border-radius: 0; }
+[data-estilo="grade"] .capa-projeto { border: var(--b) solid var(--borda); }
+/* A fonte monoespaçada é mais larga: botões longos quebram a linha em vez de passar da tela. */
+[data-estilo="grade"] .btn { max-width: 100%; white-space: normal; text-align: center; }

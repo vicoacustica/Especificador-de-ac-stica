@@ -1,0 +1,51 @@
+/*
+ * Personalização do estilo Clássico: a cor de destaque escolhida e o modo escuro. Com o laranja padrão
+ * e o modo claro, as cores derivadas reproduzem as originais de index.css.
+ */
+:root[data-estilo="classico"] {
+  --accent-hover: color-mix(in srgb, var(--accent) 86%, #000);
+  --accent-soft: color-mix(in srgb, var(--accent) 13%, #fff);
+  --accent-text: color-mix(in srgb, var(--accent) 78%, #000);
+  --s-meio: color-mix(in srgb, var(--accent) 55%, #fff);
+  --s-cheio: var(--accent);
+  --c0: var(--accent);
+  --c4: color-mix(in srgb, var(--accent) 55%, #fff);
+}
+:root[data-estilo="classico"][data-tema="escuro"] {
+  --bg: #171412;
+  --container: #221e1b;
+  --surface: #1d1a17;
+  --surface-2: #24201c;
+  --ink: #f3eee8;
+  --ink-2: #bfb6ab;
+  --ink-3: #978d82;
+  --line: #3a332d;
+  --line-2: #554c43;
+  --escuro: #2c2622;
+  --escuro-2: #3a332e;
+  --ok: #5cc58a;
+  --ok-soft: #183324;
+  --bad: #f08470;
+  --bad-soft: #3b1f19;
+  --warn: #e3b54f;
+  --warn-soft: #35290f;
+  --band: rgba(92, 197, 138, 0.14);
+  --accent-soft: color-mix(in srgb, var(--accent) 20%, #1d1a17);
+  --accent-text: color-mix(in srgb, var(--accent) 65%, #fff);
+  --s-vazio: #6f655b;
+  --s-meio: color-mix(in srgb, var(--accent) 55%, #1d1a17);
+  --c1: #f3eee8; --c2: #8f7f6d; --c3: #b58e72; --c4: color-mix(in srgb, var(--accent) 55%, #1d1a17);
+  --sombra: none;
+  --sombra-alta: 0 12px 40px rgba(0, 0, 0, 0.55);
+}
+/* No escuro, o texto claro sobre fundo claro (itens selecionados) passa a escuro. */
+[data-estilo="classico"][data-tema="escuro"] .pilula[aria-selected="true"],
+[data-estilo="classico"][data-tema="escuro"] .chip[aria-pressed="true"] { color: var(--bg); }
+[data-estilo="classico"][data-tema="escuro"] .chip[aria-pressed="true"] .contagem { background: rgba(0, 0, 0, 0.15); color: var(--bg); }
+[data-estilo="classico"][data-tema="escuro"] .selo { background: rgba(29, 26, 23, 0.92); }
+[data-estilo="classico"][data-tema="escuro"] .alerta { background: var(--warn-soft); border-color: rgba(227, 181, 79, 0.35); }
+[data-estilo="classico"][data-tema="escuro"] .bloco.escuro, [data-estilo="classico"][data-tema="escuro"] .criterio,
+[data-estilo="classico"][data-tema="escuro"] .equacao-formula { border: 1px solid var(--line-2); }
+[data-estilo="classico"][data-tema="escuro"] .cenarios .pilula[aria-selected="true"],
+[data-estilo="classico"][data-tema="escuro"] .abas .pilula[aria-selected="true"],
+[data-estilo="classico"][data-tema="escuro"] .etapas .pilula.etapa[aria-selected="true"] { color: var(--ink); }
